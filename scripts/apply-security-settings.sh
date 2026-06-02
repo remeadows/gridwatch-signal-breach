@@ -14,6 +14,11 @@
 
 set -euo pipefail
 
+# Run from the repository root so relative paths (e.g. the ruleset file)
+# resolve no matter which directory the script is invoked from.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel 2>/dev/null || echo "$SCRIPT_DIR/..")"
+
 OWNER="${OWNER:-remeadows}"
 REPO="${REPO:-gridwatch-signal-breach}"
 SLUG="${OWNER}/${REPO}"
