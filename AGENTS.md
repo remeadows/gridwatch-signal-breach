@@ -1,0 +1,52 @@
+# Agent Instructions
+
+## Project Scope
+
+GridWatch: Signal Breach is a fully static browser game. Keep it static: no backend, no API calls, no fetch/XHR, no secrets, no environment files, no runtime dependencies, no multiplayer, no accounts, no extra levels, and no waves beyond the existing five-wave session.
+
+Use vanilla TypeScript, Vite, and HTML5 Canvas2D only. Do not add React, Phaser, or another game framework.
+
+The canonical public repository is `https://github.com/remeadows/gridwatch-signal-breach`.
+
+## Architecture Rules
+
+- Keep deterministic game logic in `src/sim/`. This code should stay pure and DOM-free.
+- Keep all Canvas2D drawing and animation in `src/render/`.
+- Keep pointer-to-command translation in `src/input/`.
+- Keep HUD, overlays, unit picker, scoring display, and WebAudio UI effects in `src/ui/`.
+- Keep gameplay tuning in `src/data/` when practical. Avoid burying tuning numbers in logic.
+- Preserve routing as the core verb: players place/sell units, and the sim computes the Source-to-Core signal route.
+
+## Important Files
+
+- Read `CONTEXT.md` before structural work.
+- Read `HANDOFF.md` before deployment, verification, or tuning work.
+- `src/main.ts` wires the app together and owns the requestAnimationFrame loop.
+- `vite.config.ts` sets `base: "/gridwatch-signal-breach/"` and disables the modulepreload polyfill to avoid generated `fetch()`.
+
+## Verification
+
+Run the checks relevant to your change. For any shipping or behavior change, run:
+
+```sh
+npm install
+npm run build
+npm run dev -- --host 127.0.0.1 --port 5173 --strictPort
+npm run preview -- --host 127.0.0.1 --port 4173 --strictPort
+rg -n "fetch|XMLHttpRequest|process\\.env|import\\.meta\\.env" src index.html package.json vite.config.ts README.md .github dist
+find . -name '.env*' -print
+```
+
+Expected: install/build/dev/preview succeed, the app renders at `/gridwatch-signal-breach/`, the `rg` command has no matches, and `find` prints no `.env*` files.
+
+For public-repo security checks, also run:
+
+```sh
+npm audit --audit-level=high
+```
+
+Expected: no high, critical, or unpatched production-impacting advisories.
+
+## Git Notes
+
+If this workspace is nested inside another local repository, scope staging and commits to this project directory unless the user explicitly asks otherwise. Do not push to an unrelated parent remote. The intended upstream for this game is `remeadows/gridwatch-signal-breach`.

@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+
+!.gitignore
+!README.md
+!index.html
+!package.json
+!package-lock.json
+!tsconfig.json
+!vite.config.ts
+!.github/
+!.github/**
+!src/
+!src/**

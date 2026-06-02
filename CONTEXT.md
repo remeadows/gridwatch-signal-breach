@@ -1,0 +1,27 @@
+# GridWatch Context
+
+GridWatch: Signal Breach is a fully static browser game built with Vite, vanilla TypeScript, and Canvas2D. There is no backend, API, fetch/XHR, secrets, or environment configuration. The GitHub Pages base path is `/gridwatch-signal-breach/`.
+
+## Architecture
+
+- `src/main.ts` owns bootstrap, the animation loop, tick timing, and wires sim/render/input/UI together.
+- `src/sim/` is the deterministic game model. It has no DOM access; state changes flow through `createGameState()`, `applyCommand()`, and `tick()`.
+- `src/render/` draws the Canvas2D board, route, intrusions, flashes, and screen shake from sim state only.
+- `src/input/` translates pointer clicks into sim commands.
+- `src/ui/` renders HUD, unit picker, overlays, score screen, and small WebAudio event sounds.
+- `src/data/` holds level, units, enemies, waves, and taunts tuning.
+
+## Simulation Notes
+
+- The board is 8x8 with Source at `(0,3)` and Core at `(7,4)`.
+- Signal routing is auto-computed by BFS through Source, Relay tiles, and Core; corrupted tiles break routes.
+- Intrusions spawn from wave-defined perimeter edges, pathfind toward the current route or Core, and corrupt contacted tiles over deterministic tick counts.
+- Firewalls add corruption resistance except against Spoof Packets. ICE turrets damage intrusions in Manhattan range.
+- The game has exactly five waves. Prep lasts `14` ticks, with `350ms` simulation ticks, so prep is about five seconds.
+- Scoring combines core integrity, neutralized intrusions, signal uptime percentage, and unused bandwidth efficiency.
+
+## Build And Deploy
+
+- Run locally with `npm install`, `npm run dev`, `npm run build`, and `npm run preview`.
+- `vite.config.ts` disables Vite's modulepreload polyfill so the built bundle contains no generated `fetch()`.
+- `.github/workflows/pages.yml` builds `dist/` and deploys via GitHub Pages Actions when this project is the repository root.

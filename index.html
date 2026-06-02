@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GridWatch: Signal Breach</title>
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="game-layout">
+        <aside class="control-panel" aria-label="Operator controls">
+          <div id="hud-root"></div>
+          <div id="unit-picker-root"></div>
+        </aside>
+        <section class="game-panel" aria-label="GridWatch signal board">
+          <canvas id="game-canvas" width="720" height="720">
+            GridWatch: Signal Breach requires a browser with Canvas support.
+          </canvas>
+          <div id="overlay-root"></div>
+        </section>
+      </section>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
