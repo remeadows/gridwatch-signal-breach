@@ -1,16 +1,37 @@
 import { getGridPositionFromClientPoint } from "../render/canvas";
 import type { SimCommand } from "../sim/commands";
-import type { GameState, PlayerTool } from "../sim/types";
+import type { GameState, GridPosition, PlayerTool } from "../sim/types";
 
 export type PointerInputOptions = Readonly<{
   canvas: HTMLCanvasElement;
   getState: () => GameState;
   getSelectedTool: () => PlayerTool;
   dispatch: (command: SimCommand) => void;
+  isEnabled: () => boolean;
+  onHover: (position: GridPosition | null) => void;
 }>;
 
 export function installPointerInput(options: PointerInputOptions): void {
+  options.canvas.addEventListener("pointermove", (event) => {
+    if (!options.isEnabled() || event.pointerType !== "mouse") {
+      options.onHover(null);
+      return;
+    }
+
+    options.onHover(
+      getGridPositionFromClientPoint(options.canvas, event.clientX, event.clientY),
+    );
+  });
+
+  options.canvas.addEventListener("pointerleave", () => {
+    options.onHover(null);
+  });
+
   options.canvas.addEventListener("pointerdown", (event) => {
+    if (!options.isEnabled()) {
+      return;
+    }
+
     const state = options.getState();
 
     if (state.phase === "won" || state.phase === "lost") {

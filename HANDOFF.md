@@ -3,7 +3,10 @@
 ## Current State
 
 - Playable single-level game is complete through five waves with win/loss, scoring, restart, HUD polish, Canvas animation, and minimal WebAudio SFX.
-- Latest project commit at the time these notes were written: `de7bf96` (`Harden GridWatch for Pages shipping`).
+- Overhaul Phase 1 is merged: title screen, briefing flow, app-level screen state, and pointer gating.
+- Overhaul Phase 2 is merged: shared path-data icons, Canvas icon rendering, DOM SVG icons, picker icons, briefing icons, and board icon replacements.
+- Overhaul Phase 3 is merged: cached board background, route pulse, hover ghost, Source/Core treatment, animated intrusions, corruption/event polish, and scanline/vignette styling.
+- Overhaul Phase 4 is implemented on the active branch: HUD hero metrics, terminal-style prep/end overlays, UI select/start blips, mobile layout QA, and scripted win/loss playthrough verification.
 - The working game URL in preview is `http://127.0.0.1:4173/gridwatch-signal-breach/` when `npm run preview` is running.
 
 ## Verification To Re-run
@@ -15,13 +18,15 @@ npm run dev -- --host 127.0.0.1 --port 5173 --strictPort
 npm run preview -- --host 127.0.0.1 --port 4173 --strictPort
 rg -n "fetch|XMLHttpRequest|process\\.env|import\\.meta\\.env" src index.html package.json vite.config.ts README.md .github dist
 find . -name '.env*' -print
+rg -n "TODO|FIXME|XXX|HACK" src
+rg -n ": any\b" src
 ```
 
-Expected: install/build/dev/preview succeed, the app renders at `/gridwatch-signal-breach/`, the `rg` command has no matches, and `find` prints no `.env*` files.
+Expected: install/build/dev/preview succeed, the app renders at `/gridwatch-signal-breach/`, the first `rg` command has no matches, `find` prints no `.env*` files, the `TODO` `rg` has no matches (the old `src/render/animator.ts` stub must stay gone), and the `any` `rg` has no matches.
 
 ## Important Caveats
 
-- This directory currently sits inside the larger git repo at `/Users/russmeadows/Dev`. GitHub Actions only runs workflows from the repo root. If GridWatch remains nested in that repo, move the Pages workflow to the root `.github/workflows/` and add the correct `working-directory`; if GridWatch becomes its own repo, the current workflow path is ready.
+- This directory is now its own standalone git repository. Its intended upstream is `https://github.com/remeadows/gridwatch-signal-breach.git`.
 - Keep runtime dependencies empty. Only Vite and TypeScript are dev dependencies.
 - Keep gameplay tuning in `src/data/` where practical. Score weights currently live in `src/sim/scoring.ts`.
 - Do not add manual path drawing, backend/API calls, env files, additional levels, or extra waves unless the product scope changes.
