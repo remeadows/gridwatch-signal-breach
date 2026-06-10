@@ -2,6 +2,8 @@ import { GRID_SIZE } from "../data/level";
 import { getTileKind } from "../sim/grid";
 import type { EnemyKind, GameState, GridPosition, SimEvent, TileKind } from "../sim/types";
 import { type CanvasSize, getBoardMetrics } from "./canvas";
+import { ICONS, type IconName } from "./iconPaths";
+import { drawIcon, getGlowSprite } from "./icons";
 
 export type RenderFrame = {
   interpolationAlpha: number;
@@ -41,6 +43,61 @@ export function drawGrid(
   context.restore();
 }
 
+export function drawAmbientBackdrop(
+  context: CanvasRenderingContext2D,
+  size: CanvasSize,
+  timeMs: number,
+): void {
+  const { originX, originY, boardSize, tileSize } = getBoardMetrics(size);
+  const pulse = (timeMs * 0.04) % (boardSize + tileSize * 2);
+
+  context.clearRect(0, 0, size.width, size.height);
+  drawBackdrop(context, size);
+
+  context.save();
+  context.globalAlpha = 0.72;
+  context.strokeStyle = "rgba(120, 255, 238, 0.13)";
+  context.lineWidth = 1;
+
+  for (let index = 0; index <= GRID_SIZE; index += 1) {
+    const offset = index * tileSize;
+
+    context.beginPath();
+    context.moveTo(originX + offset, originY);
+    context.lineTo(originX + offset, originY + boardSize);
+    context.stroke();
+
+    context.beginPath();
+    context.moveTo(originX, originY + offset);
+    context.lineTo(originX + boardSize, originY + offset);
+    context.stroke();
+  }
+
+  context.strokeStyle = "rgba(34, 224, 196, 0.34)";
+  context.lineWidth = 2;
+  context.beginPath();
+  context.moveTo(originX - tileSize + pulse, originY + tileSize * 0.5);
+  context.lineTo(originX + pulse, originY + tileSize * 0.5);
+  context.lineTo(originX + pulse, originY + boardSize - tileSize * 0.5);
+  context.stroke();
+
+  context.strokeStyle = "rgba(255, 79, 145, 0.18)";
+  context.lineWidth = 1;
+  for (let y = 0; y < GRID_SIZE; y += 2) {
+    const rowY = originY + y * tileSize + tileSize * 0.5;
+    const drift = (timeMs * 0.015 + y * tileSize) % boardSize;
+    context.beginPath();
+    context.moveTo(originX + drift - tileSize, rowY);
+    context.lineTo(originX + drift + tileSize * 1.5, rowY);
+    context.stroke();
+  }
+
+  context.strokeStyle = "rgba(215, 255, 247, 0.22)";
+  context.lineWidth = 2;
+  context.strokeRect(originX, originY, boardSize, boardSize);
+  context.restore();
+}
+
 function drawBackdrop(context: CanvasRenderingContext2D, size: CanvasSize): void {
   const gradient = context.createLinearGradient(0, 0, size.width, size.height);
   gradient.addColorStop(0, "#09141c");
@@ -70,7 +127,7 @@ function drawTiles(
         tileSize - inset * 2,
       );
 
-      drawTileGlyph(context, originX, originY, tileSize, position, kind);
+      drawTileUnitIcon(context, originX, originY, tileSize, position, kind);
     }
   }
 }
@@ -114,37 +171,50 @@ function drawMarkers(
   const markers = [
     {
       label: "SRC",
+      icon: "source",
       position: state.config.source,
-      fill: "#22e0c4",
-      stroke: "#a4fff3",
     },
     {
       label: "CORE",
+      icon: "core",
       position: state.config.core,
-      fill: "#ff4f91",
-      stroke: "#ffd1e0",
     },
-  ] as const;
+  ] satisfies readonly {
+    label: string;
+    icon: IconName;
+    position: GridPosition;
+  }[];
 
   for (const marker of markers) {
     const centerX = originX + marker.position.x * tileSize + tileSize / 2;
-    const centerY = originY + marker.position.y * tileSize + tileSize / 2;
-    const radius = tileSize * 0.32;
+    const centerY = originY + marker.position.y * tileSize + tileSize * 0.45;
+    const iconSize = tileSize * 0.5;
+    const sprite = getGlowSprite(marker.icon, iconSize);
+    const tileLeft = originX + marker.position.x * tileSize + 4;
+    const tileTop = originY + marker.position.y * tileSize + 4;
+    const iconColor = ICONS[marker.icon].color;
 
-    context.fillStyle = marker.fill;
-    context.strokeStyle = marker.stroke;
-    context.lineWidth = 4;
+    context.fillStyle = "rgba(3, 9, 13, 0.42)";
+    context.fillRect(tileLeft, tileTop, tileSize - 8, tileSize - 8);
+    context.strokeStyle = iconColor;
+    context.lineWidth = 2;
+    context.strokeRect(tileLeft, tileTop, tileSize - 8, tileSize - 8);
 
-    context.beginPath();
-    context.arc(centerX, centerY, radius, 0, Math.PI * 2);
-    context.fill();
-    context.stroke();
+    context.drawImage(
+      sprite,
+      centerX - sprite.width / 2,
+      centerY - sprite.height / 2,
+    );
 
-    context.fillStyle = "#061016";
-    context.font = `700 ${Math.max(14, tileSize * 0.19)}px ui-sans-serif, system-ui, sans-serif`;
+    context.fillStyle = "rgba(215, 255, 247, 0.9)";
+    context.font = `700 ${Math.max(11, tileSize * 0.14)}px ui-monospace, "SF Mono", Consolas, monospace`;
     context.textAlign = "center";
-    context.textBaseline = "middle";
-    context.fillText(marker.label, centerX, centerY);
+    context.textBaseline = "top";
+    context.fillText(
+      marker.label,
+      centerX,
+      originY + marker.position.y * tileSize + tileSize * 0.7,
+    );
   }
 }
 
@@ -330,20 +400,18 @@ function drawIntrusions(
     const x = previous.x + (current.x - previous.x) * alpha;
     const y = previous.y + (current.y - previous.y) * alpha;
     const radius = tileSize * 0.24;
+    const iconName = getEnemyIconName(intrusion.kind);
 
-    context.fillStyle = getIntrusionFill(intrusion.kind);
-    context.strokeStyle = getIntrusionStroke(intrusion.kind);
-    context.lineWidth = 3;
+    context.fillStyle = "rgba(3, 9, 13, 0.74)";
+    context.strokeStyle = ICONS[iconName].accent;
+    context.lineWidth = 2;
     context.beginPath();
     context.arc(x, y, radius, 0, Math.PI * 2);
     context.fill();
     context.stroke();
-
-    context.fillStyle = "#061016";
-    context.font = `800 ${Math.max(12, tileSize * 0.18)}px ui-sans-serif, system-ui, sans-serif`;
-    context.textAlign = "center";
-    context.textBaseline = "middle";
-    context.fillText(getIntrusionLabel(intrusion.kind), x, y);
+    drawIcon(context, iconName, x, y, tileSize * 0.42, {
+      glow: true,
+    });
 
     const hpRatio = intrusion.hp / intrusion.maxHp;
     context.fillStyle = "rgba(3, 9, 13, 0.72)";
@@ -437,7 +505,7 @@ function getTileFill(kind: TileKind, x: number, y: number): string {
   }
 }
 
-function drawTileGlyph(
+function drawTileUnitIcon(
   context: CanvasRenderingContext2D,
   originX: number,
   originY: number,
@@ -445,77 +513,49 @@ function drawTileGlyph(
   position: GridPosition,
   kind: TileKind,
 ): void {
-  if (kind === "empty" || kind === "corrupted") {
+  const iconName = getTileIconName(kind);
+
+  if (!iconName) {
     return;
   }
 
   const centerX = originX + position.x * tileSize + tileSize / 2;
   const centerY = originY + position.y * tileSize + tileSize / 2;
-  const radius = tileSize * 0.18;
+  const sprite = getGlowSprite(iconName, tileSize * 0.55);
+  const tileLeft = originX + position.x * tileSize + 7;
+  const tileTop = originY + position.y * tileSize + 7;
 
-  context.fillStyle = getTileGlyphFill(kind);
-  context.strokeStyle = "rgba(255, 255, 255, 0.66)";
-  context.lineWidth = 2;
-
-  context.beginPath();
-
-  if (kind === "relay") {
-    context.moveTo(centerX, centerY - radius);
-    context.lineTo(centerX + radius, centerY);
-    context.lineTo(centerX, centerY + radius);
-    context.lineTo(centerX - radius, centerY);
-    context.closePath();
-  } else {
-    context.arc(centerX, centerY, radius, 0, Math.PI * 2);
-  }
-
-  context.fill();
-  context.stroke();
+  context.strokeStyle = ICONS[iconName].accent;
+  context.lineWidth = 1;
+  context.strokeRect(tileLeft, tileTop, tileSize - 14, tileSize - 14);
+  context.drawImage(
+    sprite,
+    centerX - sprite.width / 2,
+    centerY - sprite.height / 2,
+  );
 }
 
-function getTileGlyphFill(kind: TileKind): string {
+function getTileIconName(kind: TileKind): IconName | null {
   switch (kind) {
     case "relay":
-      return "#22e0c4";
+      return "relay";
     case "firewall":
-      return "#f2c94c";
+      return "firewall";
     case "turret":
-      return "#4da3ff";
+      return "turret";
     case "empty":
     case "corrupted":
-      return "transparent";
+      return null;
   }
 }
 
-function getIntrusionFill(kind: EnemyKind): string {
+function getEnemyIconName(kind: EnemyKind): IconName {
   switch (kind) {
     case "probe":
-      return "#f2c94c";
+      return "probe";
     case "crawler":
-      return "#ff5f6e";
+      return "crawler";
     case "spoof":
-      return "#b68cff";
-  }
-}
-
-function getIntrusionStroke(kind: EnemyKind): string {
-  switch (kind) {
-    case "probe":
-      return "#fff1a8";
-    case "crawler":
-      return "#ffd0d6";
-    case "spoof":
-      return "#eadfff";
-  }
-}
-
-function getIntrusionLabel(kind: EnemyKind): string {
-  switch (kind) {
-    case "probe":
-      return "P";
-    case "crawler":
-      return "C";
-    case "spoof":
-      return "S";
+      return "spoof";
   }
 }
