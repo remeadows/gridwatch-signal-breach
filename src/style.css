@@ -153,6 +153,14 @@ body {
   gap: 8px;
 }
 
+.tool-button {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+}
+
 .tool-button,
 .overlay-panel button {
   min-height: 38px;
@@ -162,6 +170,22 @@ body {
   font: inherit;
   font-weight: 700;
   cursor: pointer;
+}
+
+.tool-icon {
+  width: 28px;
+  height: 28px;
+}
+
+.tool-name {
+  min-width: 0;
+}
+
+.tool-cost {
+  color: rgba(215, 255, 247, 0.68);
+  font-family: var(--font-display);
+  font-size: 12px;
+  text-transform: uppercase;
 }
 
 .neon-button {
@@ -219,6 +243,9 @@ body {
 .tool-button.selected {
   border-color: #22e0c4;
   background: rgba(34, 224, 196, 0.24);
+  box-shadow:
+    inset 0 0 18px rgba(34, 224, 196, 0.12),
+    0 0 22px rgba(34, 224, 196, 0.14);
 }
 
 .tool-button:disabled {
@@ -536,6 +563,7 @@ body {
   height: 52px;
   display: grid;
   place-items: center;
+  gap: 2px;
   border: 1px solid currentColor;
   border-radius: 4px;
   background: rgba(7, 16, 23, 0.84);
@@ -548,6 +576,17 @@ body {
   box-shadow:
     inset 0 0 16px color-mix(in srgb, currentColor 16%, transparent),
     0 0 18px color-mix(in srgb, currentColor 16%, transparent);
+}
+
+.briefing-icon {
+  width: 34px;
+  height: 34px;
+}
+
+.briefing-glyph small {
+  color: currentColor;
+  font-size: 8px;
+  line-height: 1;
 }
 
 .briefing-glyph-firewall,

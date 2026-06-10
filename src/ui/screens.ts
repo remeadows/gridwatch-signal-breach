@@ -3,6 +3,8 @@ import {
   BRIEFING_THREATS,
   BRIEFING_UNITS,
 } from "../data/briefing";
+import type { IconName } from "../render/iconPaths";
+import { svgIcon } from "./iconsSvg";
 
 export type AppScreen = "title" | "briefing" | "playing";
 
@@ -242,7 +244,7 @@ function appendThreatPanel(root: HTMLElement): void {
   root.append(title, list, intro);
 }
 
-function createBriefingRow(kind: string, name: string, summary: string): HTMLElement {
+function createBriefingRow(kind: IconName, name: string, summary: string): HTMLElement {
   const row = document.createElement("div");
   const glyph = createGlyphNode(kind, name.slice(0, 3).toUpperCase());
   const copy = document.createElement("div");
@@ -259,10 +261,14 @@ function createBriefingRow(kind: string, name: string, summary: string): HTMLEle
   return row;
 }
 
-function createGlyphNode(kind: string, label: string): HTMLElement {
+function createGlyphNode(kind: IconName, label: string): HTMLElement {
   const glyph = document.createElement("span");
+  const caption = document.createElement("small");
+
   glyph.className = `briefing-glyph briefing-glyph-${kind}`;
-  glyph.textContent = label;
+  glyph.insertAdjacentHTML("afterbegin", svgIcon(kind, 34, "briefing-icon"));
+  caption.textContent = label;
+  glyph.append(caption);
 
   return glyph;
 }
