@@ -3,9 +3,10 @@
 ## Current State
 
 - Playable single-level game is complete through five waves with win/loss, scoring, restart, HUD polish, Canvas animation, and minimal WebAudio SFX.
-- Overhaul Phase 1 is committed as `6005afe` (`Add intro screen flow`): title screen, briefing flow, app-level screen state, and pointer gating.
-- Overhaul Phase 2 is implemented in the current checkpoint: shared path-data icons, Canvas icon rendering, DOM SVG icons, picker icons, briefing icons, and board icon replacements.
-- Phase 3 should start from the pushed Phase 2 baseline and focus only on board juice: background layer, route pulse, hover ghost, marker/enemy animation, corruption/event polish, and scanline/vignette styling.
+- Overhaul Phase 1 is merged: title screen, briefing flow, app-level screen state, and pointer gating.
+- Overhaul Phase 2 is merged: shared path-data icons, Canvas icon rendering, DOM SVG icons, picker icons, briefing icons, and board icon replacements.
+- Overhaul Phase 3 is merged: cached board background, route pulse, hover ghost, Source/Core treatment, animated intrusions, corruption/event polish, and scanline/vignette styling.
+- Overhaul Phase 4 is implemented on the active branch: HUD hero metrics, terminal-style prep/end overlays, UI select/start blips, mobile layout QA, and scripted win/loss playthrough verification.
 - The working game URL in preview is `http://127.0.0.1:4173/gridwatch-signal-breach/` when `npm run preview` is running.
 
 ## Verification To Re-run

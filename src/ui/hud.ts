@@ -7,23 +7,51 @@ export function renderHud(root: HTMLElement, state: GameState): void {
 
   root.innerHTML = "";
   root.className = "hud";
-  root.append(
-    createHudMetric("Wave", `${wave.id}/5`),
-    createHudMetric("Phase", phaseLabel),
-    createHudMetric("Bandwidth", String(state.bandwidth)),
-    createHudMetric("Core", String(state.coreIntegrity)),
-    createHudMetric("Signal", state.signal.status.toUpperCase()),
-    createHudMetric("Intrusions", String(state.intrusions.length)),
-    createHudMetric("Neutralized", String(state.neutralizedCount)),
-  );
+  root.append(createHudHero(state), createHudStatusRail(state, wave.id, phaseLabel));
 }
 
-function createHudMetric(label: string, value: string): HTMLElement {
+function createHudHero(state: GameState): HTMLElement {
+  const hero = document.createElement("section");
+
+  hero.className = "hud-hero";
+  hero.append(
+    createHudMetric("Bandwidth", String(state.bandwidth), "primary"),
+    createHudMetric("Core", String(state.coreIntegrity), "primary"),
+  );
+
+  return hero;
+}
+
+function createHudStatusRail(state: GameState, waveId: number, phaseLabel: string): HTMLElement {
+  const rail = document.createElement("section");
+
+  rail.className = "hud-rail";
+  rail.append(
+    createHudMetric("Wave", `${waveId}/5`, "secondary"),
+    createHudMetric("Phase", phaseLabel, "secondary"),
+    createHudMetric("Signal", state.signal.status.toUpperCase(), "secondary", state.signal.status),
+    createHudMetric("Intrusions", String(state.intrusions.length), "secondary"),
+    createHudMetric("Neutralized", String(state.neutralizedCount), "secondary"),
+  );
+
+  return rail;
+}
+
+function createHudMetric(
+  label: string,
+  value: string,
+  priority: "primary" | "secondary",
+  status?: string,
+): HTMLElement {
   const element = document.createElement("div");
   const labelElement = document.createElement("span");
   const valueElement = document.createElement("strong");
 
-  element.className = "hud-metric";
+  element.className = `hud-metric hud-metric-${priority}`;
+  if (status) {
+    element.dataset.status = status;
+  }
+
   labelElement.textContent = label;
   valueElement.textContent = value;
   element.append(labelElement, valueElement);

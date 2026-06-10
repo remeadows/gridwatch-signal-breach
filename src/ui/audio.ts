@@ -6,6 +6,7 @@ type AudioContextLike = AudioContext & {
 
 export type AudioEngine = Readonly<{
   playEvents: (events: readonly SimEvent[]) => void;
+  playUi: (kind: "select" | "start") => void;
 }>;
 
 export function createAudioEngine(): AudioEngine {
@@ -17,6 +18,7 @@ export function createAudioEngine(): AudioEngine {
   if (!context) {
     return {
       playEvents: () => undefined,
+      playUi: () => undefined,
     };
   }
 
@@ -28,10 +30,19 @@ export function createAudioEngine(): AudioEngine {
   window.addEventListener("keydown", unlock, { once: true });
 
   return {
-    playEvents: (events) => {
-      if (context.state === "suspended") {
-        void context.resume();
+    playUi: (kind) => {
+      resumeContext(context);
+
+      if (kind === "select") {
+        playTone(context, 520, 0.028, 0.028, "triangle");
+        return;
       }
+
+      playTone(context, 330, 0.045, 0.034, "triangle");
+      playTone(context, 660, 0.06, 0.028, "square", 0.045);
+    },
+    playEvents: (events) => {
+      resumeContext(context);
 
       for (const event of events) {
         switch (event.type) {
@@ -60,16 +71,23 @@ export function createAudioEngine(): AudioEngine {
   };
 }
 
+function resumeContext(context: AudioContextLike): void {
+  if (context.state === "suspended") {
+    void context.resume();
+  }
+}
+
 function playTone(
   context: AudioContextLike,
   frequency: number,
   durationSeconds: number,
   volume: number,
   type: OscillatorType,
+  startDelaySeconds = 0,
 ): void {
   const oscillator = context.createOscillator();
   const gain = context.createGain();
-  const now = context.currentTime;
+  const now = context.currentTime + startDelaySeconds;
 
   oscillator.type = type;
   oscillator.frequency.setValueAtTime(frequency, now);

@@ -42,12 +42,15 @@ function renderPrepOverlay(root: HTMLElement, state: GameState, onSkipPrep: () =
 
     root.innerHTML = "";
     root.dataset.overlayKey = key;
-    panel.className = "overlay-panel";
+    panel.className = "overlay-panel prep-panel";
     title.dataset.overlayTitle = "true";
+    title.className = "overlay-title";
+    taunt.className = "overlay-taunt";
     taunt.dataset.overlayTaunt = "true";
     countdown.className = "overlay-countdown";
     countdown.dataset.overlayCountdown = "true";
     button.type = "button";
+    button.className = "neon-button neon-button-primary";
     button.textContent = "Skip prep";
     button.addEventListener("click", onSkipPrep);
     panel.append(title, taunt, countdown, button);
@@ -63,7 +66,7 @@ function renderPrepOverlay(root: HTMLElement, state: GameState, onSkipPrep: () =
   }
 
   if (taunt) {
-    taunt.textContent = state.activeTaunt;
+    taunt.textContent = `> incoming transmission: ${state.activeTaunt}`;
   }
 
   if (countdown) {
@@ -92,9 +95,11 @@ function renderTerminalOverlay(
   root.innerHTML = "";
   root.dataset.overlayKey = key;
   panel.className = "overlay-panel terminal-panel";
+  title.className = "overlay-title";
   title.textContent = state.phase === "won" ? "Core held" : "Core collapsed";
   rating.className = "operator-rating";
   rating.textContent = score.rating;
+  detail.className = "terminal-detail";
   detail.textContent =
     state.phase === "won"
       ? "All five waves survived."
@@ -106,6 +111,7 @@ function renderTerminalOverlay(
   appendScoreRow(scoreList, "Bandwidth efficiency", score.efficiencyBonus);
   appendScoreRow(scoreList, "Score", score.total);
   button.type = "button";
+  button.className = "neon-button neon-button-primary";
   button.textContent = "Restart";
   button.addEventListener("click", onRestart);
 
