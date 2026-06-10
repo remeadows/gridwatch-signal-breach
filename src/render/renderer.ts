@@ -349,7 +349,11 @@ function drawHoverGhost(
   }
 
   const cost = state.config.units[frame.selectedTool].cost;
-  const isValid = tileKind === "empty" && !isMarkerTile && state.bandwidth >= cost;
+  const isValid =
+    tileKind === "empty" &&
+    !isMarkerTile &&
+    !isIntrusionOccupied(state, hover) &&
+    state.bandwidth >= cost;
   const pulse = pulse01(frame.timeMs, 900);
   const color = isValid
     ? `rgba(34, 224, 196, ${0.58 + pulse * 0.28})`
@@ -976,6 +980,12 @@ function getUnitKind(kind: TileKind): UnitKind | null {
 
 function isSamePosition(a: GridPosition, b: GridPosition): boolean {
   return a.x === b.x && a.y === b.y;
+}
+
+function isIntrusionOccupied(state: GameState, position: GridPosition): boolean {
+  return state.intrusions.some((intrusion) =>
+    isSamePosition(intrusion.position, position),
+  );
 }
 
 function isInBounds(position: GridPosition): boolean {
