@@ -8,7 +8,7 @@ import { renderHud } from "./ui/hud";
 import { renderOverlay } from "./ui/overlays";
 import { hasSeenBriefing, renderScreens, type AppScreen } from "./ui/screens";
 import { renderUnitPicker } from "./ui/unitPicker";
-import type { PlayerTool } from "./sim";
+import type { GridPosition, PlayerTool } from "./sim";
 
 const canvas = document.querySelector<HTMLCanvasElement>("#game-canvas");
 const hudRoot = document.querySelector<HTMLElement>("#hud-root");
@@ -36,6 +36,7 @@ const audio = createAudioEngine();
 let state = createGameState();
 let selectedTool: PlayerTool = "relay";
 let screen: AppScreen = "title";
+let hoverTile: GridPosition | null = null;
 let lastTickTime = performance.now();
 
 installPointerInput({
@@ -43,6 +44,9 @@ installPointerInput({
   getState: () => state,
   getSelectedTool: () => selectedTool,
   isEnabled: () => screen === "playing",
+  onHover: (position) => {
+    hoverTile = position;
+  },
   dispatch: (command) => {
     state = applyCommand(state, command);
   },
@@ -81,6 +85,9 @@ function drawFrame(now: number): void {
       shakeMagnitude: state.events.some((event) => event.type === "coreDamaged")
         ? 8 * (1 - interpolationAlpha)
         : 0,
+      timeMs: now,
+      hover: hoverTile,
+      selectedTool,
     });
     hudContainer.hidden = false;
     unitPickerContainer.hidden = false;
@@ -105,11 +112,13 @@ function drawFrame(now: number): void {
       onRestart: () => {
         state = createGameState();
         selectedTool = "relay";
+        hoverTile = null;
         lastTickTime = performance.now();
       },
     });
   } else {
     drawAmbientBackdrop(renderContext, canvasSize, now);
+    hoverTile = null;
     hudContainer.hidden = true;
     unitPickerContainer.hidden = true;
     overlayContainer.hidden = true;
