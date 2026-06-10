@@ -439,7 +439,7 @@ body {
   display: block;
   margin: 0 0 12px;
   padding: 8px 12px;
-  border: 2px solid currentColor;
+  border: 2px solid currentcolor;
   color: #22e0c4;
   font-family: var(--font-display);
   font-size: 22px;
@@ -713,7 +713,7 @@ body {
   display: grid;
   place-items: center;
   gap: 2px;
-  border: 1px solid currentColor;
+  border: 1px solid currentcolor;
   border-radius: 4px;
   background: rgba(7, 16, 23, 0.84);
   color: var(--neon-cyan);
@@ -723,8 +723,8 @@ body {
   letter-spacing: 0;
   text-transform: uppercase;
   box-shadow:
-    inset 0 0 16px color-mix(in srgb, currentColor 16%, transparent),
-    0 0 18px color-mix(in srgb, currentColor 16%, transparent);
+    inset 0 0 16px color-mix(in srgb, currentcolor 16%, transparent),
+    0 0 18px color-mix(in srgb, currentcolor 16%, transparent);
 }
 
 .briefing-icon {
@@ -733,7 +733,7 @@ body {
 }
 
 .briefing-glyph small {
-  color: currentColor;
+  color: currentcolor;
   font-size: 8px;
   line-height: 1;
 }
