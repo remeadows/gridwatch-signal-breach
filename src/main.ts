@@ -55,6 +55,7 @@ installPointerInput({
 function enterPlaying(): void {
   screen = "playing";
   lastTickTime = performance.now();
+  audio.playUi("start");
 }
 
 function drawFrame(now: number): void {
@@ -98,6 +99,7 @@ function drawFrame(now: number): void {
       selectedTool,
       onSelect: (tool) => {
         selectedTool = tool;
+        audio.playUi("select");
       },
     });
     renderOverlay({
@@ -108,12 +110,14 @@ function drawFrame(now: number): void {
           type: "skipPrep",
         });
         lastTickTime = performance.now();
+        audio.playUi("start");
       },
       onRestart: () => {
         state = createGameState();
         selectedTool = "relay";
         hoverTile = null;
         lastTickTime = performance.now();
+        audio.playUi("start");
       },
     });
   } else {
