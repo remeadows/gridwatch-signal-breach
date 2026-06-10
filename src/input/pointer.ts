@@ -7,10 +7,15 @@ export type PointerInputOptions = Readonly<{
   getState: () => GameState;
   getSelectedTool: () => PlayerTool;
   dispatch: (command: SimCommand) => void;
+  isEnabled: () => boolean;
 }>;
 
 export function installPointerInput(options: PointerInputOptions): void {
   options.canvas.addEventListener("pointerdown", (event) => {
+    if (!options.isEnabled()) {
+      return;
+    }
+
     const state = options.getState();
 
     if (state.phase === "won" || state.phase === "lost") {

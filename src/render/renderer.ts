@@ -41,6 +41,61 @@ export function drawGrid(
   context.restore();
 }
 
+export function drawAmbientBackdrop(
+  context: CanvasRenderingContext2D,
+  size: CanvasSize,
+  timeMs: number,
+): void {
+  const { originX, originY, boardSize, tileSize } = getBoardMetrics(size);
+  const pulse = (timeMs * 0.04) % (boardSize + tileSize * 2);
+
+  context.clearRect(0, 0, size.width, size.height);
+  drawBackdrop(context, size);
+
+  context.save();
+  context.globalAlpha = 0.72;
+  context.strokeStyle = "rgba(120, 255, 238, 0.13)";
+  context.lineWidth = 1;
+
+  for (let index = 0; index <= GRID_SIZE; index += 1) {
+    const offset = index * tileSize;
+
+    context.beginPath();
+    context.moveTo(originX + offset, originY);
+    context.lineTo(originX + offset, originY + boardSize);
+    context.stroke();
+
+    context.beginPath();
+    context.moveTo(originX, originY + offset);
+    context.lineTo(originX + boardSize, originY + offset);
+    context.stroke();
+  }
+
+  context.strokeStyle = "rgba(34, 224, 196, 0.34)";
+  context.lineWidth = 2;
+  context.beginPath();
+  context.moveTo(originX - tileSize + pulse, originY + tileSize * 0.5);
+  context.lineTo(originX + pulse, originY + tileSize * 0.5);
+  context.lineTo(originX + pulse, originY + boardSize - tileSize * 0.5);
+  context.stroke();
+
+  context.strokeStyle = "rgba(255, 79, 145, 0.18)";
+  context.lineWidth = 1;
+  for (let y = 0; y < GRID_SIZE; y += 2) {
+    const rowY = originY + y * tileSize + tileSize * 0.5;
+    const drift = (timeMs * 0.015 + y * tileSize) % boardSize;
+    context.beginPath();
+    context.moveTo(originX + drift - tileSize, rowY);
+    context.lineTo(originX + drift + tileSize * 1.5, rowY);
+    context.stroke();
+  }
+
+  context.strokeStyle = "rgba(215, 255, 247, 0.22)";
+  context.lineWidth = 2;
+  context.strokeRect(originX, originY, boardSize, boardSize);
+  context.restore();
+}
+
 function drawBackdrop(context: CanvasRenderingContext2D, size: CanvasSize): void {
   const gradient = context.createLinearGradient(0, 0, size.width, size.height);
   gradient.addColorStop(0, "#09141c");

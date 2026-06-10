@@ -3,10 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="data:," />
     <title>GridWatch: Signal Breach</title>
   </head>
   <body>
     <main class="app-shell">
+      <h1 class="game-logo" aria-label="GridWatch: Signal Breach">
+        <span>GridWatch</span>
+        <small>Signal Breach</small>
+      </h1>
       <section class="game-layout">
         <aside class="control-panel" aria-label="Operator controls">
           <div id="hud-root"></div>
@@ -20,6 +25,7 @@
         </section>
       </section>
     </main>
+    <div id="screen-root"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
