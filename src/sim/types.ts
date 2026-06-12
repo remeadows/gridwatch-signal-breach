@@ -38,7 +38,6 @@ export type EnemyDefinition = Readonly<{
   maxHp: number;
   moveEveryTicks: number;
   corruptionTicks: number;
-  spawnWeight: number;
   spawnBatchSize: number;
 }>;
 

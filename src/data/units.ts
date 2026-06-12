@@ -1,6 +1,6 @@
 export const UNIT_TUNING = {
   relay: {
-    cost: 6,
+    cost: 7,
     sellRefund: 3,
     signalRange: 2,
   },
@@ -10,9 +10,9 @@ export const UNIT_TUNING = {
     hardeningBonusTicks: 8,
   },
   turret: {
-    cost: 16,
+    cost: 18,
     sellRefund: 8,
     range: 1,
-    damagePerTick: 6,
+    damagePerTick: 4,
   },
 } as const;
