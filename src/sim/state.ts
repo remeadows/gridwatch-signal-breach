@@ -1,7 +1,7 @@
 import { ENEMY_TUNING } from "../data/enemies";
 import { CORE_TUNING, SECTORS } from "../data/levels";
 import { UNIT_TUNING } from "../data/units";
-import { createGrid, setTile } from "./grid";
+import { createGrid, positionKey, setTile } from "./grid";
 import { createRng } from "./rng";
 import { computeSignalRoute } from "./routing";
 import { startPrepPhase } from "./waves";
@@ -30,7 +30,15 @@ export function createGameState(options: CreateGameStateOptions = {}): GameState
     grid = setTile(grid, voidTile, { kind: "void" });
   }
 
+  const voidKeys = new Set(sector.voidTiles.map(positionKey));
+
   for (const initialTile of options.initialTiles ?? sector.initialTiles) {
+    const key = positionKey(initialTile.position);
+
+    if (voidKeys.has(key)) {
+      throw new Error(`Initial tile overlaps sector void at ${key}.`);
+    }
+
     grid = setTile(grid, initialTile.position, createInitialTile(config, initialTile.kind));
   }
 

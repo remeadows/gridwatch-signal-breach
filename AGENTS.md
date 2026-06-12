@@ -2,7 +2,9 @@
 
 ## Project Scope
 
-GridWatch: Signal Breach is a fully static browser game. Keep it static: no backend, no API calls, no fetch/XHR, no secrets, no environment files, no runtime dependencies, no multiplayer, no accounts, no extra levels, and no waves beyond the existing five-wave session.
+GridWatch: Signal Breach is a fully static browser game. Keep it static: no backend, no API calls, no fetch/XHR, no secrets, no environment files, no runtime dependencies, no multiplayer, and no accounts.
+
+The current V2 product scope is a three-sector campaign with twelve total waves. Do not add sectors beyond the existing three, and do not add waves beyond the existing twelve-wave campaign.
 
 Use vanilla TypeScript, Vite, and HTML5 Canvas2D only. Do not add React, Phaser, or another game framework.
 

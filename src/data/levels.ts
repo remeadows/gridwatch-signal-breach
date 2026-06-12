@@ -124,29 +124,37 @@ function assertSectorInvariants(sector: SectorDefinition): void {
     positionKey(sector.source),
     positionKey(sector.core),
   ]);
+  const initialTileKeys = new Set<string>();
   const voidKeys = new Set<string>();
 
   for (const voidTile of sector.voidTiles) {
+    const key = positionKey(voidTile);
+
     assertPositionInBounds(sector, voidTile, "void");
     assert(
       !isPerimeter(sector, voidTile),
-      `Sector ${sector.id} void on perimeter ${positionKey(voidTile)}.`,
+      `Sector ${sector.id} void on perimeter ${key}.`,
     );
-    assert(!reserved.has(positionKey(voidTile)), `Sector ${sector.id} void overlaps source/core.`);
-    voidKeys.add(positionKey(voidTile));
+    assert(!reserved.has(key), `Sector ${sector.id} void overlaps source/core.`);
+    assert(!voidKeys.has(key), `Sector ${sector.id} duplicate void tile at ${key}.`);
+    voidKeys.add(key);
   }
 
   for (const initialTile of sector.initialTiles) {
+    const key = positionKey(initialTile.position);
+
     assertPositionInBounds(sector, initialTile.position, initialTile.kind);
     assert(isInitialUnitKind(initialTile.kind), `Sector ${sector.id} initial tile must be a unit.`);
     assert(
-      !reserved.has(positionKey(initialTile.position)),
+      !reserved.has(key),
       `Sector ${sector.id} initial tile overlaps source/core.`,
     );
     assert(
-      !voidKeys.has(positionKey(initialTile.position)),
+      !voidKeys.has(key),
       `Sector ${sector.id} initial tile overlaps void.`,
     );
+    assert(!initialTileKeys.has(key), `Sector ${sector.id} duplicate initial tile at ${key}.`);
+    initialTileKeys.add(key);
   }
 
   assertInitialRouteLive(sector);

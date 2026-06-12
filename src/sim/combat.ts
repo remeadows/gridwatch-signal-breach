@@ -1,4 +1,4 @@
-import { getPositionsByKind, manhattanDistance } from "./grid";
+import { getOrthogonalNeighbors, getPositionsByKind, getTileKind, manhattanDistance } from "./grid";
 import type { GameState, IntrusionState } from "./types";
 
 export function applyTurretCombat(state: GameState): GameState {
@@ -18,6 +18,8 @@ export function applyTurretCombat(state: GameState): GameState {
   let events = state.events;
 
   for (const turretPosition of turrets) {
+    const damage = getTurretDamage(state, turretPosition);
+
     for (const intrusion of state.intrusions) {
       if (manhattanDistance(turretPosition, intrusion.position) > state.config.turretRange) {
         continue;
@@ -29,7 +31,7 @@ export function applyTurretCombat(state: GameState): GameState {
         continue;
       }
 
-      hpById.set(intrusion.id, currentHp - state.config.turretDamagePerTick);
+      hpById.set(intrusion.id, currentHp - damage);
       events = [
         ...events,
         {
@@ -38,7 +40,7 @@ export function applyTurretCombat(state: GameState): GameState {
           turretPosition,
           targetId: intrusion.id,
           targetPosition: intrusion.position,
-          damage: state.config.turretDamagePerTick,
+          damage,
         },
       ];
     }
@@ -76,4 +78,13 @@ export function applyTurretCombat(state: GameState): GameState {
     neutralizedCount,
     events,
   };
+}
+
+function getTurretDamage(state: GameState, turretPosition: Readonly<{ x: number; y: number }>): number {
+  const adjacentOverclocks = getOrthogonalNeighbors(state.grid, turretPosition).filter(
+    (position) => getTileKind(state.grid, position) === "overclock",
+  ).length;
+
+  return state.config.turretDamagePerTick +
+    adjacentOverclocks * state.config.overclockBonusDamage;
 }

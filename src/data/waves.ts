@@ -96,6 +96,7 @@ export const WAVE_TUNING: readonly WaveDefinition[] = [
     },
     spawnEdges: ["west", "north", "east", "south"],
   },
+  // V2 campaign sector rows; new enemy-specific weights arrive in Phase 4.
   {
     id: 6,
     label: "Hunter Protocol",

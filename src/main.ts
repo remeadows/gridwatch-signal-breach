@@ -146,7 +146,7 @@ function drawFrame(now: number): void {
       state = tick(state);
 
       if (previousPhase !== "won" && state.phase === "won") {
-        progress = markSectorCleared(currentSector);
+        progress = markSectorCleared(progress, currentSector);
       }
 
       previousPhase = state.phase;

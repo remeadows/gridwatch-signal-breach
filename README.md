@@ -4,20 +4,21 @@ A static browser-playable cyberpunk signal-routing defense game built with Vite,
 
 ## What It Is
 
-GridWatch: Signal Breach is a single-level signal-routing defense game. Place relays, firewalls, and ICE turrets on an 8x8 grid to keep the Source connected to the Core while intrusions corrupt the board over five deterministic waves.
+GridWatch: Signal Breach is a three-sector signal-routing defense campaign. Place relays, firewalls, ICE turrets, and sector-unlocked tools on 8x8 grids to keep the Source connected to the Core while intrusions corrupt the board over twelve deterministic waves.
 
 The game is fully static: no backend, no API, no network calls, no secrets, and no environment files.
 
 ## How Codex Helped
 
-Codex scaffolded the Vite + TypeScript project, separated deterministic simulation code from Canvas rendering and DOM UI, implemented seeded wave logic and scoring, tuned the five-wave curve, and added GitHub Pages deployment support.
+Codex scaffolded the Vite + TypeScript project, separated deterministic simulation code from Canvas rendering and DOM UI, implemented seeded wave logic and scoring, added the V2 sector campaign navigation, and added GitHub Pages deployment support.
 
 ## Controls
 
-- Select `Relay`, `Firewall`, `ICE`, or `Sell` from the left control panel.
+- Select `Relay`, `Firewall`, `ICE`, or `Sell` from the left control panel. Later sectors unlock `Scrubber` and `Overclock`.
 - Click a grid tile to place the selected unit or sell an existing unit.
 - Use `Skip prep` to start a wave early.
-- Use `Restart` on the end screen to play again.
+- Use `BRIEFING` in the HUD to pause and review the mission notes.
+- Use `Retry Sector`, `Sector Select`, `Title`, or `Next Sector` from the end screen.
 
 ## Local Development
 

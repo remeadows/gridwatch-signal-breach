@@ -67,9 +67,11 @@ export function loadCampaignProgress(): CampaignProgress {
   }
 }
 
-export function markSectorCleared(sectorId: number): CampaignProgress {
+export function markSectorCleared(
+  current: CampaignProgress,
+  sectorId: number,
+): CampaignProgress {
   const sector = clampSectorId(sectorId);
-  const current = loadCampaignProgress();
   const cleared = [...new Set([...current.clearedSectors, sector])].sort((a, b) => a - b);
   const progress: CampaignProgress = {
     highestUnlockedSector: Math.min(
@@ -435,8 +437,7 @@ function sanitizeCampaignProgress(value: unknown): CampaignProgress {
     : [];
   const cleared = [...new Set(
     clearedSource
-      .filter((sector): sector is number => Number.isInteger(sector))
-      .map(clampSectorId),
+      .filter(isValidStoredSectorId),
   )].sort((a, b) => a - b);
   const highestFromCleared = cleared.reduce(
     (highest, sectorId) => Math.max(highest, Math.min(MAX_SECTOR_ID, sectorId + 1)),
@@ -446,7 +447,9 @@ function sanitizeCampaignProgress(value: unknown): CampaignProgress {
   return {
     highestUnlockedSector: Math.max(
       highestFromCleared,
-      normalizeSectorId(value.highestUnlockedSector, DEFAULT_PROGRESS.highestUnlockedSector),
+      isValidStoredSectorId(value.highestUnlockedSector)
+        ? value.highestUnlockedSector
+        : DEFAULT_PROGRESS.highestUnlockedSector,
     ),
     clearedSectors: cleared,
   };
@@ -460,14 +463,17 @@ function saveCampaignProgress(progress: CampaignProgress): void {
   }
 }
 
-function normalizeSectorId(value: unknown, fallback: number): number {
-  return typeof value === "number" && Number.isFinite(value)
-    ? clampSectorId(value)
-    : fallback;
-}
-
 function clampSectorId(value: number): number {
   return Math.min(MAX_SECTOR_ID, Math.max(1, Math.floor(value)));
+}
+
+function isValidStoredSectorId(value: unknown): value is number {
+  return (
+    typeof value === "number" &&
+    Number.isInteger(value) &&
+    value >= 1 &&
+    value <= MAX_SECTOR_ID
+  );
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
