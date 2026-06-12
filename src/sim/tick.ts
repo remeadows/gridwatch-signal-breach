@@ -1,6 +1,7 @@
 import { applyTurretCombat } from "./combat";
 import { applyIntrusionCorruption } from "./corruption";
 import { applyBandwidthTrickle } from "./economy";
+import { samePosition } from "./grid";
 import { moveIntrusions, spawnIntrusions } from "./intrusions";
 import { deriveSignalState } from "./state";
 import type { GameState } from "./types";
@@ -46,7 +47,7 @@ export function tick(state: GameState): GameState {
   const isLive = signal.status === "live";
   const drainAmount = isLive ? 0 : withCorruption.config.coreIntegrityDrainPerSeveredTick;
   const regenAmount = isLive ? withCorruption.config.coreIntegrityRegenPerLiveTick : 0;
-  const coreIntegrity = isLive
+  const coreIntegrityAfterSignal = isLive
     ? Math.min(
         withCorruption.config.coreIntegrityMax,
         withCorruption.coreIntegrity + regenAmount,
@@ -55,6 +56,24 @@ export function tick(state: GameState): GameState {
         0,
         withCorruption.coreIntegrity - drainAmount,
       );
+  const contactBreaches = withCorruption.intrusions
+    .filter((intrusion) => samePosition(intrusion.position, withCorruption.config.core))
+    .map((intrusion) => ({
+      intrusionId: intrusion.id,
+      amount: withCorruption.config.enemies[intrusion.kind].coreContactDamage,
+    }));
+  const contactDamage = contactBreaches.reduce(
+    (total, breach) => total + breach.amount,
+    0,
+  );
+  const coreIntegrity = Math.max(
+    0,
+    Math.min(
+      withCorruption.config.coreIntegrityMax,
+      coreIntegrityAfterSignal - contactDamage,
+    ),
+  );
+  const routeDrainAmount = withCorruption.coreIntegrity - coreIntegrityAfterSignal;
   const events = [
     ...withCorruption.events,
     ...(state.signal.status === "live" && signal.status === "severed"
@@ -66,16 +85,23 @@ export function tick(state: GameState): GameState {
           },
         ]
       : []),
-    ...(drainAmount > 0
+    ...(routeDrainAmount > 0
       ? [
           {
             type: "coreDamaged" as const,
             tick: nextTickCount,
-            amount: withCorruption.coreIntegrity - coreIntegrity,
+            amount: routeDrainAmount,
             integrity: coreIntegrity,
           },
         ]
       : []),
+    ...contactBreaches.map((breach) => ({
+      type: "coreBreach" as const,
+      tick: nextTickCount,
+      intrusionId: breach.intrusionId,
+      amount: breach.amount,
+      integrity: coreIntegrity,
+    })),
   ];
 
   const progressedState: GameState = {

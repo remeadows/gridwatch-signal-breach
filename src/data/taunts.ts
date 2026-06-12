@@ -4,6 +4,7 @@ export const ANTAGONIST_TAUNTS = [
   "I only need one corrupted tile.",
   "Single-lane defense is a confession.",
   "The Core already answered my handshake.",
-  "Firewalls slow amateurs. Spoofs walk through.",
+  "Your walls are a chew toy.",
+  "Double the wall. Double the bill.",
   "Route around me. I will route around you.",
 ] as const;

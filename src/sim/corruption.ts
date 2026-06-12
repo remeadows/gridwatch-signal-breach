@@ -15,7 +15,7 @@ export function applyIntrusionCorruption(state: GameState): GameState {
       continue;
     }
 
-    const requiredTicks = getRequiredCorruptionTicks(state, grid, intrusion);
+    const requiredTicks = getRequiredCorruptionTicks(state, intrusion);
     const previousContact = intrusion.corruption;
     const isSameContact =
       previousContact !== null &&
@@ -84,20 +84,12 @@ function isCorruptiblePosition(
   }
 
   const kind = getTileKind(grid, position);
-  return kind === "relay" || kind === "firewall" || kind === "turret";
+  return kind === "relay" || kind === "turret";
 }
 
 function getRequiredCorruptionTicks(
   state: GameState,
-  grid: GridState,
   intrusion: IntrusionState,
 ): number {
-  const definition = state.config.enemies[intrusion.kind];
-  const tileKind = getTileKind(grid, intrusion.position);
-  const firewallBonus =
-    tileKind === "firewall" && intrusion.kind !== "spoof"
-      ? state.config.firewallHardeningBonusTicks
-      : 0;
-
-  return definition.corruptionTicks + firewallBonus;
+  return state.config.enemies[intrusion.kind].corruptionTicks;
 }

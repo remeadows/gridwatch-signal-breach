@@ -1,4 +1,10 @@
-import { TILE_KINDS, type GridPosition, type GridState, type TileKind } from "./types";
+import {
+  TILE_KINDS,
+  type GridPosition,
+  type GridState,
+  type TileKind,
+  type TileState,
+} from "./types";
 
 const ORTHOGONAL_DELTAS = [
   { x: 0, y: -1 },
@@ -39,7 +45,11 @@ export function toIndex(grid: GridState, position: GridPosition): number {
 }
 
 export function getTileKind(grid: GridState, position: GridPosition): TileKind {
-  return grid.tiles[toIndex(grid, position)].kind;
+  return getTile(grid, position).kind;
+}
+
+export function getTile(grid: GridState, position: GridPosition): TileState {
+  return grid.tiles[toIndex(grid, position)];
 }
 
 export function setTileKind(
@@ -47,10 +57,18 @@ export function setTileKind(
   position: GridPosition,
   kind: TileKind,
 ): GridState {
+  return setTile(grid, position, { kind });
+}
+
+export function setTile(
+  grid: GridState,
+  position: GridPosition,
+  tile: TileState,
+): GridState {
   assertInBounds(grid, position);
 
   const tiles = [...grid.tiles];
-  tiles[toIndex(grid, position)] = { kind };
+  tiles[toIndex(grid, position)] = tile;
 
   return {
     ...grid,

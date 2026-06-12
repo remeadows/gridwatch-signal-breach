@@ -1,5 +1,5 @@
 import { GRID_SIZE } from "../data/level";
-import { getTileKind } from "../sim/grid";
+import { getTile, getTileKind } from "../sim/grid";
 import type {
   EnemyKind,
   GameState,
@@ -58,7 +58,7 @@ export function drawGrid(
   drawRouteCuts(context, originX, originY, tileSize, state.events, frame);
   drawMarkers(context, originX, originY, tileSize, state, frame);
   drawHoverGhost(context, originX, originY, tileSize, state, frame);
-  drawHitFlashes(context, originX, originY, tileSize, state.events, frame);
+  drawHitFlashes(context, originX, originY, tileSize, state, frame);
   drawIntrusions(context, originX, originY, tileSize, state, frame);
   drawStatus(context, size, state);
   context.restore();
@@ -130,7 +130,8 @@ function drawTiles(
   for (let y = 0; y < GRID_SIZE; y += 1) {
     for (let x = 0; x < GRID_SIZE; x += 1) {
       const position = { x, y };
-      const kind = getTileKind(state.grid, position);
+      const tile = getTile(state.grid, position);
+      const kind = tile.kind;
       const inset = 3;
 
       if (kind === "corrupted") {
@@ -146,6 +147,7 @@ function drawTiles(
       }
 
       drawTileUnitIcon(context, originX, originY, tileSize, position, kind);
+      drawUnitHpPips(context, originX, originY, tileSize, state, position, kind, tile.hp);
     }
   }
 }
@@ -626,7 +628,7 @@ function drawHitFlashes(
   originX: number,
   originY: number,
   tileSize: number,
-  events: readonly SimEvent[],
+  state: GameState,
   frame: RenderFrame,
 ): void {
   const alpha = frame.flashAlpha;
@@ -635,7 +637,7 @@ function drawHitFlashes(
     return;
   }
 
-  for (const event of events) {
+  for (const event of state.events) {
     if (event.type === "turretHit") {
       const from = getTileCenter(originX, originY, tileSize, event.turretPosition);
       const to = getTileCenter(originX, originY, tileSize, event.targetPosition);
@@ -662,6 +664,34 @@ function drawHitFlashes(
 
       context.strokeStyle = `rgba(34, 224, 196, ${0.7 * alpha})`;
       context.lineWidth = 3;
+      context.beginPath();
+      context.arc(center.x, center.y, radius, 0, Math.PI * 2);
+      context.stroke();
+    }
+
+    if (event.type === "unitDamaged") {
+      const center = getTileCenter(originX, originY, tileSize, event.position);
+      const left = originX + event.position.x * tileSize + 5;
+      const top = originY + event.position.y * tileSize + 5;
+
+      context.fillStyle = `rgba(242, 201, 76, ${0.22 * alpha})`;
+      context.fillRect(left, top, tileSize - 10, tileSize - 10);
+      context.strokeStyle = `rgba(255, 241, 168, ${0.82 * alpha})`;
+      context.lineWidth = 3;
+      context.beginPath();
+      context.moveTo(center.x - tileSize * 0.22, center.y - tileSize * 0.18);
+      context.lineTo(center.x + tileSize * 0.22, center.y + tileSize * 0.18);
+      context.moveTo(center.x + tileSize * 0.18, center.y - tileSize * 0.22);
+      context.lineTo(center.x - tileSize * 0.18, center.y + tileSize * 0.22);
+      context.stroke();
+    }
+
+    if (event.type === "coreBreach") {
+      const center = getTileCenter(originX, originY, tileSize, state.config.core);
+      const radius = tileSize * (0.42 + (1 - alpha) * 0.28);
+
+      context.strokeStyle = `rgba(255, 95, 110, ${0.86 * alpha})`;
+      context.lineWidth = 4;
       context.beginPath();
       context.arc(center.x, center.y, radius, 0, Math.PI * 2);
       context.stroke();
@@ -867,7 +897,9 @@ function getShakeOffset(
   state: GameState,
   frame: RenderFrame,
 ): Readonly<{ x: number; y: number }> {
-  const hasCoreHit = state.events.some((event) => event.type === "coreDamaged");
+  const hasCoreHit = state.events.some(
+    (event) => event.type === "coreDamaged" || event.type === "coreBreach",
+  );
 
   if (!hasCoreHit || frame.shakeMagnitude <= 0) {
     return {
@@ -939,6 +971,57 @@ function drawTileUnitIcon(
     centerX - sprite.width / 2,
     centerY - sprite.height / 2,
   );
+}
+
+function drawUnitHpPips(
+  context: CanvasRenderingContext2D,
+  originX: number,
+  originY: number,
+  tileSize: number,
+  state: GameState,
+  position: GridPosition,
+  kind: TileKind,
+  hp: number | undefined,
+): void {
+  const unitKind = getUnitKind(kind);
+
+  if (!unitKind) {
+    return;
+  }
+
+  const maxHp = state.config.units[unitKind].hp;
+  const currentHp = hp ?? maxHp;
+
+  if (currentHp >= maxHp) {
+    return;
+  }
+
+  const pipCount = 4;
+  const filledPips = Math.ceil(Math.max(0, currentHp / maxHp) * pipCount);
+  const pipSize = Math.max(3, tileSize * 0.07);
+  const gap = Math.max(2, tileSize * 0.035);
+  const totalWidth = pipCount * pipSize + (pipCount - 1) * gap;
+  const left = originX + position.x * tileSize + (tileSize - totalWidth) / 2;
+  const top = originY + position.y * tileSize + tileSize - pipSize - 9;
+  const fillColor =
+    currentHp <= maxHp / 2
+      ? "rgba(255, 95, 110, 0.92)"
+      : "rgba(242, 201, 76, 0.94)";
+
+  for (let index = 0; index < pipCount; index += 1) {
+    const x = left + index * (pipSize + gap);
+
+    context.fillStyle = "rgba(3, 9, 13, 0.82)";
+    context.fillRect(x, top, pipSize, pipSize);
+    context.strokeStyle = "rgba(215, 255, 247, 0.24)";
+    context.lineWidth = 1;
+    context.strokeRect(x, top, pipSize, pipSize);
+
+    if (index < filledPips) {
+      context.fillStyle = fillColor;
+      context.fillRect(x + 1, top + 1, pipSize - 2, pipSize - 2);
+    }
+  }
 }
 
 function getTileIconName(kind: TileKind): IconName | null {
