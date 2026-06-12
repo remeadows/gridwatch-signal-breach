@@ -3,11 +3,14 @@ export const TILE_KINDS = [
   "relay",
   "firewall",
   "turret",
+  "scrubber",
+  "overclock",
+  "void",
   "corrupted",
 ] as const;
 
 export type TileKind = (typeof TILE_KINDS)[number];
-export type UnitKind = "relay" | "firewall" | "turret";
+export type UnitKind = "relay" | "firewall" | "turret" | "scrubber" | "overclock";
 export type PlayerTool = UnitKind | "sell";
 
 export type GridPosition = Readonly<{
@@ -18,6 +21,7 @@ export type GridPosition = Readonly<{
 export type TileState = Readonly<{
   kind: TileKind;
   hp?: number;
+  progress?: number;
 }>;
 
 export type GridState = Readonly<{
@@ -190,11 +194,16 @@ export type RngState = Readonly<{
 
 export type SimConfig = Readonly<{
   gridSize: number;
+  sectorId: number;
+  sectorName: string;
   source: GridPosition;
   core: GridPosition;
   relaySignalRange: number;
   turretRange: number;
   turretDamagePerTick: number;
+  toolsUnlocked: readonly PlayerTool[];
+  scrubberCleanseTicks: number;
+  overclockBonusDamage: number;
   initialCoreIntegrity: number;
   coreIntegrityMax: number;
   coreIntegrityDrainPerSeveredTick: number;

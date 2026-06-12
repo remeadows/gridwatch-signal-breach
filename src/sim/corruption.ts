@@ -84,7 +84,7 @@ function isCorruptiblePosition(
   }
 
   const kind = getTileKind(grid, position);
-  return kind === "relay" || kind === "turret";
+  return kind === "relay" || kind === "turret" || kind === "scrubber" || kind === "overclock";
 }
 
 function getRequiredCorruptionTicks(

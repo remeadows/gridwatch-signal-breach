@@ -322,7 +322,7 @@ function getTargetSets(state: GameState): TargetSets {
   const units = sortPositionsByReadingOrder(
     listPositions(state.grid).filter((position) => {
       const kind = getTileKind(state.grid, position);
-      return kind === "relay" || kind === "turret";
+      return kind === "relay" || kind === "turret" || kind === "scrubber" || kind === "overclock";
     }),
   );
 
@@ -428,7 +428,7 @@ function canIntrusionEnter(
 ): boolean {
   const kind = getTileKind(state.grid, position);
 
-  if (kind === "firewall") {
+  if (kind === "firewall" || kind === "void") {
     return false;
   }
 
@@ -548,5 +548,11 @@ function moveIntrusion(
 }
 
 function isUnitKind(kind: string): kind is UnitKind {
-  return kind === "relay" || kind === "firewall" || kind === "turret";
+  return (
+    kind === "relay" ||
+    kind === "firewall" ||
+    kind === "turret" ||
+    kind === "scrubber" ||
+    kind === "overclock"
+  );
 }

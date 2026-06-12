@@ -1,4 +1,4 @@
-import { GRID_SIZE } from "../data/level";
+import { GRID_SIZE } from "../data/levels";
 import type { GridPosition } from "../sim/types";
 
 export type CanvasSize = {

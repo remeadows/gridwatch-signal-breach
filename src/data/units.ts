@@ -17,4 +17,16 @@ export const UNIT_TUNING = {
     range: 1,
     damagePerTick: 4,
   },
+  scrubber: {
+    cost: 9,
+    sellRefund: 0,
+    hp: 8,
+    cleanseTicks: 12,
+  },
+  overclock: {
+    cost: 14,
+    sellRefund: 6,
+    hp: 8,
+    bonusDamage: 3,
+  },
 } as const;

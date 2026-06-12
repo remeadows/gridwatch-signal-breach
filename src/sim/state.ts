@@ -1,8 +1,7 @@
 import { ENEMY_TUNING } from "../data/enemies";
-import { LEVEL_CONFIG, LEVEL_INITIAL_TILES } from "../data/level";
+import { CORE_TUNING, SECTORS } from "../data/levels";
 import { UNIT_TUNING } from "../data/units";
-import { WAVE_TUNING } from "../data/waves";
-import { createGrid, setTile } from "./grid";
+import { createGrid, positionKey, setTile } from "./grid";
 import { createRng } from "./rng";
 import { computeSignalRoute } from "./routing";
 import { startPrepPhase } from "./waves";
@@ -18,14 +17,28 @@ import type {
 
 export type CreateGameStateOptions = Readonly<{
   seed?: string | number;
+  sector?: number;
   initialTiles?: readonly InitialTileDefinition[];
 }>;
 
 export function createGameState(options: CreateGameStateOptions = {}): GameState {
-  const config = createSimConfig();
+  const sector = getSectorDefinition(options.sector ?? 1);
+  const config = createSimConfig(sector.id);
   let grid = createGrid(config.gridSize);
 
-  for (const initialTile of options.initialTiles ?? LEVEL_INITIAL_TILES) {
+  for (const voidTile of sector.voidTiles) {
+    grid = setTile(grid, voidTile, { kind: "void" });
+  }
+
+  const voidKeys = new Set(sector.voidTiles.map(positionKey));
+
+  for (const initialTile of options.initialTiles ?? sector.initialTiles) {
+    const key = positionKey(initialTile.position);
+
+    if (voidKeys.has(key)) {
+      throw new Error(`Initial tile overlaps sector void at ${key}.`);
+    }
+
     grid = setTile(grid, initialTile.position, createInitialTile(config, initialTile.kind));
   }
 
@@ -85,26 +98,33 @@ export function isSignalLive(state: GameState): boolean {
   return state.signal.status === "live";
 }
 
-function createSimConfig(): SimConfig {
+function createSimConfig(sectorId: number): SimConfig {
+  const sector = getSectorDefinition(sectorId);
+
   return {
-    gridSize: LEVEL_CONFIG.gridSize,
+    gridSize: sector.gridSize,
+    sectorId: sector.id,
+    sectorName: sector.codename,
     source: {
-      x: LEVEL_CONFIG.source.x,
-      y: LEVEL_CONFIG.source.y,
+      x: sector.source.x,
+      y: sector.source.y,
     },
     core: {
-      x: LEVEL_CONFIG.core.x,
-      y: LEVEL_CONFIG.core.y,
+      x: sector.core.x,
+      y: sector.core.y,
     },
     relaySignalRange: UNIT_TUNING.relay.signalRange,
     turretRange: UNIT_TUNING.turret.range,
     turretDamagePerTick: UNIT_TUNING.turret.damagePerTick,
-    initialCoreIntegrity: LEVEL_CONFIG.initialCoreIntegrity,
-    coreIntegrityMax: LEVEL_CONFIG.coreIntegrityMax,
-    coreIntegrityDrainPerSeveredTick: LEVEL_CONFIG.coreIntegrityDrainPerSeveredTick,
-    coreIntegrityRegenPerLiveTick: LEVEL_CONFIG.coreIntegrityRegenPerLiveTick,
-    simulationTickMs: LEVEL_CONFIG.simulationTickMs,
-    defaultSeed: LEVEL_CONFIG.defaultSeed,
+    toolsUnlocked: sector.toolsUnlocked,
+    scrubberCleanseTicks: UNIT_TUNING.scrubber.cleanseTicks,
+    overclockBonusDamage: UNIT_TUNING.overclock.bonusDamage,
+    initialCoreIntegrity: CORE_TUNING.initialCoreIntegrity,
+    coreIntegrityMax: CORE_TUNING.coreIntegrityMax,
+    coreIntegrityDrainPerSeveredTick: CORE_TUNING.coreIntegrityDrainPerSeveredTick,
+    coreIntegrityRegenPerLiveTick: CORE_TUNING.coreIntegrityRegenPerLiveTick,
+    simulationTickMs: CORE_TUNING.simulationTickMs,
+    defaultSeed: CORE_TUNING.defaultSeed,
     enemies: {
       probe: { ...ENEMY_TUNING.probe },
       crawler: { ...ENEMY_TUNING.crawler },
@@ -126,8 +146,18 @@ function createSimConfig(): SimConfig {
         sellRefund: UNIT_TUNING.turret.sellRefund,
         hp: UNIT_TUNING.turret.hp,
       },
+      scrubber: {
+        cost: UNIT_TUNING.scrubber.cost,
+        sellRefund: UNIT_TUNING.scrubber.sellRefund,
+        hp: UNIT_TUNING.scrubber.hp,
+      },
+      overclock: {
+        cost: UNIT_TUNING.overclock.cost,
+        sellRefund: UNIT_TUNING.overclock.sellRefund,
+        hp: UNIT_TUNING.overclock.hp,
+      },
     },
-    waves: WAVE_TUNING,
+    waves: sector.waves,
   };
 }
 
@@ -139,9 +169,26 @@ function createInitialTile(config: SimConfig, kind: TileKind): TileState {
   return {
     kind,
     hp: config.units[kind].hp,
+    ...(kind === "scrubber" ? { progress: 0 } : {}),
   };
 }
 
 function isUnitKind(kind: TileKind): kind is UnitKind {
-  return kind === "relay" || kind === "firewall" || kind === "turret";
+  return (
+    kind === "relay" ||
+    kind === "firewall" ||
+    kind === "turret" ||
+    kind === "scrubber" ||
+    kind === "overclock"
+  );
+}
+
+function getSectorDefinition(sectorId: number) {
+  const sector = SECTORS.find((candidate) => candidate.id === sectorId);
+
+  if (!sector) {
+    throw new Error(`Unknown sector id: ${sectorId}.`);
+  }
+
+  return sector;
 }

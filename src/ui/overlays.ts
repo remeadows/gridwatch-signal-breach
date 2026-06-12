@@ -7,10 +7,13 @@ export type OverlayOptions = Readonly<{
   state: GameState;
   onSkipPrep: () => void;
   onRestart: () => void;
+  onReturnToTitle: () => void;
+  onSectorSelect: () => void;
+  onNextSector: (() => void) | null;
 }>;
 
 export function renderOverlay(options: OverlayOptions): void {
-  const { root, state, onSkipPrep, onRestart } = options;
+  const { root, state, onSkipPrep } = options;
   root.className = "overlay-root";
 
   if (state.phase === "active") {
@@ -26,7 +29,7 @@ export function renderOverlay(options: OverlayOptions): void {
     return;
   }
 
-  renderTerminalOverlay(root, state, onRestart);
+  renderTerminalOverlay(options);
 }
 
 function renderPrepOverlay(root: HTMLElement, state: GameState, onSkipPrep: () => void): void {
@@ -74,12 +77,16 @@ function renderPrepOverlay(root: HTMLElement, state: GameState, onSkipPrep: () =
   }
 }
 
-function renderTerminalOverlay(
-  root: HTMLElement,
-  state: GameState,
-  onRestart: () => void,
-): void {
-  const key = state.phase;
+function renderTerminalOverlay(options: OverlayOptions): void {
+  const {
+    root,
+    state,
+    onRestart,
+    onReturnToTitle,
+    onSectorSelect,
+    onNextSector,
+  } = options;
+  const key = `${state.phase}-${onNextSector ? "next" : "final"}`;
   if (root.dataset.overlayKey === key) {
     return;
   }
@@ -89,20 +96,28 @@ function renderTerminalOverlay(
   const rating = document.createElement("strong");
   const detail = document.createElement("p");
   const scoreList = document.createElement("dl");
-  const button = document.createElement("button");
+  const actions = document.createElement("div");
   const score = calculateScore(state);
+  const isFinalCampaignWin = state.phase === "won" && !onNextSector;
 
   root.innerHTML = "";
   root.dataset.overlayKey = key;
   panel.className = "overlay-panel terminal-panel";
   title.className = "overlay-title";
-  title.textContent = state.phase === "won" ? "Core held" : "Core collapsed";
+  title.textContent =
+    state.phase === "won"
+      ? isFinalCampaignWin
+        ? "GRID RECLAIMED"
+        : "Core held"
+      : "Core collapsed";
   rating.className = "operator-rating";
   rating.textContent = score.rating;
   detail.className = "terminal-detail";
   detail.textContent =
     state.phase === "won"
-      ? "All five waves survived."
+      ? isFinalCampaignWin
+        ? "All twelve waves survived. The network is yours."
+        : "Sector waves survived."
       : `Integrity reached ${state.coreIntegrity}.`;
   scoreList.className = "score-breakdown";
   appendScoreRow(scoreList, "Core integrity", score.integrity);
@@ -110,12 +125,19 @@ function renderTerminalOverlay(
   appendScoreRow(scoreList, `Signal uptime (${score.uptimePercent}%)`, score.uptimeScore);
   appendScoreRow(scoreList, "Bandwidth efficiency", score.efficiencyBonus);
   appendScoreRow(scoreList, "Score", score.total);
-  button.type = "button";
-  button.className = "neon-button neon-button-primary";
-  button.textContent = "Restart";
-  button.addEventListener("click", onRestart);
+  actions.className = "terminal-actions";
 
-  panel.append(title, rating, detail, scoreList, button);
+  if (onNextSector) {
+    actions.append(createActionButton("NEXT SECTOR ▸", "primary", onNextSector));
+  }
+
+  actions.append(
+    createActionButton("RETRY SECTOR", "primary", onRestart),
+    createActionButton("SECTOR SELECT", "secondary", onSectorSelect),
+    createActionButton("TITLE", "secondary", onReturnToTitle),
+  );
+
+  panel.append(title, rating, detail, scoreList, actions);
   root.append(panel);
 }
 
@@ -126,4 +148,19 @@ function appendScoreRow(root: HTMLElement, label: string, value: number): void {
   term.textContent = label;
   detail.textContent = String(value);
   root.append(term, detail);
+}
+
+function createActionButton(
+  label: string,
+  variant: "primary" | "secondary",
+  onClick: () => void,
+): HTMLButtonElement {
+  const button = document.createElement("button");
+
+  button.type = "button";
+  button.className = `neon-button neon-button-${variant}`;
+  button.textContent = label;
+  button.addEventListener("click", onClick);
+
+  return button;
 }
