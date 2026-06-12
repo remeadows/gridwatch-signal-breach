@@ -129,6 +129,9 @@ function createSimConfig(sectorId: number): SimConfig {
       probe: { ...ENEMY_TUNING.probe },
       crawler: { ...ENEMY_TUNING.crawler },
       spoof: { ...ENEMY_TUNING.spoof },
+      hunter: { ...ENEMY_TUNING.hunter },
+      splitter: { ...ENEMY_TUNING.splitter },
+      goliath: { ...ENEMY_TUNING.goliath },
     },
     units: {
       relay: {
