@@ -17,6 +17,7 @@ export type GridPosition = Readonly<{
 
 export type TileState = Readonly<{
   kind: TileKind;
+  hp?: number;
 }>;
 
 export type GridState = Readonly<{
@@ -39,6 +40,13 @@ export type EnemyDefinition = Readonly<{
   moveEveryTicks: number;
   corruptionTicks: number;
   spawnBatchSize: number;
+  chewDamage: number;
+  coreContactDamage: number;
+  targeting: "route" | "units";
+  onDeathSpawn: Readonly<{
+    kind: EnemyKind;
+    count: number;
+  }> | null;
 }>;
 
 export type EnemyDefinitions = Readonly<Record<EnemyKind, EnemyDefinition>>;
@@ -84,6 +92,7 @@ export type GamePhase = "prep" | "active" | "won" | "lost";
 export type UnitDefinition = Readonly<{
   cost: number;
   sellRefund: number;
+  hp: number;
 }>;
 
 export type UnitDefinitions = Readonly<Record<UnitKind, UnitDefinition>>;
@@ -138,6 +147,21 @@ export type SimEvent =
       position: GridPosition;
     }>
   | Readonly<{
+      type: "unitDamaged";
+      tick: number;
+      intrusionId: number;
+      position: GridPosition;
+      unitKind: UnitKind;
+      hp: number;
+    }>
+  | Readonly<{
+      type: "coreBreach";
+      tick: number;
+      intrusionId: number;
+      amount: number;
+      integrity: number;
+    }>
+  | Readonly<{
       type: "routeSevered";
       tick: number;
       previousRoute: readonly GridPosition[];
@@ -169,7 +193,6 @@ export type SimConfig = Readonly<{
   source: GridPosition;
   core: GridPosition;
   relaySignalRange: number;
-  firewallHardeningBonusTicks: number;
   turretRange: number;
   turretDamagePerTick: number;
   initialCoreIntegrity: number;

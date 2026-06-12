@@ -1,7 +1,6 @@
 import {
-  BRIEFING_COPY,
-  BRIEFING_THREATS,
-  BRIEFING_UNITS,
+  BRIEFING_PAGES,
+  type BriefingPage,
 } from "../data/briefing";
 import type { IconName } from "../render/iconPaths";
 import { svgIcon } from "./iconsSvg";
@@ -17,7 +16,7 @@ export type ScreenOptions = Readonly<{
 }>;
 
 const BRIEFING_STORAGE_KEY = "gridwatch.briefingSeen";
-const BRIEFING_PANEL_COUNT = 3;
+const BRIEFING_PANEL_COUNT = BRIEFING_PAGES.length;
 
 let activeScreen: AppScreen | null = null;
 let briefingPanelIndex = 0;
@@ -176,20 +175,21 @@ function renderBriefingScreen(options: ScreenOptions): void {
 }
 
 function appendBriefingPanel(root: HTMLElement, panelIndex: number): void {
-  if (panelIndex === 0) {
-    appendSignalPanel(root);
+  const page = BRIEFING_PAGES[panelIndex];
+
+  if (!page) {
     return;
   }
 
-  if (panelIndex === 1) {
-    appendArsenalPanel(root);
+  if (page.kind === "signal") {
+    appendSignalPanel(root, page);
     return;
   }
 
-  appendThreatPanel(root);
+  appendRowsPanel(root, page);
 }
 
-function appendSignalPanel(root: HTMLElement): void {
+function appendSignalPanel(root: HTMLElement, page: BriefingPage): void {
   const title = document.createElement("h2");
   const diagram = document.createElement("div");
   const source = createGlyphNode("source", "SRC");
@@ -197,50 +197,33 @@ function appendSignalPanel(root: HTMLElement): void {
   const core = createGlyphNode("core", "CORE");
   const body = document.createElement("p");
 
-  title.textContent = BRIEFING_COPY.signal.title;
+  title.textContent = page.title;
   diagram.className = "briefing-signal-diagram";
   line.className = "briefing-signal-line";
-  body.textContent = BRIEFING_COPY.signal.body;
+  body.textContent = page.body ?? "";
 
   diagram.append(source, line, core);
   root.append(title, diagram, body);
 }
 
-function appendArsenalPanel(root: HTMLElement): void {
+function appendRowsPanel(root: HTMLElement, page: BriefingPage): void {
   const title = document.createElement("h2");
   const list = document.createElement("div");
-  const intro = document.createElement("p");
 
-  title.textContent = BRIEFING_COPY.arsenalTitle;
+  title.textContent = page.title;
   list.className = "briefing-list";
-  intro.textContent = BRIEFING_COPY.arsenalIntro;
 
-  for (const unit of BRIEFING_UNITS) {
-    list.append(
-      createBriefingRow(
-        unit.kind,
-        unit.name,
-        `(${unit.cost}) ${unit.summary}`,
-      ),
-    );
+  for (const row of page.rows ?? []) {
+    list.append(createBriefingRow(row.icon as IconName, row.name, row.summary));
   }
 
-  root.append(title, list, intro);
-}
-
-function appendThreatPanel(root: HTMLElement): void {
-  const title = document.createElement("h2");
-  const list = document.createElement("div");
-  const intro = document.createElement("p");
-
-  title.textContent = BRIEFING_COPY.threatsTitle;
-  list.className = "briefing-list";
-  intro.textContent = BRIEFING_COPY.threatsIntro;
-
-  for (const threat of BRIEFING_THREATS) {
-    list.append(createBriefingRow(threat.kind, threat.name, threat.summary));
+  if (!page.body) {
+    root.append(title, list);
+    return;
   }
 
+  const intro = document.createElement("p");
+  intro.textContent = page.body;
   root.append(title, list, intro);
 }
 

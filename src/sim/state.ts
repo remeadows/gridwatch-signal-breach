@@ -2,11 +2,19 @@ import { ENEMY_TUNING } from "../data/enemies";
 import { LEVEL_CONFIG, LEVEL_INITIAL_TILES } from "../data/level";
 import { UNIT_TUNING } from "../data/units";
 import { WAVE_TUNING } from "../data/waves";
-import { createGrid, setTileKind } from "./grid";
+import { createGrid, setTile } from "./grid";
 import { createRng } from "./rng";
 import { computeSignalRoute } from "./routing";
 import { startPrepPhase } from "./waves";
-import type { GameState, InitialTileDefinition, SignalState, SimConfig } from "./types";
+import type {
+  GameState,
+  InitialTileDefinition,
+  SignalState,
+  SimConfig,
+  TileKind,
+  TileState,
+  UnitKind,
+} from "./types";
 
 export type CreateGameStateOptions = Readonly<{
   seed?: string | number;
@@ -18,7 +26,7 @@ export function createGameState(options: CreateGameStateOptions = {}): GameState
   let grid = createGrid(config.gridSize);
 
   for (const initialTile of options.initialTiles ?? LEVEL_INITIAL_TILES) {
-    grid = setTileKind(grid, initialTile.position, initialTile.kind);
+    grid = setTile(grid, initialTile.position, createInitialTile(config, initialTile.kind));
   }
 
   const baseState: GameState = {
@@ -89,7 +97,6 @@ function createSimConfig(): SimConfig {
       y: LEVEL_CONFIG.core.y,
     },
     relaySignalRange: UNIT_TUNING.relay.signalRange,
-    firewallHardeningBonusTicks: UNIT_TUNING.firewall.hardeningBonusTicks,
     turretRange: UNIT_TUNING.turret.range,
     turretDamagePerTick: UNIT_TUNING.turret.damagePerTick,
     initialCoreIntegrity: LEVEL_CONFIG.initialCoreIntegrity,
@@ -107,16 +114,34 @@ function createSimConfig(): SimConfig {
       relay: {
         cost: UNIT_TUNING.relay.cost,
         sellRefund: UNIT_TUNING.relay.sellRefund,
+        hp: UNIT_TUNING.relay.hp,
       },
       firewall: {
         cost: UNIT_TUNING.firewall.cost,
         sellRefund: UNIT_TUNING.firewall.sellRefund,
+        hp: UNIT_TUNING.firewall.hp,
       },
       turret: {
         cost: UNIT_TUNING.turret.cost,
         sellRefund: UNIT_TUNING.turret.sellRefund,
+        hp: UNIT_TUNING.turret.hp,
       },
     },
     waves: WAVE_TUNING,
   };
+}
+
+function createInitialTile(config: SimConfig, kind: TileKind): TileState {
+  if (!isUnitKind(kind)) {
+    return { kind };
+  }
+
+  return {
+    kind,
+    hp: config.units[kind].hp,
+  };
+}
+
+function isUnitKind(kind: TileKind): kind is UnitKind {
+  return kind === "relay" || kind === "firewall" || kind === "turret";
 }

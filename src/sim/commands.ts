@@ -1,7 +1,7 @@
-import { getTileKind, samePosition, setTileKind } from "./grid";
+import { getTileKind, samePosition, setTile, setTileKind } from "./grid";
 import { withRecomputedSignal } from "./state";
 import { startActivePhase } from "./waves";
-import type { GameState, GridPosition, TileKind, UnitKind } from "./types";
+import type { GameState, GridPosition, TileKind, TileState, UnitKind } from "./types";
 
 export type SetTileKindCommand = Readonly<{
   type: "setTileKind";
@@ -48,7 +48,7 @@ export function applyCommand(state: GameState, command: SimCommand): GameState {
       assertSpecialTilePlacement(state, command.position, command.kind);
       return withRecomputedSignal({
         ...state,
-        grid: setTileKind(state.grid, command.position, command.kind),
+        grid: setTile(state.grid, command.position, createTileForKind(state, command.kind)),
       });
 
     case "clearTile":
@@ -100,7 +100,10 @@ function placeUnit(state: GameState, position: GridPosition, unit: UnitKind): Ga
   return withRecomputedSignal({
     ...state,
     bandwidth: state.bandwidth - cost,
-    grid: setTileKind(state.grid, position, unit),
+    grid: setTile(state.grid, position, {
+      kind: unit,
+      hp: state.config.units[unit].hp,
+    }),
   });
 }
 
@@ -141,4 +144,15 @@ function isSpecialTile(state: GameState, position: GridPosition): boolean {
 
 function isUnitKind(kind: TileKind): kind is UnitKind {
   return kind === "relay" || kind === "firewall" || kind === "turret";
+}
+
+function createTileForKind(state: GameState, kind: TileKind): TileState {
+  if (!isUnitKind(kind)) {
+    return { kind };
+  }
+
+  return {
+    kind,
+    hp: state.config.units[kind].hp,
+  };
 }

@@ -58,6 +58,12 @@ export function createAudioEngine(): AudioEngine {
           case "coreDamaged":
             playTone(context, 58, 0.07, 0.1, "sine");
             break;
+          case "coreBreach":
+            playTone(context, 46, 0.055, 0.085, "sine");
+            break;
+          case "unitDamaged":
+            playTone(context, 140, 0.035, 0.06, "triangle");
+            break;
           case "intrusionNeutralized":
             playTone(context, 840, 0.045, 0.045, "triangle");
             break;

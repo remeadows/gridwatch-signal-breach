@@ -94,7 +94,9 @@ function drawFrame(now: number): void {
     drawGrid(renderContext, canvasSize, state, {
       interpolationAlpha,
       flashAlpha: 1 - interpolationAlpha,
-      shakeMagnitude: state.events.some((event) => event.type === "coreDamaged")
+      shakeMagnitude: state.events.some(
+        (event) => event.type === "coreDamaged" || event.type === "coreBreach",
+      )
         ? 8 * (1 - interpolationAlpha)
         : 0,
       timeMs: now,
