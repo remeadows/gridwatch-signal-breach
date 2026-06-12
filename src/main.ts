@@ -33,7 +33,18 @@ const unitPickerContainer = unitPickerRoot;
 const overlayContainer = overlayRoot;
 const screenContainer = screenRoot;
 const audio = createAudioEngine();
-let state = createGameState();
+
+function makeRunSeed(): string {
+  const fixed = new URLSearchParams(window.location.search).get("seed");
+  return fixed ?? `run-${Date.now().toString(36)}-${Math.floor(performance.now()).toString(36)}`;
+}
+
+function createRunState(): ReturnType<typeof createGameState> {
+  // ?seed= pins balance/debug runs; normal page loads and restarts reroll.
+  return createGameState({ seed: makeRunSeed() });
+}
+
+let state = createRunState();
 let selectedTool: PlayerTool = "relay";
 let screen: AppScreen = "title";
 let hoverTile: GridPosition | null = null;
@@ -113,7 +124,7 @@ function drawFrame(now: number): void {
         audio.playUi("start");
       },
       onRestart: () => {
-        state = createGameState();
+        state = createRunState();
         selectedTool = "relay";
         hoverTile = null;
         lastTickTime = performance.now();
