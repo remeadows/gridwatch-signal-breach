@@ -79,11 +79,19 @@ function placeUnit(state: GameState, position: GridPosition, unit: UnitKind): Ga
     return state;
   }
 
+  if (!state.config.toolsUnlocked.includes(unit)) {
+    return state;
+  }
+
   if (isSpecialTile(state, position)) {
     return state;
   }
 
-  if (getTileKind(state.grid, position) !== "empty") {
+  const tileKind = getTileKind(state.grid, position);
+  const canPlace =
+    unit === "scrubber" ? tileKind === "corrupted" : tileKind === "empty";
+
+  if (!canPlace) {
     return state;
   }
 
@@ -103,6 +111,7 @@ function placeUnit(state: GameState, position: GridPosition, unit: UnitKind): Ga
     grid: setTile(state.grid, position, {
       kind: unit,
       hp: state.config.units[unit].hp,
+      ...(unit === "scrubber" ? { progress: 0 } : {}),
     }),
   });
 }
@@ -114,7 +123,7 @@ function sellUnit(state: GameState, position: GridPosition): GameState {
 
   const kind = getTileKind(state.grid, position);
 
-  if (!isUnitKind(kind)) {
+  if (!isUnitKind(kind) || kind === "scrubber") {
     return state;
   }
 
@@ -143,7 +152,13 @@ function isSpecialTile(state: GameState, position: GridPosition): boolean {
 }
 
 function isUnitKind(kind: TileKind): kind is UnitKind {
-  return kind === "relay" || kind === "firewall" || kind === "turret";
+  return (
+    kind === "relay" ||
+    kind === "firewall" ||
+    kind === "turret" ||
+    kind === "scrubber" ||
+    kind === "overclock"
+  );
 }
 
 function createTileForKind(state: GameState, kind: TileKind): TileState {
@@ -154,5 +169,6 @@ function createTileForKind(state: GameState, kind: TileKind): TileState {
   return {
     kind,
     hp: state.config.units[kind].hp,
+    ...(kind === "scrubber" ? { progress: 0 } : {}),
   };
 }

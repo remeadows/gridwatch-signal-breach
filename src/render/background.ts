@@ -1,4 +1,4 @@
-import { GRID_SIZE } from "../data/level";
+import { GRID_SIZE } from "../data/levels";
 import type { CanvasSize } from "./canvas";
 import { getBoardMetrics } from "./canvas";
 import { hashTile } from "./animator";

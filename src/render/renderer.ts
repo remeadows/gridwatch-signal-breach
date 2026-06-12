@@ -1,4 +1,4 @@
-import { GRID_SIZE } from "../data/level";
+import { GRID_SIZE } from "../data/levels";
 import { getTile, getTileKind } from "../sim/grid";
 import type {
   EnemyKind,
@@ -127,8 +127,8 @@ function drawTiles(
   state: GameState,
   frame: RenderFrame,
 ): void {
-  for (let y = 0; y < GRID_SIZE; y += 1) {
-    for (let x = 0; x < GRID_SIZE; x += 1) {
+  for (let y = 0; y < state.grid.size; y += 1) {
+    for (let x = 0; x < state.grid.size; x += 1) {
       const position = { x, y };
       const tile = getTile(state.grid, position);
       const kind = tile.kind;
@@ -136,6 +136,8 @@ function drawTiles(
 
       if (kind === "corrupted") {
         drawCorruptedTile(context, originX, originY, tileSize, position, frame);
+      } else if (kind === "void") {
+        drawVoidTile(context, originX, originY, tileSize, position);
       } else {
         context.fillStyle = getTileFill(kind, x, y);
         context.fillRect(
@@ -150,6 +152,37 @@ function drawTiles(
       drawUnitHpPips(context, originX, originY, tileSize, state, position, kind, tile.hp);
     }
   }
+}
+
+function drawVoidTile(
+  context: CanvasRenderingContext2D,
+  originX: number,
+  originY: number,
+  tileSize: number,
+  position: GridPosition,
+): void {
+  const left = originX + position.x * tileSize + 3;
+  const top = originY + position.y * tileSize + 3;
+  const size = tileSize - 6;
+  const hash = hashTile(position.x, position.y);
+
+  context.fillStyle = "#05080c";
+  context.fillRect(left, top, size, size);
+  context.strokeStyle = "rgba(120, 255, 238, 0.1)";
+  context.lineWidth = 1;
+  context.strokeRect(left + 1, top + 1, size - 2, size - 2);
+
+  context.strokeStyle =
+    (hash & 1) === 0
+      ? "rgba(242, 201, 76, 0.26)"
+      : "rgba(255, 79, 145, 0.22)";
+  context.lineWidth = 2;
+  context.beginPath();
+  context.moveTo(left + size * 0.18, top + size * 0.72);
+  context.lineTo(left + size * 0.72, top + size * 0.18);
+  context.moveTo(left + size * 0.36, top + size * 0.88);
+  context.lineTo(left + size * 0.88, top + size * 0.36);
+  context.stroke();
 }
 
 function drawCorruptedTile(
@@ -342,7 +375,7 @@ function drawHoverGhost(
     isSamePosition(hover, state.config.core);
 
   if (frame.selectedTool === "sell") {
-    if (!unitKind) {
+    if (!unitKind || unitKind === "scrubber") {
       return;
     }
 
@@ -352,7 +385,9 @@ function drawHoverGhost(
 
   const cost = state.config.units[frame.selectedTool].cost;
   const isValid =
-    tileKind === "empty" &&
+    (frame.selectedTool === "scrubber"
+      ? tileKind === "corrupted"
+      : tileKind === "empty") &&
     !isMarkerTile &&
     !isIntrusionOccupied(state, hover) &&
     state.bandwidth >= cost;
@@ -388,7 +423,12 @@ function drawToolRangeTelegraph(
   hover: GridPosition,
   tool: PlayerTool,
 ): void {
-  if (tool === "sell" || tool === "firewall") {
+  if (tool === "sell" || tool === "firewall" || tool === "scrubber") {
+    return;
+  }
+
+  if (tool === "overclock") {
+    drawOverclockTelegraph(context, originX, originY, tileSize, state, hover);
     return;
   }
 
@@ -408,13 +448,45 @@ function drawToolRangeTelegraph(
   context.lineWidth = 1;
 
   for (const position of positions) {
-    if (!isInBounds(position)) {
+    if (!isInBounds(position, state.grid.size)) {
       continue;
     }
 
     const left = originX + position.x * tileSize + 8;
     const top = originY + position.y * tileSize + 8;
 
+    context.fillRect(left, top, tileSize - 16, tileSize - 16);
+    context.strokeRect(left, top, tileSize - 16, tileSize - 16);
+  }
+}
+
+function drawOverclockTelegraph(
+  context: CanvasRenderingContext2D,
+  originX: number,
+  originY: number,
+  tileSize: number,
+  state: GameState,
+  hover: GridPosition,
+): void {
+  const positions = getTurretRangePositions(hover, 1);
+
+  context.lineWidth = 1;
+
+  for (const position of positions) {
+    if (!isInBounds(position, state.grid.size)) {
+      continue;
+    }
+
+    const isTurret = getTileKind(state.grid, position) === "turret";
+    const left = originX + position.x * tileSize + 8;
+    const top = originY + position.y * tileSize + 8;
+
+    context.fillStyle = isTurret
+      ? "rgba(242, 201, 76, 0.18)"
+      : "rgba(242, 201, 76, 0.06)";
+    context.strokeStyle = isTurret
+      ? "rgba(255, 241, 168, 0.38)"
+      : "rgba(242, 201, 76, 0.14)";
     context.fillRect(left, top, tileSize - 16, tileSize - 16);
     context.strokeRect(left, top, tileSize - 16, tileSize - 16);
   }
@@ -936,6 +1008,12 @@ function getTileFill(kind: TileKind, x: number, y: number): string {
       return "#302711";
     case "turret":
       return "#122536";
+    case "scrubber":
+      return "#123329";
+    case "overclock":
+      return "#332a12";
+    case "void":
+      return "#05080c";
     case "corrupted":
       return "#35131e";
     case "empty":
@@ -1032,7 +1110,12 @@ function getTileIconName(kind: TileKind): IconName | null {
       return "firewall";
     case "turret":
       return "turret";
+    case "scrubber":
+      return "scrubber";
+    case "overclock":
+      return "overclock";
     case "empty":
+    case "void":
     case "corrupted":
       return null;
   }
@@ -1054,8 +1137,11 @@ function getUnitKind(kind: TileKind): UnitKind | null {
     case "relay":
     case "firewall":
     case "turret":
+    case "scrubber":
+    case "overclock":
       return kind;
     case "empty":
+    case "void":
     case "corrupted":
       return null;
   }
@@ -1071,11 +1157,11 @@ function isIntrusionOccupied(state: GameState, position: GridPosition): boolean 
   );
 }
 
-function isInBounds(position: GridPosition): boolean {
+function isInBounds(position: GridPosition, gridSize: number): boolean {
   return (
     position.x >= 0 &&
     position.y >= 0 &&
-    position.x < GRID_SIZE &&
-    position.y < GRID_SIZE
+    position.x < gridSize &&
+    position.y < gridSize
   );
 }

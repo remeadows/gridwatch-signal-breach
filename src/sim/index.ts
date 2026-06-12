@@ -21,4 +21,7 @@ export type {
   SignalStatus,
   TileKind,
   TileState,
+  UnitKind,
+  SimConfig,
+  WaveDefinition,
 } from "./types";

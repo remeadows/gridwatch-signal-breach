@@ -2,6 +2,8 @@ export type IconName =
   | "relay"
   | "firewall"
   | "turret"
+  | "scrubber"
+  | "overclock"
   | "sell"
   | "source"
   | "core"
@@ -61,6 +63,36 @@ export const ICONS: Readonly<Record<IconName, IconDef>> = {
     ],
     color: "#4da3ff",
     accent: "#d5ecff",
+  },
+  scrubber: {
+    fill: [
+      "M5 5 H19 V19 H5 Z",
+      "M10 10 L12 6.5 L14 10 L17.5 12 L14 14 L12 17.5 L10 14 L6.5 12 Z",
+      "M16.5 4.2 L17.5 6.5 L20 7.2 L17.5 7.9 L16.5 10.2 L15.5 7.9 L13 7.2 L15.5 6.5 Z",
+    ],
+    stroke: [
+      "M8 12 H16",
+      "M12 8 V16",
+      "M7.5 17.5 L10 20 L16.5 13.5",
+    ],
+    color: "#5ee08a",
+    accent: "#c7ffd6",
+  },
+  overclock: {
+    fill: [
+      "M5 5 H19 V19 H5 Z",
+      "M13 2.8 L7.8 12.2 H11.4 L10.4 21.2 L16.4 10.6 H12.8 Z",
+    ],
+    stroke: [
+      "M7 7 H10",
+      "M14 7 H17",
+      "M7 17 H10",
+      "M14 17 H17",
+      "M3.8 9.2 H6",
+      "M18 14.8 H20.2",
+    ],
+    color: "#f2c94c",
+    accent: "#fff1a8",
   },
   sell: {
     fill: [

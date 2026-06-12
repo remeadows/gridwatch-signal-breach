@@ -10,6 +10,7 @@ export type BriefingRow = Readonly<{
 }>;
 
 export type BriefingPage = Readonly<{
+  minSector?: number;
   title: string;
   kind: "signal" | "rows";
   body?: string;
@@ -111,11 +112,13 @@ export const BRIEFING_PROTOCOLS: readonly BriefingRow[] = [
 
 export const BRIEFING_PAGES: readonly BriefingPage[] = [
   {
+    minSector: 1,
     title: BRIEFING_COPY.signal.title,
     kind: "signal",
     body: BRIEFING_COPY.signal.body,
   },
   {
+    minSector: 1,
     title: BRIEFING_COPY.arsenalTitle,
     kind: "rows",
     body: BRIEFING_COPY.arsenalIntro,
@@ -126,11 +129,13 @@ export const BRIEFING_PAGES: readonly BriefingPage[] = [
     })),
   },
   {
+    minSector: 1,
     title: BRIEFING_COPY.protocolsTitle,
     kind: "rows",
     rows: BRIEFING_PROTOCOLS,
   },
   {
+    minSector: 1,
     title: BRIEFING_COPY.threatsTitle,
     kind: "rows",
     body: BRIEFING_COPY.threatsIntro,
