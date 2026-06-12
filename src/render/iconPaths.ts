@@ -9,7 +9,10 @@ export type IconName =
   | "core"
   | "probe"
   | "crawler"
-  | "spoof";
+  | "spoof"
+  | "hunter"
+  | "splitter"
+  | "goliath";
 
 export type IconDef = Readonly<{
   fill: readonly string[];
@@ -179,5 +182,53 @@ export const ICONS: Readonly<Record<IconName, IconDef>> = {
     ],
     color: "#b68cff",
     accent: "#eadfff",
+  },
+  hunter: {
+    fill: [
+      "M3.5 12 L12.8 5.2 L20.5 8.2 L13.4 12 L20.5 15.8 L12.8 18.8 Z",
+      "M8 17.2 H12.8 V21 H8 Z",
+      "M9.4 8.7 L13.6 12 L9.4 15.3 Z",
+    ],
+    stroke: [
+      "M14.2 7.6 L17.6 4.2",
+      "M14.2 16.4 L17.6 19.8",
+      "M5.2 12 H9.8",
+      "M16.5 10.8 A1.2 1.2 0 1 0 16.5 13.2 A1.2 1.2 0 1 0 16.5 10.8",
+      "M7 20 H13.8",
+    ],
+    color: "#ff5f6e",
+    accent: "#ffd0d6",
+  },
+  splitter: {
+    fill: [
+      "M6 12 L11 4.5 L11.2 10.2 L9.2 12.6 L11.4 19.5 Z",
+      "M18 12 L13 4.5 L12.8 10.2 L14.8 12.6 L12.6 19.5 Z",
+    ],
+    stroke: [
+      "M11.6 5.2 L12.4 8.5 L11.2 10.9 L12.8 13.1 L11.9 18.8",
+      "M7.2 12 H9.2",
+      "M14.8 12 H16.8",
+      "M8.6 7.8 L6.4 5.8",
+      "M15.4 16.2 L17.6 18.2",
+    ],
+    color: "#b68cff",
+    accent: "#eadfff",
+  },
+  goliath: {
+    fill: [
+      "M12 2.5 L20.5 6.8 V17.2 L12 21.5 L3.5 17.2 V6.8 Z",
+      "M6.2 7.2 H17.8 L19 10.5 H5 Z",
+      "M5 12 H19 V15.4 H5 Z",
+      "M7.2 17.2 H16.8 L14.8 20 H9.2 Z",
+    ],
+    stroke: [
+      "M7 8.8 H17",
+      "M6.2 13.7 H17.8",
+      "M8.5 16.8 H15.5",
+      "M10.8 11.1 A1.2 1.2 0 1 0 13.2 11.1 A1.2 1.2 0 1 0 10.8 11.1",
+      "M4.8 6.8 L7.4 9.4 M19.2 6.8 L16.6 9.4",
+    ],
+    color: "#ff2957",
+    accent: "#ffd0d6",
   },
 } as const;

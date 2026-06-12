@@ -59,10 +59,18 @@ export function createAudioEngine(): AudioEngine {
             playTone(context, 58, 0.07, 0.1, "sine");
             break;
           case "coreBreach":
-            playTone(context, 46, 0.055, 0.085, "sine");
+            playTone(context, 46, 0.075, 0.12, "sine");
             break;
           case "unitDamaged":
-            playTone(context, 140, 0.035, 0.06, "triangle");
+            playTone(context, 140, 0.03, 0.05, "square");
+            break;
+          case "tileCleansed":
+            playTone(context, 540, 0.045, 0.04, "triangle");
+            playTone(context, 920, 0.05, 0.035, "triangle", 0.035);
+            break;
+          case "intrusionSplit":
+            playTone(context, 260, 0.025, 0.045, "square");
+            playTone(context, 390, 0.025, 0.04, "square", 0.03);
             break;
           case "intrusionNeutralized":
             playTone(context, 840, 0.045, 0.045, "triangle");

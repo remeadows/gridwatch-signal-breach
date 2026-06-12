@@ -4,7 +4,7 @@ A static browser-playable cyberpunk signal-routing defense game built with Vite,
 
 ## What It Is
 
-GridWatch: Signal Breach is a three-sector signal-routing defense campaign. Place relays, firewalls, ICE turrets, and sector-unlocked tools on 8x8 grids to keep the Source connected to the Core while intrusions corrupt the board over twelve deterministic waves.
+GridWatch: Signal Breach is a three-sector signal-routing defense campaign. Place relays, firewalls, ICE turrets, scrubbers, and overclock nodes on 8x8 grids to keep the Source connected to the Core while probes, crawlers, spoofs, hunters, splitters, and a goliath corrupt the board over twelve deterministic waves.
 
 The game is fully static: no backend, no API, no network calls, no secrets, and no environment files.
 

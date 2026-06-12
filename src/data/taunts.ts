@@ -7,4 +7,6 @@ export const ANTAGONIST_TAUNTS = [
   "Your walls are a chew toy.",
   "Double the wall. Double the bill.",
   "Route around me. I will route around you.",
+  "I don't want your route. I want your toys.",
+  "Split the packet. Split your focus.",
 ] as const;

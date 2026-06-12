@@ -7,6 +7,7 @@ export type BriefingRow = Readonly<{
   icon: BriefingRowIcon;
   name: string;
   summary: string;
+  minSector?: number;
 }>;
 
 export type BriefingPage = Readonly<{
@@ -22,12 +23,14 @@ export type BriefingUnit = Readonly<{
   name: string;
   cost: number;
   summary: string;
+  minSector?: number;
 }>;
 
 export type BriefingThreat = Readonly<{
   kind: EnemyKind;
   name: string;
   summary: string;
+  minSector?: number;
 }>;
 
 export const BRIEFING_COPY = {
@@ -63,6 +66,20 @@ export const BRIEFING_UNITS: readonly BriefingUnit[] = [
     cost: UNIT_TUNING.turret.cost,
     summary: "auto-fires at adjacent intrusions.",
   },
+  {
+    kind: "scrubber",
+    name: "Scrubber",
+    cost: UNIT_TUNING.scrubber.cost,
+    summary: `cleans corrupted ground in ${UNIT_TUNING.scrubber.cleanseTicks} active ticks - place ON corruption.`,
+    minSector: 2,
+  },
+  {
+    kind: "overclock",
+    name: "Overclock",
+    cost: UNIT_TUNING.overclock.cost,
+    summary: `amplifies adjacent ICE turrets by +${UNIT_TUNING.overclock.bonusDamage} damage.`,
+    minSector: 3,
+  },
 ] as const;
 
 export const BRIEFING_THREATS: readonly BriefingThreat[] = [
@@ -80,6 +97,24 @@ export const BRIEFING_THREATS: readonly BriefingThreat[] = [
     kind: "spoof",
     name: "Spoof",
     summary: "jumps a single wall. Double up.",
+  },
+  {
+    kind: "hunter",
+    name: "Hunter",
+    summary: "ignores the route - anything you built is the target.",
+    minSector: 2,
+  },
+  {
+    kind: "splitter",
+    name: "Splitter",
+    summary: "bursts into probes on death - choose where it dies.",
+    minSector: 2,
+  },
+  {
+    kind: "goliath",
+    name: "Goliath",
+    summary: "a siege engine. Walls slow it; massed, overclocked ICE stops it.",
+    minSector: 3,
   },
 ] as const;
 
@@ -100,7 +135,7 @@ export const BRIEFING_PROTOCOLS: readonly BriefingRow[] = [
     icon: "firewall",
     name: "Corruption",
     summary:
-      "a corrupted tile is dead ground - it carries nothing and never recovers on its own. Route around it.",
+      "a corrupted tile is dead ground - it carries nothing and never recovers on its own. Scrub it or route around it.",
   },
   {
     icon: "source",
@@ -126,6 +161,7 @@ export const BRIEFING_PAGES: readonly BriefingPage[] = [
       icon: unit.kind,
       name: unit.name,
       summary: `(${unit.cost}) ${unit.summary}`,
+      minSector: unit.minSector,
     })),
   },
   {
@@ -143,6 +179,53 @@ export const BRIEFING_PAGES: readonly BriefingPage[] = [
       icon: threat.kind,
       name: threat.name,
       summary: threat.summary,
+      minSector: threat.minSector,
     })),
+  },
+  {
+    minSector: 2,
+    title: "SECTOR 2 INTEL",
+    kind: "rows",
+    body: "Void chasms block movement - but not the signal.",
+    rows: [
+      {
+        icon: "hunter",
+        name: "Hunter",
+        summary: "ignores the route - anything you built is the target.",
+      },
+      {
+        icon: "splitter",
+        name: "Splitter",
+        summary: "bursts into probes on death - choose where it dies.",
+      },
+      {
+        icon: "scrubber",
+        name: "Scrubber",
+        summary: `counter-corruption tool; cleans after ${UNIT_TUNING.scrubber.cleanseTicks} active ticks.`,
+      },
+    ],
+  },
+  {
+    minSector: 3,
+    title: "SECTOR 3 INTEL",
+    kind: "rows",
+    body: "The vault has two gates. Force long exposure and amplify your ICE.",
+    rows: [
+      {
+        icon: "overclock",
+        name: "Overclock",
+        summary: `adjacent ICE gains +${UNIT_TUNING.overclock.bonusDamage} damage per node.`,
+      },
+      {
+        icon: "goliath",
+        name: "Goliath",
+        summary: "a siege engine. Walls slow it. Only massed, overclocked ICE stops it.",
+      },
+      {
+        icon: "core",
+        name: "Vault Core",
+        summary: "wave 12 includes a scripted boss handshake - do not let it touch the Core.",
+      },
+    ],
   },
 ] as const;
