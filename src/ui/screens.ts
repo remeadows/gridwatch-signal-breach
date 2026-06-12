@@ -323,7 +323,7 @@ function renderBriefingScreen(options: ScreenOptions): void {
   });
 
   navLeft.append(backButton);
-  appendBriefingPanel(content, pages[briefingPanelIndex]);
+  appendBriefingPanel(content, pages[briefingPanelIndex], options.briefingMaxSector);
   nav.append(navLeft, nextButton);
   panel.append(content, dots, nav);
   screen.append(panel);
@@ -334,7 +334,11 @@ function getVisibleBriefingPages(maxSector: number): readonly BriefingPage[] {
   return BRIEFING_PAGES.filter((page) => (page.minSector ?? 1) <= maxSector);
 }
 
-function appendBriefingPanel(root: HTMLElement, page: BriefingPage | undefined): void {
+function appendBriefingPanel(
+  root: HTMLElement,
+  page: BriefingPage | undefined,
+  maxSector: number,
+): void {
   if (!page) {
     return;
   }
@@ -344,7 +348,7 @@ function appendBriefingPanel(root: HTMLElement, page: BriefingPage | undefined):
     return;
   }
 
-  appendRowsPanel(root, page);
+  appendRowsPanel(root, page, maxSector);
 }
 
 function appendSignalPanel(root: HTMLElement, page: BriefingPage): void {
@@ -364,14 +368,18 @@ function appendSignalPanel(root: HTMLElement, page: BriefingPage): void {
   root.append(title, diagram, body);
 }
 
-function appendRowsPanel(root: HTMLElement, page: BriefingPage): void {
+function appendRowsPanel(root: HTMLElement, page: BriefingPage, maxSector: number): void {
   const title = document.createElement("h2");
   const list = document.createElement("div");
 
   title.textContent = page.title;
   list.className = "briefing-list";
 
-  for (const row of page.rows ?? []) {
+  const visibleRows = page.rows?.filter(
+    (candidate) => (candidate.minSector ?? 1) <= maxSector,
+  ) ?? [];
+
+  for (const row of visibleRows) {
     list.append(createBriefingRow(row.icon as IconName, row.name, row.summary));
   }
 

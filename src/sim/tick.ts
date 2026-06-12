@@ -3,6 +3,7 @@ import { applyIntrusionCorruption } from "./corruption";
 import { applyBandwidthTrickle } from "./economy";
 import { samePosition } from "./grid";
 import { moveIntrusions, spawnIntrusions } from "./intrusions";
+import { applyScrubberProgress } from "./scrubbing";
 import { deriveSignalState } from "./state";
 import type { GameState } from "./types";
 import {
@@ -43,24 +44,25 @@ export function tick(state: GameState): GameState {
   const withMovement = moveIntrusions(withSpawns);
   const withCombat = applyTurretCombat(withMovement);
   const withCorruption = applyIntrusionCorruption(withCombat);
-  const signal = deriveSignalState(withCorruption);
+  const withScrubbing = applyScrubberProgress(withCorruption);
+  const signal = deriveSignalState(withScrubbing);
   const isLive = signal.status === "live";
-  const drainAmount = isLive ? 0 : withCorruption.config.coreIntegrityDrainPerSeveredTick;
-  const regenAmount = isLive ? withCorruption.config.coreIntegrityRegenPerLiveTick : 0;
+  const drainAmount = isLive ? 0 : withScrubbing.config.coreIntegrityDrainPerSeveredTick;
+  const regenAmount = isLive ? withScrubbing.config.coreIntegrityRegenPerLiveTick : 0;
   const coreIntegrityAfterSignal = isLive
     ? Math.min(
-        withCorruption.config.coreIntegrityMax,
-        withCorruption.coreIntegrity + regenAmount,
+        withScrubbing.config.coreIntegrityMax,
+        withScrubbing.coreIntegrity + regenAmount,
       )
     : Math.max(
         0,
-        withCorruption.coreIntegrity - drainAmount,
+        withScrubbing.coreIntegrity - drainAmount,
       );
-  const contactBreaches = withCorruption.intrusions
-    .filter((intrusion) => samePosition(intrusion.position, withCorruption.config.core))
+  const contactBreaches = withScrubbing.intrusions
+    .filter((intrusion) => samePosition(intrusion.position, withScrubbing.config.core))
     .map((intrusion) => ({
       intrusionId: intrusion.id,
-      amount: withCorruption.config.enemies[intrusion.kind].coreContactDamage,
+      amount: withScrubbing.config.enemies[intrusion.kind].coreContactDamage,
     }));
   const contactDamage = contactBreaches.reduce(
     (total, breach) => total + breach.amount,
@@ -69,13 +71,13 @@ export function tick(state: GameState): GameState {
   const coreIntegrity = Math.max(
     0,
     Math.min(
-      withCorruption.config.coreIntegrityMax,
+      withScrubbing.config.coreIntegrityMax,
       coreIntegrityAfterSignal - contactDamage,
     ),
   );
-  const routeDrainAmount = withCorruption.coreIntegrity - coreIntegrityAfterSignal;
+  const routeDrainAmount = withScrubbing.coreIntegrity - coreIntegrityAfterSignal;
   const events = [
-    ...withCorruption.events,
+    ...withScrubbing.events,
     ...(state.signal.status === "live" && signal.status === "severed"
       ? [
           {
@@ -105,7 +107,7 @@ export function tick(state: GameState): GameState {
   ];
 
   const progressedState: GameState = {
-    ...withCorruption,
+    ...withScrubbing,
     events,
     signal,
     coreIntegrity,
