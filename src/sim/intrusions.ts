@@ -25,7 +25,14 @@ import type {
 } from "./types";
 import { getCurrentWave } from "./waves";
 
-const ENEMY_KIND_ORDER: readonly EnemyKind[] = ["probe", "crawler", "spoof"];
+const ENEMY_KIND_ORDER: readonly EnemyKind[] = [
+  "probe",
+  "crawler",
+  "spoof",
+  "hunter",
+  "splitter",
+  "goliath",
+];
 const ORTHOGONAL_DELTAS = [
   { x: 0, y: -1 },
   { x: 1, y: 0 },
@@ -39,15 +46,22 @@ type TargetSets = Readonly<{
 }>;
 
 export function spawnIntrusions(state: GameState): GameState {
-  if (!shouldSpawn(state)) {
+  if (state.phase !== "active") {
     return state;
   }
 
-  const kindPick = pickEnemyKind(state);
-  let nextState = {
-    ...state,
+  let nextState = spawnScriptedIntrusions(state);
+
+  if (!shouldCadenceSpawn(nextState)) {
+    return nextState;
+  }
+
+  const kindPick = pickEnemyKind(nextState);
+  nextState = {
+    ...nextState,
     rng: kindPick.rng,
   };
+
   const definition = nextState.config.enemies[kindPick.kind];
   const wave = getCurrentWave(nextState);
 
@@ -70,35 +84,7 @@ export function spawnIntrusions(state: GameState): GameState {
       break;
     }
 
-    const intrusion: IntrusionState = {
-      id: nextState.nextIntrusionId,
-      kind: kindPick.kind,
-      hp: definition.maxHp,
-      maxHp: definition.maxHp,
-      position: spawnPick.position,
-      previousPosition: spawnPick.position,
-      spawnedTick: nextState.tickCount,
-      lastMoveTick: nextState.tickCount,
-      corruption: null,
-    };
-
-    nextState = {
-      ...nextState,
-      intrusions: [...nextState.intrusions, intrusion],
-      nextIntrusionId: nextState.nextIntrusionId + 1,
-      spawnedIntrusionCount: nextState.spawnedIntrusionCount + 1,
-      waveSpawnedCount: nextState.waveSpawnedCount + 1,
-      events: [
-        ...nextState.events,
-        {
-          type: "intrusionSpawned",
-          tick: nextState.tickCount,
-          intrusionId: intrusion.id,
-          kind: intrusion.kind,
-          position: intrusion.position,
-        },
-      ],
-    };
+    nextState = spawnIntrusionAt(nextState, kindPick.kind, spawnPick.position, true);
   }
 
   return nextState;
@@ -189,11 +175,74 @@ export function moveIntrusions(state: GameState): GameState {
   };
 }
 
-function shouldSpawn(state: GameState): boolean {
-  if (state.phase !== "active") {
-    return false;
+function spawnScriptedIntrusions(state: GameState): GameState {
+  const wave = getCurrentWave(state);
+  const scriptedSpawns = wave.scriptedSpawns?.filter(
+    (entry) => entry.waveTick === state.waveTick,
+  ) ?? [];
+
+  let nextState = state;
+
+  for (const entry of scriptedSpawns) {
+    if (nextState.waveSpawnedCount >= wave.maxSpawnedIntrusions) {
+      break;
+    }
+
+    const spawnPick = pickSpawnPosition(nextState);
+    nextState = {
+      ...nextState,
+      rng: spawnPick.rng,
+    };
+
+    if (!spawnPick.position) {
+      continue;
+    }
+
+    nextState = spawnIntrusionAt(nextState, entry.kind, spawnPick.position, true);
   }
 
+  return nextState;
+}
+
+function spawnIntrusionAt(
+  state: GameState,
+  kind: EnemyKind,
+  position: GridPosition,
+  countTowardWave: boolean,
+): GameState {
+  const definition = state.config.enemies[kind];
+  const intrusion: IntrusionState = {
+    id: state.nextIntrusionId,
+    kind,
+    hp: definition.maxHp,
+    maxHp: definition.maxHp,
+    position,
+    previousPosition: position,
+    spawnedTick: state.tickCount,
+    lastMoveTick: state.tickCount,
+    corruption: null,
+  };
+
+  return {
+    ...state,
+    intrusions: [...state.intrusions, intrusion],
+    nextIntrusionId: state.nextIntrusionId + 1,
+    spawnedIntrusionCount: state.spawnedIntrusionCount + 1,
+    waveSpawnedCount: state.waveSpawnedCount + (countTowardWave ? 1 : 0),
+    events: [
+      ...state.events,
+      {
+        type: "intrusionSpawned",
+        tick: state.tickCount,
+        intrusionId: intrusion.id,
+        kind: intrusion.kind,
+        position: intrusion.position,
+      },
+    ],
+  };
+}
+
+function shouldCadenceSpawn(state: GameState): boolean {
   const wave = getCurrentWave(state);
 
   if (state.waveTick < wave.spawnFirstTick) {
@@ -208,6 +257,10 @@ function shouldSpawn(state: GameState): boolean {
     return false;
   }
 
+  if (getEnemyWeightTotal(wave.enemyWeights) <= 0) {
+    return false;
+  }
+
   return (state.waveTick - wave.spawnFirstTick) % wave.spawnEveryTicks === 0;
 }
 
@@ -216,10 +269,7 @@ function pickEnemyKind(state: GameState): Readonly<{
   kind: EnemyKind;
 }> {
   const wave = getCurrentWave(state);
-  const totalWeight = ENEMY_KIND_ORDER.reduce(
-    (total, kind) => total + wave.enemyWeights[kind],
-    0,
-  );
+  const totalWeight = getEnemyWeightTotal(wave.enemyWeights);
   const pick = nextInt(state.rng, 0, totalWeight);
   let cursor = pick.value;
 
@@ -238,6 +288,10 @@ function pickEnemyKind(state: GameState): Readonly<{
     rng: pick.rng,
     kind: ENEMY_KIND_ORDER[ENEMY_KIND_ORDER.length - 1],
   };
+}
+
+function getEnemyWeightTotal(weights: Readonly<Record<EnemyKind, number>>): number {
+  return ENEMY_KIND_ORDER.reduce((total, kind) => total + weights[kind], 0);
 }
 
 function pickSpawnPosition(state: GameState): Readonly<{

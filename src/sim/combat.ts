@@ -1,4 +1,11 @@
-import { getOrthogonalNeighbors, getPositionsByKind, getTileKind, manhattanDistance } from "./grid";
+import {
+  getOrthogonalNeighbors,
+  getPositionsByKind,
+  getTileKind,
+  isInBounds,
+  manhattanDistance,
+  samePosition,
+} from "./grid";
 import type { GameState, IntrusionState } from "./types";
 
 export function applyTurretCombat(state: GameState): GameState {
@@ -48,6 +55,9 @@ export function applyTurretCombat(state: GameState): GameState {
 
   const survivingIntrusions: IntrusionState[] = [];
   let neutralizedCount = state.neutralizedCount;
+  let nextIntrusionId = state.nextIntrusionId;
+  let spawnedIntrusionCount = state.spawnedIntrusionCount;
+  let splitChildren: IntrusionState[] = [];
 
   for (const intrusion of state.intrusions) {
     const hp = hpById.get(intrusion.id) ?? intrusion.hp;
@@ -63,6 +73,32 @@ export function applyTurretCombat(state: GameState): GameState {
           position: intrusion.position,
         },
       ];
+
+      const split = createSplitChildren(state, intrusion, nextIntrusionId, splitChildren);
+
+      if (split.children.length > 0) {
+        nextIntrusionId += split.children.length;
+        spawnedIntrusionCount += split.children.length;
+        splitChildren = [...splitChildren, ...split.children];
+        events = [
+          ...events,
+          {
+            type: "intrusionSplit",
+            tick: state.tickCount,
+            parentId: intrusion.id,
+            childIds: split.children.map((child) => child.id),
+            position: intrusion.position,
+          },
+          ...split.children.map((child) => ({
+            type: "intrusionSpawned" as const,
+            tick: state.tickCount,
+            intrusionId: child.id,
+            kind: child.kind,
+            position: child.position,
+          })),
+        ];
+      }
+
       continue;
     }
 
@@ -74,7 +110,9 @@ export function applyTurretCombat(state: GameState): GameState {
 
   return {
     ...state,
-    intrusions: survivingIntrusions,
+    intrusions: [...survivingIntrusions, ...splitChildren],
+    nextIntrusionId,
+    spawnedIntrusionCount,
     neutralizedCount,
     events,
   };
@@ -87,4 +125,64 @@ function getTurretDamage(state: GameState, turretPosition: Readonly<{ x: number;
 
   return state.config.turretDamagePerTick +
     adjacentOverclocks * state.config.overclockBonusDamage;
+}
+
+function createSplitChildren(
+  state: GameState,
+  intrusion: IntrusionState,
+  nextIntrusionId: number,
+  existingSplitChildren: readonly IntrusionState[],
+): Readonly<{
+  children: readonly IntrusionState[];
+}> {
+  const spawn = state.config.enemies[intrusion.kind].onDeathSpawn;
+
+  if (!spawn) {
+    return {
+      children: [],
+    };
+  }
+
+  const definition = state.config.enemies[spawn.kind];
+  const occupiedIntrusions = [
+    ...state.intrusions.filter((candidate) => candidate.id !== intrusion.id),
+    ...existingSplitChildren,
+  ];
+  const positions = getSplitSpawnCandidates(intrusion.position)
+    .filter((position) => isInBounds(state.grid, position))
+    .filter((position) => {
+      const kind = getTileKind(state.grid, position);
+      return kind === "empty" || kind === "corrupted";
+    })
+    .filter((position) =>
+      !occupiedIntrusions.some((occupied) => samePosition(occupied.position, position)),
+    )
+    .slice(0, spawn.count);
+
+  return {
+    children: positions.map((position, index) => ({
+      id: nextIntrusionId + index,
+      kind: spawn.kind,
+      hp: definition.maxHp,
+      maxHp: definition.maxHp,
+      position,
+      previousPosition: position,
+      spawnedTick: state.tickCount,
+      lastMoveTick: state.tickCount,
+      corruption: null,
+    })),
+  };
+}
+
+function getSplitSpawnCandidates(position: Readonly<{ x: number; y: number }>): readonly Readonly<{
+  x: number;
+  y: number;
+}>[] {
+  return [
+    position,
+    { x: position.x, y: position.y - 1 },
+    { x: position.x + 1, y: position.y },
+    { x: position.x, y: position.y + 1 },
+    { x: position.x - 1, y: position.y },
+  ];
 }

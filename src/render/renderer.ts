@@ -1,5 +1,5 @@
 import { GRID_SIZE } from "../data/levels";
-import { getTile, getTileKind } from "../sim/grid";
+import { getOrthogonalNeighbors, getTile, getTileKind } from "../sim/grid";
 import type {
   EnemyKind,
   GameState,
@@ -53,6 +53,7 @@ export function drawGrid(
   context.save();
   context.translate(shake.x, shake.y);
   drawTiles(context, originX, originY, tileSize, state, frame);
+  drawOverclockLinks(context, originX, originY, tileSize, state, frame);
   drawCorruptionFlashes(context, originX, originY, tileSize, state.events, frame);
   drawSignalRoute(context, originX, originY, tileSize, state.signal, frame);
   drawRouteCuts(context, originX, originY, tileSize, state.events, frame);
@@ -152,6 +153,55 @@ function drawTiles(
       drawUnitHpPips(context, originX, originY, tileSize, state, position, kind, tile.hp);
     }
   }
+}
+
+function drawOverclockLinks(
+  context: CanvasRenderingContext2D,
+  originX: number,
+  originY: number,
+  tileSize: number,
+  state: GameState,
+  frame: RenderFrame,
+): void {
+  const pulse = 0.5 + pulse01(frame.timeMs, 1100) * 0.28;
+
+  context.save();
+  context.lineCap = "round";
+
+  for (let y = 0; y < state.grid.size; y += 1) {
+    for (let x = 0; x < state.grid.size; x += 1) {
+      const position = { x, y };
+
+      if (getTileKind(state.grid, position) !== "overclock") {
+        continue;
+      }
+
+      const from = getTileCenter(originX, originY, tileSize, position);
+
+      for (const neighbor of getOrthogonalNeighbors(state.grid, position)) {
+        if (getTileKind(state.grid, neighbor) !== "turret") {
+          continue;
+        }
+
+        const to = getTileCenter(originX, originY, tileSize, neighbor);
+        context.strokeStyle = `rgba(242, 201, 76, ${pulse})`;
+        context.lineWidth = 3;
+        context.beginPath();
+        context.moveTo(from.x, from.y);
+        context.lineTo(to.x, to.y);
+        context.stroke();
+
+        context.strokeStyle = `rgba(255, 241, 168, ${0.24 + pulse * 0.22})`;
+        context.lineWidth = 1;
+        context.beginPath();
+        context.moveTo(from.x, from.y);
+        context.lineTo(to.x, to.y);
+        context.stroke();
+      }
+    }
+  }
+
+  context.restore();
 }
 
 function drawVoidTile(
@@ -713,16 +763,21 @@ function drawHitFlashes(
     if (event.type === "turretHit") {
       const from = getTileCenter(originX, originY, tileSize, event.turretPosition);
       const to = getTileCenter(originX, originY, tileSize, event.targetPosition);
+      const isBoosted = event.damage > state.config.turretDamagePerTick;
 
       context.lineCap = "round";
-      context.strokeStyle = `rgba(77, 163, 255, ${0.22 * alpha})`;
+      context.strokeStyle = isBoosted
+        ? `rgba(242, 201, 76, ${0.26 * alpha})`
+        : `rgba(77, 163, 255, ${0.22 * alpha})`;
       context.lineWidth = 9;
       context.beginPath();
       context.moveTo(from.x, from.y);
       context.lineTo(to.x, to.y);
       context.stroke();
 
-      context.strokeStyle = `rgba(213, 236, 255, ${0.82 * alpha})`;
+      context.strokeStyle = isBoosted
+        ? `rgba(255, 241, 168, ${0.86 * alpha})`
+        : `rgba(213, 236, 255, ${0.82 * alpha})`;
       context.lineWidth = 2;
       context.beginPath();
       context.moveTo(from.x, from.y);
@@ -755,6 +810,38 @@ function drawHitFlashes(
       context.lineTo(center.x + tileSize * 0.22, center.y + tileSize * 0.18);
       context.moveTo(center.x + tileSize * 0.18, center.y - tileSize * 0.22);
       context.lineTo(center.x - tileSize * 0.18, center.y + tileSize * 0.22);
+      context.stroke();
+    }
+
+    if (event.type === "tileCleansed") {
+      const center = getTileCenter(originX, originY, tileSize, event.position);
+      const radius = tileSize * (0.14 + (1 - alpha) * 0.32);
+
+      context.strokeStyle = `rgba(94, 224, 138, ${0.78 * alpha})`;
+      context.lineWidth = 4;
+      context.beginPath();
+      context.arc(center.x, center.y, radius, 0, Math.PI * 2);
+      context.stroke();
+
+      context.strokeStyle = `rgba(199, 255, 214, ${0.62 * alpha})`;
+      context.lineWidth = 2;
+      context.beginPath();
+      context.moveTo(center.x - tileSize * 0.16, center.y);
+      context.lineTo(center.x - tileSize * 0.03, center.y + tileSize * 0.14);
+      context.lineTo(center.x + tileSize * 0.2, center.y - tileSize * 0.16);
+      context.stroke();
+    }
+
+    if (event.type === "intrusionSplit") {
+      const center = getTileCenter(originX, originY, tileSize, event.position);
+
+      context.strokeStyle = `rgba(182, 140, 255, ${0.82 * alpha})`;
+      context.lineWidth = 3;
+      context.beginPath();
+      context.moveTo(center.x - tileSize * 0.3, center.y);
+      context.lineTo(center.x + tileSize * 0.3, center.y);
+      context.moveTo(center.x, center.y - tileSize * 0.3);
+      context.lineTo(center.x, center.y + tileSize * 0.3);
       context.stroke();
     }
 
@@ -842,7 +929,7 @@ function drawIntrusions(
       intrusion.lastMoveTick === state.tickCount ? frame.interpolationAlpha : 1;
     const x = previous.x + (current.x - previous.x) * alpha;
     const y = previous.y + (current.y - previous.y) * alpha;
-    const radius = tileSize * 0.24;
+    const radius = tileSize * (intrusion.kind === "goliath" ? 0.32 : 0.24);
     const iconName = getEnemyIconName(intrusion.kind);
     const movementAngle =
       current.x === previous.x && current.y === previous.y
@@ -851,7 +938,13 @@ function drawIntrusions(
     const breath =
       intrusion.kind === "crawler"
         ? 1 + 0.06 * Math.sin(frame.timeMs * 0.004 + intrusion.id)
-        : 1;
+        : intrusion.kind === "goliath"
+          ? 1 + 0.04 * Math.sin(frame.timeMs * 0.003 + intrusion.id)
+          : 1;
+    const bob =
+      intrusion.kind === "goliath"
+        ? Math.sin(frame.timeMs * 0.006 + intrusion.id) * tileSize * 0.025
+        : 0;
 
     context.fillStyle = "rgba(3, 9, 13, 0.74)";
     context.strokeStyle = ICONS[iconName].accent;
@@ -875,10 +968,17 @@ function drawIntrusions(
       });
     }
 
-    drawIcon(context, iconName, x, y, tileSize * 0.42 * breath, {
-      glow: true,
-      rotation: intrusion.kind === "probe" ? movementAngle : 0,
-    });
+    drawIcon(
+      context,
+      iconName,
+      x,
+      y + bob,
+      tileSize * getEnemyIconScale(intrusion.kind) * breath,
+      {
+        glow: true,
+        rotation: intrusion.kind === "probe" ? movementAngle : 0,
+      },
+    );
 
     const hpRatio = intrusion.hp / intrusion.maxHp;
     drawHpBar(context, x, y + radius + 5, radius * 2, hpRatio);
@@ -1129,6 +1229,25 @@ function getEnemyIconName(kind: EnemyKind): IconName {
       return "crawler";
     case "spoof":
       return "spoof";
+    case "hunter":
+      return "hunter";
+    case "splitter":
+      return "splitter";
+    case "goliath":
+      return "goliath";
+  }
+}
+
+function getEnemyIconScale(kind: EnemyKind): number {
+  switch (kind) {
+    case "goliath":
+      return 0.58;
+    case "probe":
+    case "crawler":
+    case "spoof":
+    case "hunter":
+    case "splitter":
+      return 0.42;
   }
 }
 

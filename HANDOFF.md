@@ -2,14 +2,15 @@
 
 ## Current State
 
-- Playable V2 campaign is complete through Phase 3: three sectors, twelve wave rows, sector select, campaign unlock persistence, win/loss, scoring, restart, HUD polish, Canvas animation, and minimal WebAudio SFX.
+- Playable V2 campaign is complete through Phase 4: three sectors, twelve final wave rows, sector select, campaign unlock persistence, win/loss, scoring, restart, HUD polish, Canvas animation, and minimal WebAudio SFX.
 - Overhaul Phase 1 is merged: title screen, briefing flow, app-level screen state, and pointer gating.
 - Overhaul Phase 2 is merged: shared path-data icons, Canvas icon rendering, DOM SVG icons, picker icons, briefing icons, and board icon replacements.
 - Overhaul Phase 3 is merged: cached board background, route pulse, hover ghost, Source/Core treatment, animated intrusions, corruption/event polish, and scanline/vignette styling.
 - Overhaul Phase 4 is implemented on the active branch: HUD hero metrics, terminal-style prep/end overlays, UI select/start blips, mobile layout QA, and scripted win/loss playthrough verification.
 - V2 Phase 1 is merged: run seed randomization and global rebalance.
 - V2 Phase 2 is merged: firewall blocker/chew behavior and core contact damage.
-- V2 Phase 3 is implemented on the active branch: sector campaign navigation, void maps, sector unlocks, HUD briefing pause, and sector-specific tools.
+- V2 Phase 3 is merged: sector campaign navigation, void maps, sector unlocks, HUD briefing pause, and sector-specific tools.
+- V2 Phase 4 is implemented on the active branch: scrubber cleansing, overclock combat links, Hunter/Splitter/Goliath enemy behaviors, scripted spawns, final W6-W12 tuning, new icons/audio/briefing intel, and taunts.
 - The working game URL in preview is `http://127.0.0.1:4173/` when `npm run preview` is running.
 
 ## Verification To Re-run
@@ -36,5 +37,6 @@ Expected: install/build/dev/preview succeed, the app renders at the host root (`
 
 ## Good Next Checks
 
-- Playtest W1-W12 after any tuning change and confirm W1 is forgiving, sector 2 introduces scrubber pressure cleanly, and sector 3's overclock tool has visible value.
+- Phase 5 is next: projection, 2.5D pieces, lighting, pointer rewrite, and render performance checks.
+- Playtest W1-W12 after any tuning change and confirm W1 is forgiving, sector 2 introduces hunter/splitter plus scrubber pressure cleanly, and sector 3's overclock tool has visible value against the scripted goliath.
 - After a Cloudflare Pages deploy, confirm `https://GridWatch-SignalBreach.warsignallabs.net` loads and does not show a blank canvas (root-relative `/assets/...` paths must resolve).

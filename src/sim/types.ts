@@ -37,7 +37,7 @@ export type SignalState = Readonly<{
   routeTick: number;
 }>;
 
-export type EnemyKind = "probe" | "crawler" | "spoof";
+export type EnemyKind = "probe" | "crawler" | "spoof" | "hunter" | "splitter" | "goliath";
 
 export type EnemyDefinition = Readonly<{
   maxHp: number;
@@ -88,6 +88,10 @@ export type WaveDefinition = Readonly<{
   maxSpawnedIntrusions: number;
   perimeterPickAttempts: number;
   enemyWeights: Readonly<Record<EnemyKind, number>>;
+  scriptedSpawns?: readonly Readonly<{
+    waveTick: number;
+    kind: EnemyKind;
+  }>[];
   spawnEdges: readonly SpawnEdge[];
 }>;
 
@@ -159,11 +163,23 @@ export type SimEvent =
       hp: number;
     }>
   | Readonly<{
+      type: "tileCleansed";
+      tick: number;
+      position: GridPosition;
+    }>
+  | Readonly<{
       type: "coreBreach";
       tick: number;
       intrusionId: number;
       amount: number;
       integrity: number;
+    }>
+  | Readonly<{
+      type: "intrusionSplit";
+      tick: number;
+      parentId: number;
+      childIds: readonly number[];
+      position: GridPosition;
     }>
   | Readonly<{
       type: "routeSevered";
