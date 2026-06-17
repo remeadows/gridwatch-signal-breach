@@ -24,7 +24,7 @@ The canonical public repository is `https://github.com/remeadows/gridwatch-signa
 - Read `CONTEXT.md` before structural work.
 - Read `HANDOFF.md` before deployment, verification, or tuning work.
 - `src/main.ts` wires the app together and owns the requestAnimationFrame loop.
-- `vite.config.ts` sets `base: "/gridwatch-signal-breach/"` and disables the modulepreload polyfill to avoid generated `fetch()`.
+- `vite.config.ts` sets `base: "/"` (served from the host root on Cloudflare Pages) and disables the modulepreload polyfill to avoid generated `fetch()`.
 
 ## Verification
 
@@ -39,7 +39,7 @@ rg -n "fetch|XMLHttpRequest|process\\.env|import\\.meta\\.env" src index.html pa
 find . -name '.env*' -print
 ```
 
-Expected: install/build/dev/preview succeed, the app renders at `/gridwatch-signal-breach/`, the `rg` command has no matches, and `find` prints no `.env*` files.
+Expected: install/build/dev/preview succeed, the app renders at the host root (`/`), the `rg` command has no matches, and `find` prints no `.env*` files.
 
 For public-repo security checks, also run:
 

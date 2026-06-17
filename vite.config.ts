@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  base: "/gridwatch-signal-breach/",
+  base: "/",
   build: {
     modulePreload: {
       polyfill: false,

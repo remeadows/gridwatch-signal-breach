@@ -10,7 +10,7 @@
 - V2 Phase 1 is merged: run seed randomization and global rebalance.
 - V2 Phase 2 is merged: firewall blocker/chew behavior and core contact damage.
 - V2 Phase 3 is implemented on the active branch: sector campaign navigation, void maps, sector unlocks, HUD briefing pause, and sector-specific tools.
-- The working game URL in preview is `http://127.0.0.1:4173/gridwatch-signal-breach/` when `npm run preview` is running.
+- The working game URL in preview is `http://127.0.0.1:4173/` when `npm run preview` is running.
 
 ## Verification To Re-run
 
@@ -25,7 +25,7 @@ rg -n "TODO|FIXME|XXX|HACK" src
 rg -n ": any\b" src
 ```
 
-Expected: install/build/dev/preview succeed, the app renders at `/gridwatch-signal-breach/`, the first `rg` command has no matches, `find` prints no `.env*` files, the `TODO` `rg` has no matches (the old `src/render/animator.ts` stub must stay gone), and the `any` `rg` has no matches.
+Expected: install/build/dev/preview succeed, the app renders at the host root (`/`), the first `rg` command has no matches, `find` prints no `.env*` files, the `TODO` `rg` has no matches (the old `src/render/animator.ts` stub must stay gone), and the `any` `rg` has no matches.
 
 ## Important Caveats
 
@@ -37,4 +37,4 @@ Expected: install/build/dev/preview succeed, the app renders at `/gridwatch-sign
 ## Good Next Checks
 
 - Playtest W1-W12 after any tuning change and confirm W1 is forgiving, sector 2 introduces scrubber pressure cleanly, and sector 3's overclock tool has visible value.
-- If deploying to GitHub Pages, confirm the published URL matches the Vite base path and does not show a blank canvas.
+- After a Cloudflare Pages deploy, confirm `https://GridWatch-SignalBreach.warsignallabs.net` loads and does not show a blank canvas (root-relative `/assets/...` paths must resolve).
