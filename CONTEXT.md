@@ -1,6 +1,6 @@
 # GridWatch Context
 
-GridWatch: Signal Breach is a fully static browser game built with Vite, vanilla TypeScript, and Canvas2D. There is no backend, API, fetch/XHR, secrets, or environment configuration. The GitHub Pages base path is `/gridwatch-signal-breach/`.
+GridWatch: Signal Breach is a fully static browser game built with Vite, vanilla TypeScript, and Canvas2D. There is no backend, API, fetch/XHR, secrets, or environment configuration. The Vite base path is `/` so the app is served from the root of its host (Cloudflare Pages).
 
 ## Architecture
 
@@ -24,4 +24,4 @@ GridWatch: Signal Breach is a fully static browser game built with Vite, vanilla
 
 - Run locally with `npm install`, `npm run dev`, `npm run build`, and `npm run preview`.
 - `vite.config.ts` disables Vite's modulepreload polyfill so the built bundle contains no generated `fetch()`.
-- `.github/workflows/pages.yml` builds `dist/` and deploys via GitHub Pages Actions when this project is the repository root.
+- Hosting is on Cloudflare Pages (`GridWatch-SignalBreach.warsignallabs.net`) via Cloudflare's Git integration: each push to `main` runs `npm run build` and publishes `dist/`. Node is pinned to `24` via `.nvmrc`.

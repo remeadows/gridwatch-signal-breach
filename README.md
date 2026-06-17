@@ -29,8 +29,16 @@ npm run build
 npm run preview
 ```
 
-The Vite base path is `/gridwatch-signal-breach/` for GitHub Pages.
+The Vite base path is `/` so the app is served from the root of its host.
 
 ## Deploy
 
-This repo includes a GitHub Actions workflow at `.github/workflows/pages.yml`. Push to `main`, enable GitHub Pages for Actions in the repository settings, and GitHub will publish the built `dist/` artifact.
+The game is hosted on **Cloudflare Pages** at `https://GridWatch-SignalBreach.warsignallabs.net`, connected to this repository via Cloudflare's Git integration. Every push to `main` triggers a Cloudflare build.
+
+Cloudflare Pages build settings:
+
+- **Build command:** `npm run build`
+- **Output directory:** `dist`
+- **Node version:** pinned to `24` via `.nvmrc`
+
+Pull requests get automatic Cloudflare preview deployments.
