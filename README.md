@@ -41,4 +41,4 @@ Cloudflare Pages build settings:
 - **Output directory:** `dist`
 - **Node version:** pinned to `24` via `.nvmrc`
 
-Pull requests get automatic Cloudflare preview deployments.
+Pull requests get automatic Cloudflare preview deployments. A lightweight GitHub Actions workflow (`.github/workflows/ci.yml`) still builds and audits on every PR and push to `main` (the `build` status check), without deploying.

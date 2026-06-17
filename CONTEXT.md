@@ -25,3 +25,4 @@ GridWatch: Signal Breach is a fully static browser game built with Vite, vanilla
 - Run locally with `npm install`, `npm run dev`, `npm run build`, and `npm run preview`.
 - `vite.config.ts` disables Vite's modulepreload polyfill so the built bundle contains no generated `fetch()`.
 - Hosting is on Cloudflare Pages (`GridWatch-SignalBreach.warsignallabs.net`) via Cloudflare's Git integration: each push to `main` runs `npm run build` and publishes `dist/`. Node is pinned to `24` via `.nvmrc`.
+- `.github/workflows/ci.yml` builds and audits on PRs and pushes to `main` (emits the `build` status check required by `.github/rulesets/main-protection.json`); it does not deploy.
