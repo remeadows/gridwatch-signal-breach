@@ -23,7 +23,7 @@ secrets. The most relevant security concerns are therefore:
 - Supply-chain issues in build/dev dependencies or GitHub Actions.
 - Client-side issues such as DOM-based XSS in rendering or input handling.
 
-Reports about the deployed GitHub Pages site or the build pipeline are in
+Reports about the deployed Cloudflare Pages site or the build pipeline are in
 scope. Findings that require a non-default browser configuration or that
 depend on a compromised local machine are generally out of scope.
 
