@@ -6,7 +6,9 @@ A static browser-playable cyberpunk signal-routing defense game built with Vite,
 
 GridWatch: Signal Breach is a three-sector signal-routing defense campaign. Place relays, firewalls, ICE turrets, scrubbers, and overclock nodes on 8x8 grids to keep the Source connected to the Core while probes, crawlers, spoofs, hunters, splitters, and a goliath corrupt the board over twelve deterministic waves.
 
-The game is fully static: no backend, no API, no network calls, no secrets, and no environment files.
+The game itself is a static client (no game logic on a server). The only network
+feature is an optional **high-score leaderboard** (see below); with no leaderboard
+env vars configured, the game runs fully offline with no network calls.
 
 ## How Codex Helped
 
@@ -42,3 +44,39 @@ Cloudflare Pages build settings:
 - **Node version:** pinned to `24` via `.nvmrc`
 
 Pull requests get automatic Cloudflare preview deployments. A lightweight GitHub Actions workflow (`.github/workflows/ci.yml`) still builds and audits on every PR and push to `main` (the `build` status check), without deploying.
+
+## Leaderboard (high scores)
+
+A global + per-sector **Top 20** leaderboard, backed by Supabase (`GridWatchGamesDB`,
+a shared multi-game database). Players view rankings from the title screen and submit
+their run with a handle on the game-over screen.
+
+**Anti-cheat by replay.** The simulation is pure and deterministic, so the client
+submits its run as `{ seed, sector, commands }` rather than a score. A Supabase
+Edge Function (`submit-gridwatch-score`) replays the run with the *exact* game code
+and stores the score **it** computes — the client's claimed number is never trusted,
+and a tampered or unfinished run is rejected. RLS blocks all direct writes/reads to
+the `scores` table; reads go through the `get_leaderboard` RPC, writes through the
+function's service role only.
+
+The validator runs a bundle generated from `src/sim`:
+
+```sh
+npm run build:validator   # regenerates supabase/functions/submit-gridwatch-score/sim.bundle.js
+```
+
+CI fails if that bundle drifts from `src/sim`, so the server-side logic always
+matches the game.
+
+### Configuration
+
+Set two build-time env vars in the **Cloudflare Pages** project (and `.env.local`
+for local dev — see `.env.example`). Both are publishable; protection comes from RLS
+plus replay validation, not secrecy:
+
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
+
+The Supabase **service-role** key is never in the repo or frontend — it lives only in
+the Edge Function's runtime environment. If the env vars are absent, the leaderboard
+UI degrades gracefully and the game stays fully offline.

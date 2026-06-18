@@ -37,3 +37,12 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Verify score validator bundle is in sync
+        # The Edge Function replays runs with a bundle generated from src/sim.
+        # Regenerate it and fail if it drifts from the committed copy, so the
+        # server-side anti-cheat can never silently diverge from the game.
+        run: |
+          npm run build:validator
+          git diff --exit-code -- supabase/functions/submit-gridwatch-score/sim.bundle.js \
+            || (echo "::error::sim.bundle.js is stale — run 'npm run build:validator' and commit the result." && exit 1)

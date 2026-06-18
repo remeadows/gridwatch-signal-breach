@@ -18,22 +18,24 @@
 ```sh
 npm install
 npm run build
+npm run build:validator   # must produce no git diff (CI enforces this)
 npm run dev -- --host 127.0.0.1 --port 5173 --strictPort
 npm run preview -- --host 127.0.0.1 --port 4173 --strictPort
-rg -n "fetch|XMLHttpRequest|process\\.env|import\\.meta\\.env" src index.html package.json vite.config.ts README.md .github dist
-find . -name '.env*' -print
 rg -n "TODO|FIXME|XXX|HACK" src
 rg -n ": any\b" src
 ```
 
-Expected: install/build/dev/preview succeed, the app renders at the host root (`/`), the first `rg` command has no matches, `find` prints no `.env*` files, the `TODO` `rg` has no matches (the old `src/render/animator.ts` stub must stay gone), and the `any` `rg` has no matches.
+Expected: install/build/build:validator/dev/preview succeed, the app renders at the host root (`/`), `build:validator` leaves `sim.bundle.js` unchanged, the `TODO` `rg` has no matches (the old `src/render/animator.ts` stub must stay gone), and the `any` `rg` has no matches.
+
+Note: the previous "zero network / no `import.meta.env`" invariant no longer holds — the optional leaderboard adds `fetch` calls in `src/leaderboard/` and reads `VITE_SUPABASE_*` env vars. The game still runs fully offline when those vars are unset.
 
 ## Important Caveats
 
 - This directory is now its own standalone git repository. Its intended upstream is `https://github.com/remeadows/gridwatch-signal-breach.git`.
-- Keep runtime dependencies empty. Only Vite and TypeScript are dev dependencies.
+- Keep runtime dependencies empty. Dev dependencies are Vite, TypeScript, and esbuild (esbuild only bundles the leaderboard validator via `npm run build:validator`).
 - Keep gameplay tuning in `src/data/` where practical. Score weights currently live in `src/sim/scoring.ts`.
-- Do not add manual path drawing, backend/API calls, env files, sectors beyond the existing three, or waves beyond the existing twelve unless the product scope changes again.
+- The leaderboard is the one sanctioned network feature. `src/sim` must stay pure and deterministic (no `Math.random`/`Date.now`) — the server-side anti-cheat replays it verbatim. After any `src/sim` change, run `npm run build:validator` and commit the regenerated `supabase/functions/submit-gridwatch-score/sim.bundle.js`, then redeploy the Edge Function.
+- Do not add manual path drawing, sectors beyond the existing three, or waves beyond the existing twelve unless the product scope changes again.
 
 ## Good Next Checks
 
