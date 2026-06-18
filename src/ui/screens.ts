@@ -3,10 +3,17 @@ import {
   type BriefingPage,
 } from "../data/briefing";
 import { SECTORS } from "../data/levels";
+import { fetchLeaderboard, type LeaderboardEntry } from "../leaderboard/api";
+import { leaderboardConfig } from "../leaderboard/config";
 import type { IconName } from "../render/iconPaths";
 import { svgIcon } from "./iconsSvg";
 
-export type AppScreen = "title" | "sectorSelect" | "briefing" | "playing";
+export type AppScreen =
+  | "title"
+  | "sectorSelect"
+  | "briefing"
+  | "playing"
+  | "leaderboard";
 
 export type CampaignProgress = Readonly<{
   highestUnlockedSector: number;
@@ -24,6 +31,8 @@ export type ScreenOptions = Readonly<{
   onShowBriefing: () => void;
   onSelectSector: (sectorId: number) => void;
   onBackToTitle: () => void;
+  onShowLeaderboard: () => void;
+  onCloseLeaderboard: () => void;
 }>;
 
 const BRIEFING_STORAGE_KEY = "gridwatch.briefingSeen";
@@ -119,11 +128,16 @@ export function renderScreens(options: ScreenOptions): void {
     return;
   }
 
+  if (screen === "leaderboard") {
+    renderLeaderboardScreen(options);
+    return;
+  }
+
   renderBriefingScreen(options);
 }
 
 function renderTitleScreen(options: ScreenOptions): void {
-  const { root, onStart, onShowBriefing } = options;
+  const { root, onStart, onShowBriefing, onShowLeaderboard } = options;
 
   if (root.dataset.screenKey === "title") {
     return;
@@ -138,6 +152,7 @@ function renderTitleScreen(options: ScreenOptions): void {
   const actions = document.createElement("div");
   const startButton = document.createElement("button");
   const briefingButton = document.createElement("button");
+  const leaderboardButton = document.createElement("button");
   const footer = document.createElement("p");
 
   root.innerHTML = "";
@@ -161,11 +176,15 @@ function renderTitleScreen(options: ScreenOptions): void {
   briefingButton.className = "neon-button neon-button-secondary";
   briefingButton.textContent = "MISSION BRIEFING";
   briefingButton.addEventListener("click", onShowBriefing);
+  leaderboardButton.type = "button";
+  leaderboardButton.className = "neon-button neon-button-secondary";
+  leaderboardButton.textContent = "LEADERBOARD";
+  leaderboardButton.addEventListener("click", onShowLeaderboard);
   footer.className = "screen-footer";
   footer.textContent = "v2.0 // OPERATOR TERMINAL // GRIDWATCH NETSEC";
 
   logo.append(title, subtitle, scanline);
-  actions.append(startButton, briefingButton);
+  actions.append(startButton, briefingButton, leaderboardButton);
   screen.append(logo, tagline, actions, footer);
   root.append(screen);
 }
@@ -251,6 +270,148 @@ function createSectorCard(
 
   button.append(index, title, name, tagline, meta, status);
   return button;
+}
+
+const LEADERBOARD_FILTERS: readonly { label: string; value: number | null }[] = [
+  { label: "ALL", value: null },
+  { label: "SECTOR 1", value: 1 },
+  { label: "SECTOR 2", value: 2 },
+  { label: "SECTOR 3", value: 3 },
+];
+
+let leaderboardFilter: number | null = null;
+// Guards against a slow earlier fetch overwriting a newer tab selection.
+let leaderboardRequestId = 0;
+
+function renderLeaderboardScreen(options: ScreenOptions): void {
+  const { root, onCloseLeaderboard } = options;
+
+  if (root.dataset.screenKey === "leaderboard") {
+    return;
+  }
+
+  const screen = document.createElement("section");
+  const panel = document.createElement("article");
+  const header = document.createElement("div");
+  const eyebrow = document.createElement("span");
+  const title = document.createElement("h2");
+  const tabs = document.createElement("div");
+  const list = document.createElement("div");
+  const back = document.createElement("button");
+
+  root.innerHTML = "";
+  root.dataset.screenKey = "leaderboard";
+  screen.className = "screen screen-leaderboard";
+  panel.className = "leaderboard-panel";
+  header.className = "leaderboard-header";
+  eyebrow.className = "screen-footer";
+  eyebrow.textContent = "GLOBAL UPLINK RANKINGS";
+  title.textContent = "Leaderboard // Top 20";
+  tabs.className = "leaderboard-tabs";
+  list.className = "leaderboard-list";
+
+  const tabButtons: HTMLButtonElement[] = [];
+
+  const load = (): void => {
+    const requestId = (leaderboardRequestId += 1);
+    tabButtons.forEach((button, index) => {
+      button.classList.toggle(
+        "active",
+        LEADERBOARD_FILTERS[index].value === leaderboardFilter,
+      );
+    });
+    renderLeaderboardMessage(
+      list,
+      leaderboardConfig.enabled ? "Loading rankings…" : "Leaderboard is offline.",
+    );
+
+    if (!leaderboardConfig.enabled) {
+      return;
+    }
+
+    void fetchLeaderboard(leaderboardFilter).then((entries) => {
+      // Ignore stale responses and responses that arrive after navigating away.
+      if (requestId !== leaderboardRequestId || root.dataset.screenKey !== "leaderboard") {
+        return;
+      }
+      renderLeaderboardRows(list, entries, leaderboardFilter === null);
+    });
+  };
+
+  for (const filter of LEADERBOARD_FILTERS) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "leaderboard-tab";
+    button.textContent = filter.label;
+    button.addEventListener("click", () => {
+      leaderboardFilter = filter.value;
+      load();
+    });
+    tabButtons.push(button);
+    tabs.append(button);
+  }
+
+  back.type = "button";
+  back.className = "neon-button neon-button-secondary";
+  back.textContent = "BACK";
+  back.addEventListener("click", onCloseLeaderboard);
+
+  header.append(eyebrow, title);
+  panel.append(header, tabs, list, back);
+  screen.append(panel);
+  root.append(screen);
+  load();
+}
+
+function renderLeaderboardMessage(list: HTMLElement, message: string): void {
+  list.innerHTML = "";
+  const note = document.createElement("p");
+  note.className = "leaderboard-empty";
+  note.textContent = message;
+  list.append(note);
+}
+
+function renderLeaderboardRows(
+  list: HTMLElement,
+  entries: readonly LeaderboardEntry[],
+  showSector: boolean,
+): void {
+  if (entries.length === 0) {
+    renderLeaderboardMessage(list, "No scores yet. Be the first to hold the grid.");
+    return;
+  }
+
+  list.innerHTML = "";
+  const table = document.createElement("table");
+  table.className = "leaderboard-table";
+
+  for (const entry of entries) {
+    const row = document.createElement("tr");
+    const rank = document.createElement("td");
+    const handle = document.createElement("td");
+    const detail = document.createElement("td");
+    const score = document.createElement("td");
+
+    rank.className = "leaderboard-rank";
+    rank.textContent = `#${entry.rank}`;
+    handle.className = "leaderboard-handle";
+    handle.textContent = entry.handle;
+    detail.className = "leaderboard-detail";
+    const sector = showSector ? sectorLabelFromMetadata(entry.metadata) : "";
+    detail.textContent = [sector, entry.rating ?? ""].filter(Boolean).join(" · ");
+    score.className = "leaderboard-score";
+    score.textContent = String(entry.score);
+
+    row.append(rank, handle, detail, score);
+    table.append(row);
+  }
+
+  list.append(table);
+}
+
+function sectorLabelFromMetadata(metadata: Record<string, unknown>): string {
+  const sector = metadata?.sector;
+  return typeof sector === "number" ? `Sector ${sector}` : "";
 }
 
 function renderBriefingScreen(options: ScreenOptions): void {

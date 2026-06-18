@@ -15,7 +15,9 @@ import {
   type CampaignProgress,
 } from "./ui/screens";
 import { renderUnitPicker } from "./ui/unitPicker";
-import type { GamePhase, GridPosition, PlayerTool } from "./sim";
+import { leaderboardConfig } from "./leaderboard/config";
+import { submitScore } from "./leaderboard/api";
+import type { GamePhase, GridPosition, PlayerTool, RecordedCommand, SimCommand } from "./sim";
 
 const canvas = document.querySelector<HTMLCanvasElement>("#game-canvas");
 const hudRoot = document.querySelector<HTMLElement>("#hud-root");
@@ -49,15 +51,30 @@ function makeRunSeed(): string {
 
 function createRunState(): ReturnType<typeof createGameState> {
   // ?seed= pins balance/debug runs; normal page loads, restarts, and sector starts reroll.
-  return createGameState({ seed: makeRunSeed(), sector: currentSector });
+  // Capture the exact seed and reset the command log so the run can be replayed
+  // (and its score re-validated) server-side on submission.
+  currentSeed = makeRunSeed();
+  recordedCommands = [];
+  return createGameState({ seed: currentSeed, sector: currentSector });
+}
+
+// Records every command with the tickCount at which it was applied, then applies
+// it. The (tick, command) log + seed fully reproduces the run for the server-side
+// anti-cheat replay. Routing all commands through here keeps the log authoritative.
+function dispatch(command: SimCommand): void {
+  recordedCommands.push({ t: state.tickCount, c: command });
+  state = applyCommand(state, command);
 }
 
 let progress: CampaignProgress = loadCampaignProgress();
 let currentSector = getInitialSector(progress);
+let currentSeed = "";
+let recordedCommands: RecordedCommand[] = [];
 let state = createRunState();
 let selectedTool: PlayerTool = getDefaultTool(state);
 let screen: AppScreen = "title";
 let briefingReturn: AppScreen = "sectorSelect";
+let leaderboardReturn: AppScreen = "title";
 let hoverTile: GridPosition | null = null;
 let lastTickTime = performance.now();
 let previousPhase: GamePhase = state.phase;
@@ -71,7 +88,7 @@ installPointerInput({
     hoverTile = position;
   },
   dispatch: (command) => {
-    state = applyCommand(state, command);
+    dispatch(command);
   },
 });
 
@@ -102,6 +119,19 @@ function retrySector(): void {
 
 function openSectorSelect(): void {
   screen = "sectorSelect";
+  hoverTile = null;
+  audio.playUi("select");
+}
+
+function openLeaderboard(): void {
+  leaderboardReturn = screen === "playing" ? "sectorSelect" : screen;
+  screen = "leaderboard";
+  hoverTile = null;
+  audio.playUi("select");
+}
+
+function closeLeaderboard(): void {
+  screen = leaderboardReturn;
   hoverTile = null;
   audio.playUi("select");
 }
@@ -190,9 +220,7 @@ function drawFrame(now: number): void {
       root: overlayContainer,
       state,
       onSkipPrep: () => {
-        state = applyCommand(state, {
-          type: "skipPrep",
-        });
+        dispatch({ type: "skipPrep" });
         lastTickTime = performance.now();
         audio.playUi("start");
       },
@@ -200,6 +228,16 @@ function drawFrame(now: number): void {
       onReturnToTitle: returnToTitle,
       onSectorSelect: openSectorSelect,
       onNextSector: getNextSectorHandler(),
+      onViewLeaderboard: openLeaderboard,
+      onSubmitScore: leaderboardConfig.enabled
+        ? (handle: string) =>
+            submitScore({
+              seed: currentSeed,
+              sector: currentSector,
+              commands: recordedCommands,
+              handle,
+            })
+        : null,
     });
   } else {
     if (screen === "briefing" && briefingReturn === "playing") {
@@ -239,6 +277,8 @@ function drawFrame(now: number): void {
     onShowBriefing: () => showBriefing("sectorSelect"),
     onSelectSector: startSector,
     onBackToTitle: returnToTitle,
+    onShowLeaderboard: openLeaderboard,
+    onCloseLeaderboard: closeLeaderboard,
   });
 
   requestAnimationFrame(drawFrame);
