@@ -15,6 +15,13 @@ export type OverlayOptions = Readonly<{
   onViewLeaderboard: () => void;
   // Null when the leaderboard is unconfigured; the submit UI is then hidden.
   onSubmitScore: ((handle: string) => Promise<SubmitResult>) | null;
+  // UI clock gates. Before the run is started, a START cover holds the prep
+  // timer; while paused, a PAUSE cover obscures the grid. Both take precedence
+  // over the phase-driven overlays.
+  runStarted: boolean;
+  paused: boolean;
+  onStartRun: () => void;
+  onResume: () => void;
 }>;
 
 const HANDLE_STORAGE_KEY = "gridwatch.handle";
@@ -39,6 +46,20 @@ export function renderOverlay(options: OverlayOptions): void {
   const { root, state, onSkipPrep } = options;
   root.className = "overlay-root";
 
+  // Clock-gate covers win over phase overlays: the player must START the run,
+  // and a PAUSE cover can interrupt an active wave.
+  if (!options.runStarted) {
+    root.hidden = false;
+    renderStartCover(root, state, options.onStartRun);
+    return;
+  }
+
+  if (options.paused) {
+    root.hidden = false;
+    renderPauseCover(root, options.onResume);
+    return;
+  }
+
   if (state.phase === "active") {
     root.hidden = true;
     root.dataset.overlayKey = "active";
@@ -53,6 +74,74 @@ export function renderOverlay(options: OverlayOptions): void {
   }
 
   renderTerminalOverlay(options);
+}
+
+// Full-grid cover shown before a run begins. The prep countdown stays frozen
+// until the player presses START.
+function renderStartCover(
+  root: HTMLElement,
+  state: GameState,
+  onStartRun: () => void,
+): void {
+  if (root.dataset.overlayKey === "start") {
+    return;
+  }
+
+  const wave = getCurrentWave(state);
+  const cover = document.createElement("div");
+  const panel = document.createElement("section");
+  const eyebrow = document.createElement("p");
+  const title = document.createElement("h2");
+  const detail = document.createElement("p");
+  const button = document.createElement("button");
+
+  root.innerHTML = "";
+  root.dataset.overlayKey = "start";
+  cover.className = "overlay-cover";
+  panel.className = "overlay-panel start-panel";
+  eyebrow.className = "overlay-eyebrow";
+  eyebrow.textContent = `${state.config.sectorName} // WAVE ${wave.id}`;
+  title.className = "overlay-title";
+  title.textContent = "Stand by to defend";
+  detail.textContent =
+    "The prep timer is frozen. Press START to begin — then place your defenses before the wave hits.";
+  button.type = "button";
+  button.className = "neon-button neon-button-primary";
+  button.textContent = "▸ START";
+  button.addEventListener("click", onStartRun);
+
+  panel.append(eyebrow, title, detail, button);
+  cover.append(panel);
+  root.append(cover);
+}
+
+// Full-grid cover shown while the match is paused.
+function renderPauseCover(root: HTMLElement, onResume: () => void): void {
+  if (root.dataset.overlayKey === "paused") {
+    return;
+  }
+
+  const cover = document.createElement("div");
+  const panel = document.createElement("section");
+  const title = document.createElement("h2");
+  const detail = document.createElement("p");
+  const button = document.createElement("button");
+
+  root.innerHTML = "";
+  root.dataset.overlayKey = "paused";
+  cover.className = "overlay-cover";
+  panel.className = "overlay-panel pause-panel";
+  title.className = "overlay-title";
+  title.textContent = "Paused";
+  detail.textContent = "Signal frozen. The grid is holding.";
+  button.type = "button";
+  button.className = "neon-button neon-button-primary";
+  button.textContent = "▸ RESUME";
+  button.addEventListener("click", onResume);
+
+  panel.append(title, detail, button);
+  cover.append(panel);
+  root.append(cover);
 }
 
 function renderPrepOverlay(root: HTMLElement, state: GameState, onSkipPrep: () => void): void {
