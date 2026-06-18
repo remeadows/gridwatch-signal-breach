@@ -81,6 +81,60 @@ function isValidCommandEnvelope(entry: unknown): boolean {
   return typeof type === "string" && ALLOWED_COMMAND_TYPES.has(type);
 }
 
+function canonicalizePosition(raw: unknown): { x: number; y: number } | null {
+  if (typeof raw !== "object" || raw === null) {
+    return null;
+  }
+  const { x, y } = raw as { x: unknown; y: unknown };
+  if (
+    typeof x !== "number" ||
+    !Number.isInteger(x) ||
+    typeof y !== "number" ||
+    !Number.isInteger(y)
+  ) {
+    return null;
+  }
+  return { x, y };
+}
+
+// Rebuilds the command log from only the fields the simulation actually reads,
+// in a fixed key order. Inert extra fields a client might pad in can't then
+// alter the proof hash, so the same logical run always hashes identically and
+// duplicate detection can't be bypassed by spamming variants. Throws on a
+// malformed command (mirrors the replay engine's own rejection).
+function canonicalizeCommands(
+  commands: readonly unknown[],
+): Array<{ t: number; c: Record<string, unknown> }> {
+  const out: Array<{ t: number; c: Record<string, unknown> }> = [];
+  for (const entry of commands) {
+    const { t, c } = entry as { t: number; c: { type: string } & Record<string, unknown> };
+    switch (c.type) {
+      case "skipPrep":
+        out.push({ t, c: { type: "skipPrep" } });
+        break;
+      case "sellUnit": {
+        const position = canonicalizePosition(c.position);
+        if (!position) {
+          throw new ReplayError("Malformed command log.");
+        }
+        out.push({ t, c: { type: "sellUnit", position } });
+        break;
+      }
+      case "placeUnit": {
+        const position = canonicalizePosition(c.position);
+        if (!position || typeof c.unit !== "string") {
+          throw new ReplayError("Malformed command log.");
+        }
+        out.push({ t, c: { type: "placeUnit", position, unit: c.unit } });
+        break;
+      }
+      default:
+        throw new ReplayError("Malformed command log.");
+    }
+  }
+  return out;
+}
+
 async function sha256Hex(input: string): Promise<string> {
   const data = new TextEncoder().encode(input);
   const digest = await crypto.subtle.digest("SHA-256", data);
@@ -153,8 +207,10 @@ Deno.serve(async (req: Request) => {
   let rating: string;
   let phase: string;
   let metadata: Record<string, unknown>;
+  let canonicalCommands: Array<{ t: number; c: Record<string, unknown> }>;
   try {
-    const result = replayRun({ seed, sector, commands });
+    canonicalCommands = canonicalizeCommands(commands);
+    const result = replayRun({ seed, sector, commands: canonicalCommands });
     const breakdown = result.score;
     const state = result.state;
     score = breakdown.total;
@@ -187,7 +243,8 @@ Deno.serve(async (req: Request) => {
   }
 
   const category = `sector:${sector}`;
-  const proofHash = await sha256Hex(JSON.stringify({ seed, sector, commands }));
+  const proof = { seed, sector, commands: canonicalCommands };
+  const proofHash = await sha256Hex(JSON.stringify(proof));
 
   // Service-role client bypasses RLS. These env vars are injected into every
   // Supabase Edge Function automatically.
@@ -215,7 +272,7 @@ Deno.serve(async (req: Request) => {
     score,
     rating,
     metadata,
-    proof: { seed, sector, commands },
+    proof,
     proof_hash: proofHash,
   });
 
@@ -230,17 +287,22 @@ Deno.serve(async (req: Request) => {
   }
 
   // Ranks = (number of strictly-higher scores) + 1.
-  const { count: higherGlobal } = await admin
+  const { count: higherGlobal, error: higherGlobalError } = await admin
     .from("scores")
     .select("id", { count: "exact", head: true })
     .eq("game_id", gameId)
     .gt("score", score);
-  const { count: higherSector } = await admin
+  const { count: higherSector, error: higherSectorError } = await admin
     .from("scores")
     .select("id", { count: "exact", head: true })
     .eq("game_id", gameId)
     .eq("category", category)
     .gt("score", score);
+
+  // Without this, a failed count silently coalesces to 0 and reports rank #1.
+  if (higherGlobalError || higherSectorError) {
+    return json({ ok: false, error: "Could not compute rank." }, 500, origin);
+  }
 
   return json(
     {
@@ -250,6 +312,7 @@ Deno.serve(async (req: Request) => {
       sectorRank: (higherSector ?? 0) + 1,
       score,
       rating,
+      handle,
     },
     200,
     origin,

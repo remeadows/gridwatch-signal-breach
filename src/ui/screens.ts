@@ -329,12 +329,16 @@ function renderLeaderboardScreen(options: ScreenOptions): void {
       return;
     }
 
-    void fetchLeaderboard(leaderboardFilter).then((entries) => {
+    void fetchLeaderboard(leaderboardFilter).then((result) => {
       // Ignore stale responses and responses that arrive after navigating away.
       if (requestId !== leaderboardRequestId || root.dataset.screenKey !== "leaderboard") {
         return;
       }
-      renderLeaderboardRows(list, entries, leaderboardFilter === null);
+      if (!result.ok) {
+        renderLeaderboardMessage(list, "Rankings unavailable — try again later.");
+        return;
+      }
+      renderLeaderboardRows(list, result.entries, leaderboardFilter === null);
     });
   };
 

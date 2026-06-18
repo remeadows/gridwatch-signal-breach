@@ -52,7 +52,7 @@ a shared multi-game database). Players view rankings from the title screen and s
 their run with a handle on the game-over screen.
 
 **Anti-cheat by replay.** The simulation is pure and deterministic, so the client
-submits its run as `{ seed, sector, commandLog }` rather than a score. A Supabase
+submits its run as `{ seed, sector, commands }` rather than a score. A Supabase
 Edge Function (`submit-gridwatch-score`) replays the run with the *exact* game code
 and stores the score **it** computes — the client's claimed number is never trusted,
 and a tampered or unfinished run is rejected. RLS blocks all direct writes/reads to

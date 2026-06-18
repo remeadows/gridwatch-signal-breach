@@ -214,7 +214,11 @@ function createSubmitSection(
     if (result.ok) {
       submitted = true;
       input.disabled = true;
-      saveStoredHandle(handle);
+      // Persist the handle the server actually accepted (after its stricter
+      // sanitization), and reflect it back into the field, so the stored value
+      // never drifts from what's on the board.
+      saveStoredHandle(result.handle);
+      input.value = result.handle;
       const placement = `Global #${result.globalRank} · Sector #${result.sectorRank}`;
       status.textContent = result.duplicate
         ? `Already submitted — ${placement}.`

@@ -25,8 +25,34 @@ export type SubmitResult =
       sectorRank: number;
       score: number;
       rating: string;
+      // The handle the server actually accepted after its own sanitization.
+      handle: string;
     }>
   | Readonly<{ ok: false; error: string }>;
+
+// A read either succeeds with entries (possibly empty — a genuinely empty board)
+// or fails. Callers must distinguish the two so an outage isn't shown as
+// "no scores yet".
+export type FetchLeaderboardResult =
+  | Readonly<{ ok: true; entries: LeaderboardEntry[] }>
+  | Readonly<{ ok: false; error: string }>;
+
+const REQUEST_TIMEOUT_MS = 10_000;
+
+// Wraps fetch with an abort-based timeout so a stalled connection can't leave
+// the submit button or the rankings list spinning forever.
+async function fetchWithTimeout(
+  input: string,
+  init: RequestInit,
+): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  try {
+    return await fetch(input, { ...init, signal: controller.signal });
+  } finally {
+    window.clearTimeout(timeoutId);
+  }
+}
 
 function authHeaders(): Record<string, string> {
   return {
@@ -46,7 +72,7 @@ export async function submitScore(input: SubmitScoreInput): Promise<SubmitResult
   }
 
   try {
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `${leaderboardConfig.url}/functions/v1/submit-gridwatch-score`,
       {
         method: "POST",
@@ -72,22 +98,29 @@ export async function submitScore(input: SubmitScoreInput): Promise<SubmitResult
     }
 
     return data;
-  } catch {
-    return { ok: false, error: "Network error — score not submitted." };
+  } catch (err) {
+    return {
+      ok: false,
+      error:
+        err instanceof DOMException && err.name === "AbortError"
+          ? "Submission timed out — score not submitted."
+          : "Network error — score not submitted.",
+    };
   }
 }
 
 // Reads the Top 20. `sector` null → global board (all sectors); otherwise the
-// per-sector board. Returns [] on any failure so the UI can show "unavailable".
+// per-sector board. Returns { ok: false } on any transport/parse failure so the
+// UI can show "unavailable" rather than a misleading "no scores yet".
 export async function fetchLeaderboard(
   sector: number | null,
-): Promise<LeaderboardEntry[]> {
+): Promise<FetchLeaderboardResult> {
   if (!leaderboardConfig.enabled) {
-    return [];
+    return { ok: false, error: "Leaderboard is offline." };
   }
 
   try {
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `${leaderboardConfig.url}/rest/v1/rpc/get_leaderboard`,
       {
         method: "POST",
@@ -100,15 +133,23 @@ export async function fetchLeaderboard(
     );
 
     if (!response.ok) {
-      return [];
+      return { ok: false, error: `Leaderboard request failed (${response.status}).` };
     }
 
     const data = (await response.json().catch(() => null)) as
       | LeaderboardEntry[]
       | null;
 
-    return Array.isArray(data) ? data : [];
-  } catch {
-    return [];
+    return Array.isArray(data)
+      ? { ok: true, entries: data }
+      : { ok: false, error: "Invalid leaderboard response." };
+  } catch (err) {
+    return {
+      ok: false,
+      error:
+        err instanceof DOMException && err.name === "AbortError"
+          ? "Leaderboard request timed out."
+          : "Network error.",
+    };
   }
 }
