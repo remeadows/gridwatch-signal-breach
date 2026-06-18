@@ -127,7 +127,7 @@ export async function fetchLeaderboard(
         headers: authHeaders(),
         body: JSON.stringify({
           p_game: leaderboardConfig.gameSlug,
-          p_category: sector ? `sector:${sector}` : null,
+          p_category: sector !== null ? `sector:${sector}` : null,
         }),
       },
     );
