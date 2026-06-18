@@ -167,10 +167,18 @@ body {
   gap: 6px;
 }
 
+.hud-actions {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.hud-pause-button,
 .hud-briefing-button {
   width: 100%;
   min-height: 36px;
-  margin-top: 4px;
   font-size: 11px;
 }
 
@@ -356,6 +364,42 @@ body {
 
 .overlay-root[hidden] {
   display: none;
+}
+
+/* Full-grid covers for the START and PAUSE gates (UI clock control). */
+.overlay-cover {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  pointer-events: auto;
+  background: radial-gradient(
+    circle at 50% 38%,
+    rgba(8, 20, 28, 0.82),
+    rgba(3, 7, 11, 0.95)
+  );
+  -webkit-backdrop-filter: blur(3px); /* Safari <= 15 / WebKit mobile */
+  backdrop-filter: blur(3px);
+}
+
+.overlay-eyebrow {
+  margin: 0 0 6px;
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(120, 255, 238, 0.72);
+}
+
+.start-panel {
+  text-align: center;
+  border-color: rgba(34, 224, 196, 0.5);
+}
+
+.pause-panel {
+  text-align: center;
+  border-color: rgba(120, 200, 255, 0.45);
 }
 
 .overlay-panel {

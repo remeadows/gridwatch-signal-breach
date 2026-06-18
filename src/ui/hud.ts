@@ -4,6 +4,10 @@ import type { GameState } from "../sim/types";
 export type HudOptions = Readonly<{
   sectorName: string;
   onShowBriefing: () => void;
+  onPause: () => void;
+  // Pause is only offered while a wave is in progress (not started, not paused,
+  // not on the terminal screen).
+  canPause: boolean;
 }>;
 
 export function renderHud(root: HTMLElement, state: GameState, options: HudOptions): void {
@@ -13,9 +17,14 @@ export function renderHud(root: HTMLElement, state: GameState, options: HudOptio
     root.innerHTML = "";
     root.append(
       createHudHero(),
-      createHudStatusRail(options.onShowBriefing),
+      createHudStatusRail(options.onShowBriefing, options.onPause),
     );
     root.dataset.ready = "true";
+  }
+
+  const pauseButton = root.querySelector<HTMLButtonElement>("[data-hud-pause]");
+  if (pauseButton) {
+    pauseButton.hidden = !options.canPause;
   }
 
   const wave = getCurrentWave(state);
@@ -47,9 +56,14 @@ function createHudHero(): HTMLElement {
   return hero;
 }
 
-function createHudStatusRail(onShowBriefing: () => void): HTMLElement {
+function createHudStatusRail(
+  onShowBriefing: () => void,
+  onPause: () => void,
+): HTMLElement {
   const rail = document.createElement("section");
-  const action = document.createElement("button");
+  const actions = document.createElement("div");
+  const pauseButton = document.createElement("button");
+  const briefingButton = document.createElement("button");
 
   rail.className = "hud-rail";
   rail.append(
@@ -61,11 +75,19 @@ function createHudStatusRail(onShowBriefing: () => void): HTMLElement {
     createHudMetric("neutralized", "Neutralized", "secondary"),
   );
 
-  action.type = "button";
-  action.className = "neon-button neon-button-secondary hud-briefing-button";
-  action.textContent = "BRIEFING";
-  action.addEventListener("click", onShowBriefing);
-  rail.append(action);
+  actions.className = "hud-actions";
+  pauseButton.type = "button";
+  pauseButton.className = "neon-button neon-button-secondary hud-pause-button";
+  pauseButton.dataset.hudPause = "true";
+  pauseButton.textContent = "PAUSE";
+  pauseButton.addEventListener("click", onPause);
+  briefingButton.type = "button";
+  briefingButton.className = "neon-button neon-button-secondary hud-briefing-button";
+  briefingButton.textContent = "BRIEFING";
+  briefingButton.addEventListener("click", onShowBriefing);
+
+  actions.append(pauseButton, briefingButton);
+  rail.append(actions);
 
   return rail;
 }

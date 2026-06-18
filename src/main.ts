@@ -78,18 +78,40 @@ let leaderboardReturn: AppScreen = "title";
 let hoverTile: GridPosition | null = null;
 let lastTickTime = performance.now();
 let previousPhase: GamePhase = state.phase;
+// UI-only clock gates (no effect on the deterministic sim or the recorded
+// command log): the sim ticks on wall-clock only while a run has been started
+// and isn't paused.
+let runStarted = false;
+let paused = false;
 
 installPointerInput({
   canvas: gameCanvas,
   getState: () => state,
   getSelectedTool: () => selectedTool,
-  isEnabled: () => screen === "playing",
+  isEnabled: () => screen === "playing" && runStarted && !paused,
   onHover: (position) => {
     hoverTile = position;
   },
   dispatch: (command) => {
     dispatch(command);
   },
+});
+
+// Keyboard pause toggle. Escape / P mirror the HUD pause button during a live
+// match. (Space is intentionally excluded — it activates focused buttons and
+// scrolls the page.)
+window.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape" && event.key !== "p" && event.key !== "P") {
+    return;
+  }
+  if (screen !== "playing" || !runStarted) {
+    return;
+  }
+  if (paused) {
+    resumeMatch();
+  } else {
+    pauseMatch();
+  }
 });
 
 function enterPlaying(playStartAudio = true): void {
@@ -107,6 +129,7 @@ function startSector(sectorId: number): void {
   state = createRunState();
   selectedTool = getDefaultTool(state);
   hoverTile = null;
+  armRun();
   enterPlaying();
 }
 
@@ -114,7 +137,47 @@ function retrySector(): void {
   state = createRunState();
   selectedTool = getDefaultTool(state);
   hoverTile = null;
+  armRun();
   enterPlaying();
+}
+
+// Resets the clock gates for a fresh run: the prep timer stays frozen behind
+// the START cover until the player explicitly begins.
+function armRun(): void {
+  runStarted = false;
+  paused = false;
+}
+
+// The match clock may only be controlled (started/paused) while a wave is in
+// prep or active — not on the win/loss terminal screen.
+function isMatchInProgress(): boolean {
+  return state.phase === "prep" || state.phase === "active";
+}
+
+function startRun(): void {
+  if (runStarted) {
+    return;
+  }
+  runStarted = true;
+  lastTickTime = performance.now();
+  audio.playUi("start");
+}
+
+function pauseMatch(): void {
+  if (!runStarted || paused || !isMatchInProgress()) {
+    return;
+  }
+  paused = true;
+  audio.playUi("select");
+}
+
+function resumeMatch(): void {
+  if (!runStarted || !paused) {
+    return;
+  }
+  paused = false;
+  lastTickTime = performance.now();
+  audio.playUi("start");
 }
 
 function openSectorSelect(): void {
@@ -167,8 +230,12 @@ function drawFrame(now: number): void {
 
   if (screen === "playing") {
     const tickMs = state.config.simulationTickMs;
+    // Hold the sim clock until the player presses START, and freeze it while
+    // paused. Advancing lastTickTime on resume/start avoids a catch-up burst.
+    const clockRunning = runStarted && !paused;
 
     while (
+      clockRunning &&
       state.phase !== "won" &&
       state.phase !== "lost" &&
       now - lastTickTime >= tickMs
@@ -206,6 +273,8 @@ function drawFrame(now: number): void {
     renderHud(hudContainer, state, {
       sectorName: state.config.sectorName,
       onShowBriefing: () => showBriefing("playing"),
+      onPause: pauseMatch,
+      canPause: runStarted && !paused && isMatchInProgress(),
     });
     renderUnitPicker({
       root: unitPickerContainer,
@@ -219,6 +288,10 @@ function drawFrame(now: number): void {
     renderOverlay({
       root: overlayContainer,
       state,
+      runStarted,
+      paused,
+      onStartRun: startRun,
+      onResume: resumeMatch,
       onSkipPrep: () => {
         dispatch({ type: "skipPrep" });
         lastTickTime = performance.now();
