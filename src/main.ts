@@ -97,6 +97,23 @@ installPointerInput({
   },
 });
 
+// Keyboard pause toggle. Escape / P mirror the HUD pause button during a live
+// match. (Space is intentionally excluded — it activates focused buttons and
+// scrolls the page.)
+window.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape" && event.key !== "p" && event.key !== "P") {
+    return;
+  }
+  if (screen !== "playing" || !runStarted) {
+    return;
+  }
+  if (paused) {
+    resumeMatch();
+  } else {
+    pauseMatch();
+  }
+});
+
 function enterPlaying(playStartAudio = true): void {
   screen = "playing";
   lastTickTime = performance.now();
@@ -155,7 +172,7 @@ function pauseMatch(): void {
 }
 
 function resumeMatch(): void {
-  if (!paused) {
+  if (!runStarted || !paused) {
     return;
   }
   paused = false;

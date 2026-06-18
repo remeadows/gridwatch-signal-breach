@@ -43,20 +43,20 @@ function saveStoredHandle(handle: string): void {
 }
 
 export function renderOverlay(options: OverlayOptions): void {
-  const { root, state, onSkipPrep } = options;
+  const { root, state, onSkipPrep, runStarted, paused, onStartRun, onResume } = options;
   root.className = "overlay-root";
 
   // Clock-gate covers win over phase overlays: the player must START the run,
   // and a PAUSE cover can interrupt an active wave.
-  if (!options.runStarted) {
+  if (!runStarted) {
     root.hidden = false;
-    renderStartCover(root, state, options.onStartRun);
+    renderStartCover(root, state, onStartRun);
     return;
   }
 
-  if (options.paused) {
+  if (paused) {
     root.hidden = false;
-    renderPauseCover(root, options.onResume);
+    renderPauseCover(root, onResume);
     return;
   }
 

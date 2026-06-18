@@ -182,10 +182,6 @@ body {
   font-size: 11px;
 }
 
-.hud-pause-button[hidden] {
-  display: none;
-}
-
 .hud-metric {
   display: flex;
   align-items: center;
@@ -383,6 +379,7 @@ body {
     rgba(8, 20, 28, 0.82),
     rgba(3, 7, 11, 0.95)
   );
+  -webkit-backdrop-filter: blur(3px); /* Safari <= 15 / WebKit mobile */
   backdrop-filter: blur(3px);
 }
 
