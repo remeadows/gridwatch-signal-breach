@@ -77,6 +77,11 @@ plus replay validation, not secrecy:
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_ANON_KEY`
 
+These are **build-time** variables: Vite inlines them when the site is built, so
+after adding or changing them in the Cloudflare Pages project you must trigger a
+fresh production build (push to `main` or retry the latest deployment) for the
+values to take effect.
+
 The Supabase **service-role** key is never in the repo or frontend — it lives only in
 the Edge Function's runtime environment. If the env vars are absent, the leaderboard
 UI degrades gracefully and the game stays fully offline.
