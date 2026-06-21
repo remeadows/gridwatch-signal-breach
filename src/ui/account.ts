@@ -10,12 +10,10 @@ import {
 import type { SubmitResult } from "../leaderboard/api";
 import { MAX_HANDLE_LENGTH } from "../leaderboard/config";
 
-export type AccountPanelOptions = Readonly<{
-  // "submit" adds the score-submission action; "manage" is account-only.
-  mode: "submit" | "manage";
-  // Required for mode "submit": performs the actual score submission.
-  onSubmit?: () => Promise<SubmitResult>;
-}>;
+// "submit" mode requires the submission callback; "manage" mode forbids it.
+export type AccountPanelOptions =
+  | Readonly<{ mode: "submit"; onSubmit: () => Promise<SubmitResult> }>
+  | Readonly<{ mode: "manage"; onSubmit?: never }>;
 
 // Builds an auth-aware control that renders the right state — signed out (OAuth
 // buttons), needs a handle (picker), or ready — and refreshes itself when the
@@ -114,11 +112,12 @@ export function createAccountPanel(options: AccountPanelOptions): HTMLElement {
     root.append(line(`Signed in as ${handle}` + (currentEmail() ? ` · ${currentEmail()}` : "")));
 
     if (options.mode === "submit") {
+      const onSubmit = options.onSubmit;
       const submit = button(submitted ? "SUBMITTED" : "SUBMIT SCORE", "primary", async () => {
-        if (submitted || !options.onSubmit) return;
+        if (submitted) return;
         submit.disabled = true;
         setStatus("Submitting run for validation…", "info");
-        const result = await options.onSubmit();
+        const result = await onSubmit();
         if (result.ok) {
           submitted = true;
           const placement = `Global #${result.globalRank} · Sector #${result.sectorRank}`;
@@ -170,6 +169,17 @@ export function createAccountPanel(options: AccountPanelOptions): HTMLElement {
 
   const unsubscribe = onAccountChange(render);
   render();
+
+  // Stop listening once the panel is detached, even if no further account event
+  // fires (the in-render guard only triggers on the next render).
+  const detachObserver = new MutationObserver(() => {
+    if (root.dataset.mounted === "true" && !root.isConnected) {
+      detachObserver.disconnect();
+      unsubscribe();
+    }
+  });
+  detachObserver.observe(document.body, { childList: true, subtree: true });
+
   return root;
 }
 
