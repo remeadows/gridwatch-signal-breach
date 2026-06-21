@@ -16,6 +16,8 @@ export type OverlayOptions = Readonly<{
   // Null when the leaderboard is unconfigured; the submit UI is then hidden.
   // Submits the current run for the signed-in player (identity comes from auth).
   onSubmitScore: (() => Promise<SubmitResult>) | null;
+  // Persists the finished run before an OAuth sign-in redirect.
+  onBeforeSignIn: () => void;
   // UI clock gates. Before the run is started, a START cover holds the prep
   // timer; while paused, a PAUSE cover obscures the grid. Both take precedence
   // over the phase-driven overlays.
@@ -182,6 +184,7 @@ function renderTerminalOverlay(options: OverlayOptions): void {
     onNextSector,
     onViewLeaderboard,
     onSubmitScore,
+    onBeforeSignIn,
   } = options;
   const key = `${state.phase}-${onNextSector ? "next" : "final"}`;
   if (root.dataset.overlayKey === key) {
@@ -237,7 +240,7 @@ function renderTerminalOverlay(options: OverlayOptions): void {
 
   panel.append(title, rating, detail, scoreList);
   if (onSubmitScore) {
-    panel.append(createSubmitSection(onSubmitScore));
+    panel.append(createSubmitSection(onSubmitScore, onBeforeSignIn));
   }
   panel.append(actions);
   root.append(panel);
@@ -246,7 +249,10 @@ function renderTerminalOverlay(options: OverlayOptions): void {
 // Builds the "submit to leaderboard" block — an auth-aware account panel that
 // handles sign-in, handle choice, and the SUBMIT action. The terminal panel is
 // rebuilt only when its overlay key changes, so submission state persists.
-function createSubmitSection(onSubmitScore: () => Promise<SubmitResult>): HTMLElement {
+function createSubmitSection(
+  onSubmitScore: () => Promise<SubmitResult>,
+  onBeforeSignIn: () => void,
+): HTMLElement {
   const section = document.createElement("div");
   const label = document.createElement("p");
 
@@ -254,7 +260,10 @@ function createSubmitSection(onSubmitScore: () => Promise<SubmitResult>): HTMLEl
   label.className = "submit-label";
   label.textContent = "Log your score to the leaderboard";
 
-  section.append(label, createAccountPanel({ mode: "submit", onSubmit: onSubmitScore }));
+  section.append(
+    label,
+    createAccountPanel({ mode: "submit", onSubmit: onSubmitScore, onBeforeSignIn }),
+  );
   return section;
 }
 

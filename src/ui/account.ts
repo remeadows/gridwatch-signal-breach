@@ -11,9 +11,10 @@ import type { SubmitResult } from "../leaderboard/api";
 import { MAX_HANDLE_LENGTH } from "../leaderboard/config";
 
 // "submit" mode requires the submission callback; "manage" mode forbids it.
+// onBeforeSignIn runs just before an OAuth redirect (used to persist the run).
 export type AccountPanelOptions =
-  | Readonly<{ mode: "submit"; onSubmit: () => Promise<SubmitResult> }>
-  | Readonly<{ mode: "manage"; onSubmit?: never }>;
+  | Readonly<{ mode: "submit"; onSubmit: () => Promise<SubmitResult>; onBeforeSignIn?: () => void }>
+  | Readonly<{ mode: "manage"; onSubmit?: never; onBeforeSignIn?: never }>;
 
 // Builds an auth-aware control that renders the right state — signed out (OAuth
 // buttons), needs a handle (picker), or ready — and refreshes itself when the
@@ -58,11 +59,16 @@ export function createAccountPanel(options: AccountPanelOptions): HTMLElement {
           : "Sign in to claim your operator handle.",
       ),
     );
+    const start = (provider: "google" | "github") => {
+      // Persist the finished run before the full-page OAuth redirect.
+      options.onBeforeSignIn?.();
+      void signIn(provider);
+    };
     const actions = document.createElement("div");
     actions.className = "account-actions";
     actions.append(
-      button("Sign in with Google", "primary", () => void signIn("google")),
-      button("Sign in with GitHub", "secondary", () => void signIn("github")),
+      button("Sign in with Google", "primary", () => start("google")),
+      button("Sign in with GitHub", "secondary", () => start("github")),
     );
     root.append(actions);
   }

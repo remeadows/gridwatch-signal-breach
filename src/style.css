@@ -1388,6 +1388,16 @@ body {
   box-shadow: 0 0 40px rgba(34, 224, 196, 0.12);
 }
 
+.leaderboard-notice {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(34, 224, 196, 0.4);
+  border-radius: 8px;
+  background: rgba(34, 224, 196, 0.08);
+  color: var(--neon-cyan);
+  font-size: 0.85rem;
+}
+
 .leaderboard-header h2 {
   margin: 4px 0 0;
   font-family: var(--font-display);

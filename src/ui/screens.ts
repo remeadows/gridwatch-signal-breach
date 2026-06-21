@@ -34,6 +34,9 @@ export type ScreenOptions = Readonly<{
   onBackToTitle: () => void;
   onShowLeaderboard: () => void;
   onCloseLeaderboard: () => void;
+  // Optional banner shown on the leaderboard (e.g. result of an auto-submitted
+  // run after sign-in).
+  leaderboardNotice?: string | null;
 }>;
 
 const BRIEFING_STORAGE_KEY = "gridwatch.briefingSeen";
@@ -362,7 +365,14 @@ function renderLeaderboardScreen(options: ScreenOptions): void {
   back.addEventListener("click", onCloseLeaderboard);
 
   header.append(eyebrow, title);
-  panel.append(header, tabs, list);
+  panel.append(header);
+  if (options.leaderboardNotice) {
+    const notice = document.createElement("p");
+    notice.className = "leaderboard-notice";
+    notice.textContent = options.leaderboardNotice;
+    panel.append(notice);
+  }
+  panel.append(tabs, list);
   if (leaderboardConfig.enabled) {
     const account = createAccountPanel({ mode: "manage" });
     account.classList.add("leaderboard-account");
