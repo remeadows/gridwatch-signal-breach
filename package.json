@@ -13,5 +13,8 @@
     "esbuild": "^0.28.0",
     "typescript": "^6.0.3",
     "vite": "^8.0.16"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.108.2"
   }
 }

@@ -17,6 +17,7 @@ import {
 import { renderUnitPicker } from "./ui/unitPicker";
 import { leaderboardConfig } from "./leaderboard/config";
 import { submitScore } from "./leaderboard/api";
+import { accessToken, initAccount } from "./leaderboard/account";
 import type { GamePhase, GridPosition, PlayerTool, RecordedCommand, SimCommand } from "./sim";
 
 const canvas = document.querySelector<HTMLCanvasElement>("#game-canvas");
@@ -303,12 +304,12 @@ function drawFrame(now: number): void {
       onNextSector: getNextSectorHandler(),
       onViewLeaderboard: openLeaderboard,
       onSubmitScore: leaderboardConfig.enabled
-        ? (handle: string) =>
+        ? () =>
             submitScore({
               seed: currentSeed,
               sector: currentSector,
               commands: recordedCommands,
-              handle,
+              accessToken: accessToken() ?? "",
             })
         : null,
     });
@@ -356,6 +357,10 @@ function drawFrame(now: number): void {
 
   requestAnimationFrame(drawFrame);
 }
+
+// Restore any existing session and complete a pending OAuth redirect so the
+// leaderboard knows who the player is. No-op when the leaderboard is offline.
+void initAccount();
 
 requestAnimationFrame(drawFrame);
 
