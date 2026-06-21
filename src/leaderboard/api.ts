@@ -14,18 +14,23 @@ export type SubmitScoreInput = Readonly<{
   seed: string;
   sector: number;
   commands: readonly RecordedCommand[];
-  handle: string;
+  // The signed-in player's Supabase access token; the Edge Function derives the
+  // user identity (and their handle) from it.
+  accessToken: string;
 }>;
 
 export type SubmitResult =
   | Readonly<{
       ok: true;
-      duplicate: boolean;
+      // True when this run beat the player's previous best for the sector.
+      improved: boolean;
+      // The score this run earned vs. the player's stored best (kept score).
+      runScore: number;
+      bestScore: number;
+      rating: string;
       globalRank: number;
       sectorRank: number;
-      score: number;
-      rating: string;
-      // The handle the server actually accepted after its own sanitization.
+      // The handle the score is stored under (from the player's profile).
       handle: string;
     }>
   | Readonly<{ ok: false; error: string }>;
@@ -62,10 +67,11 @@ function authHeaders(): Record<string, string> {
   };
 }
 
-// Submits a finished run for server-side validation. The server replays the run
-// from {seed, sector, commands} and stores the score it computes itself — the
-// client never reports a trusted number. Returns a typed result; network/parse
-// failures degrade to { ok: false } rather than throwing.
+// Submits a finished run for server-side validation. The server authenticates
+// the player from their access token, replays the run from {seed, sector,
+// commands}, stores the score it computes itself (never a client-claimed
+// number), and keeps only their personal best. Network/parse failures degrade
+// to { ok: false } rather than throwing.
 export async function submitScore(input: SubmitScoreInput): Promise<SubmitResult> {
   if (!leaderboardConfig.enabled) {
     return { ok: false, error: "Leaderboard is offline." };
@@ -76,12 +82,15 @@ export async function submitScore(input: SubmitScoreInput): Promise<SubmitResult
       `${leaderboardConfig.url}/functions/v1/submit-gridwatch-score`,
       {
         method: "POST",
-        headers: authHeaders(),
+        headers: {
+          "Content-Type": "application/json",
+          apikey: leaderboardConfig.anonKey,
+          Authorization: `Bearer ${input.accessToken}`,
+        },
         body: JSON.stringify({
           seed: input.seed,
           sector: input.sector,
           commands: input.commands,
-          handle: input.handle,
         }),
       },
     );

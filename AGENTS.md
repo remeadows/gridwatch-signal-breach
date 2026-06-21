@@ -2,7 +2,15 @@
 
 ## Project Scope
 
-GridWatch: Signal Breach is a fully static browser game. Keep it static: no backend, no API calls, no fetch/XHR, no secrets, no environment files, no runtime dependencies, no multiplayer, and no accounts.
+GridWatch: Signal Breach is a static-first browser game and must remain fully
+playable offline. The **one sanctioned exception** is the optional online
+leaderboard (Supabase): OAuth sign-in (Google/GitHub) and authenticated score
+submission with server-side replay validation. This adds a build-time
+dependency (`@supabase/supabase-js`), `VITE_SUPABASE_*` env vars, and network
+calls — but only when those vars are configured. With them absent the game runs
+with no backend, no accounts, and no network traffic. Outside the leaderboard,
+keep it static: no other backends, API calls, secrets, runtime dependencies, or
+multiplayer. The core simulation stays pure and deterministic.
 
 The current V2 product scope is a three-sector campaign with twelve total waves. Do not add sectors beyond the existing three, and do not add waves beyond the existing twelve-wave campaign.
 

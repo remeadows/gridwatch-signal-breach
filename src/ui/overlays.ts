@@ -1,8 +1,8 @@
 import type { SubmitResult } from "../leaderboard/api";
-import { MAX_HANDLE_LENGTH } from "../leaderboard/config";
 import { calculateScore } from "../sim/scoring";
 import { getCurrentWave } from "../sim/waves";
 import type { GameState } from "../sim/types";
+import { createAccountPanel } from "./account";
 
 export type OverlayOptions = Readonly<{
   root: HTMLElement;
@@ -14,7 +14,10 @@ export type OverlayOptions = Readonly<{
   onNextSector: (() => void) | null;
   onViewLeaderboard: () => void;
   // Null when the leaderboard is unconfigured; the submit UI is then hidden.
-  onSubmitScore: ((handle: string) => Promise<SubmitResult>) | null;
+  // Submits the current run for the signed-in player (identity comes from auth).
+  onSubmitScore: (() => Promise<SubmitResult>) | null;
+  // Persists the finished run before an OAuth sign-in redirect.
+  onBeforeSignIn: () => void;
   // UI clock gates. Before the run is started, a START cover holds the prep
   // timer; while paused, a PAUSE cover obscures the grid. Both take precedence
   // over the phase-driven overlays.
@@ -23,24 +26,6 @@ export type OverlayOptions = Readonly<{
   onStartRun: () => void;
   onResume: () => void;
 }>;
-
-const HANDLE_STORAGE_KEY = "gridwatch.handle";
-
-function loadStoredHandle(): string {
-  try {
-    return window.localStorage.getItem(HANDLE_STORAGE_KEY) ?? "";
-  } catch {
-    return "";
-  }
-}
-
-function saveStoredHandle(handle: string): void {
-  try {
-    window.localStorage.setItem(HANDLE_STORAGE_KEY, handle);
-  } catch {
-    // Storage is optional (e.g. Safari private mode); submission still works.
-  }
-}
 
 export function renderOverlay(options: OverlayOptions): void {
   const { root, state, onSkipPrep, runStarted, paused, onStartRun, onResume } = options;
@@ -199,6 +184,7 @@ function renderTerminalOverlay(options: OverlayOptions): void {
     onNextSector,
     onViewLeaderboard,
     onSubmitScore,
+    onBeforeSignIn,
   } = options;
   const key = `${state.phase}-${onNextSector ? "next" : "final"}`;
   if (root.dataset.overlayKey === key) {
@@ -254,77 +240,30 @@ function renderTerminalOverlay(options: OverlayOptions): void {
 
   panel.append(title, rating, detail, scoreList);
   if (onSubmitScore) {
-    panel.append(createSubmitSection(onSubmitScore));
+    panel.append(createSubmitSection(onSubmitScore, onBeforeSignIn));
   }
   panel.append(actions);
   root.append(panel);
 }
 
-// Builds the "submit to leaderboard" block. Submission state lives in this
-// closure; the terminal panel is rebuilt only when its overlay key changes, so
-// the in-flight/submitted state persists across animation frames.
+// Builds the "submit to leaderboard" block — an auth-aware account panel that
+// handles sign-in, handle choice, and the SUBMIT action. The terminal panel is
+// rebuilt only when its overlay key changes, so submission state persists.
 function createSubmitSection(
-  onSubmitScore: (handle: string) => Promise<SubmitResult>,
+  onSubmitScore: () => Promise<SubmitResult>,
+  onBeforeSignIn: () => void,
 ): HTMLElement {
-  const section = document.createElement("form");
-  const label = document.createElement("label");
-  const inputRow = document.createElement("div");
-  const input = document.createElement("input");
-  const button = document.createElement("button");
-  const status = document.createElement("p");
+  const section = document.createElement("div");
+  const label = document.createElement("p");
 
   section.className = "submit-section";
   label.className = "submit-label";
   label.textContent = "Log your score to the leaderboard";
-  inputRow.className = "submit-row";
-  input.type = "text";
-  input.className = "submit-input";
-  input.maxLength = MAX_HANDLE_LENGTH;
-  input.placeholder = "OPERATOR HANDLE";
-  input.value = loadStoredHandle();
-  input.setAttribute("aria-label", "Operator handle");
-  button.type = "submit";
-  button.className = "neon-button neon-button-primary submit-button";
-  button.textContent = "SUBMIT";
-  status.className = "submit-status";
 
-  let submitted = false;
-
-  const submit = async (): Promise<void> => {
-    if (submitted) {
-      return;
-    }
-    const handle = input.value.trim() || "ANON";
-    button.disabled = true;
-    status.textContent = "Submitting run for validation…";
-
-    const result = await onSubmitScore(handle);
-
-    if (result.ok) {
-      submitted = true;
-      input.disabled = true;
-      // Persist the handle the server actually accepted (after its stricter
-      // sanitization), and reflect it back into the field, so the stored value
-      // never drifts from what's on the board.
-      saveStoredHandle(result.handle);
-      input.value = result.handle;
-      const placement = `Global #${result.globalRank} · Sector #${result.sectorRank}`;
-      status.textContent = result.duplicate
-        ? `Already submitted — ${placement}.`
-        : `Logged! ${placement}.`;
-    } else {
-      button.disabled = false;
-      status.textContent = result.error;
-    }
-  };
-
-  section.addEventListener("submit", (event) => {
-    event.preventDefault();
-    void submit();
-  });
-
-  inputRow.append(input, button);
-  section.append(label, inputRow, status);
+  section.append(
+    label,
+    createAccountPanel({ mode: "submit", onSubmit: onSubmitScore, onBeforeSignIn }),
+  );
   return section;
 }
 

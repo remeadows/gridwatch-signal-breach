@@ -48,16 +48,24 @@ Pull requests get automatic Cloudflare preview deployments. A lightweight GitHub
 ## Leaderboard (high scores)
 
 A global + per-sector **Top 20** leaderboard, backed by Supabase (`GridWatchGamesDB`,
-a shared multi-game database). Players view rankings from the title screen and submit
-their run with a handle on the game-over screen.
+a shared multi-game database). Players view rankings from the title or game-over
+screen. Submitting a score requires signing in with **Google or GitHub**; each
+player picks a unique handle and the board keeps only their **personal best** per
+sector (and a single best-across-sectors row on the global board).
+
+**Identity & best-per-player.** Auth is handled by Supabase Auth (Google/GitHub
+OAuth). A `profiles` row maps each user to their handle, `scores` are owned by
+`user_id` with a unique `(game, category, user_id)`, and the Edge Function does a
+keep-best upsert (`record_score`) so replaying a sector only ever updates your own
+top score.
 
 **Anti-cheat by replay.** The simulation is pure and deterministic, so the client
 submits its run as `{ seed, sector, commands }` rather than a score. A Supabase
-Edge Function (`submit-gridwatch-score`) replays the run with the *exact* game code
-and stores the score **it** computes — the client's claimed number is never trusted,
-and a tampered or unfinished run is rejected. RLS blocks all direct writes/reads to
-the `scores` table; reads go through the `get_leaderboard` RPC, writes through the
-function's service role only.
+Edge Function (`submit-gridwatch-score`) authenticates the player, replays the run
+with the *exact* game code, and stores the score **it** computes — the client's
+claimed number is never trusted, and a tampered or unfinished run is rejected. RLS
+blocks all direct writes/reads to the `scores` table; reads go through the
+`get_leaderboard` RPC, writes through the function's service role only.
 
 The validator runs a bundle generated from `src/sim`:
 
@@ -85,3 +93,8 @@ values to take effect.
 The Supabase **service-role** key is never in the repo or frontend — it lives only in
 the Edge Function's runtime environment. If the env vars are absent, the leaderboard
 UI degrades gracefully and the game stays fully offline.
+
+**Auth providers.** Sign-in needs Google and GitHub enabled in **Supabase →
+Authentication → Sign In / Providers** (each provider's OAuth app uses the callback
+`https://<project-ref>.supabase.co/auth/v1/callback`), and the site origin plus
+`http://localhost:5173` listed under **Authentication → URL Configuration**.

@@ -17,6 +17,8 @@ import {
 import { renderUnitPicker } from "./ui/unitPicker";
 import { leaderboardConfig } from "./leaderboard/config";
 import { submitScore } from "./leaderboard/api";
+import { accessToken, accountState, initAccount, onAccountChange } from "./leaderboard/account";
+import { savePendingRun, takePendingRun } from "./leaderboard/pendingRun";
 import type { GamePhase, GridPosition, PlayerTool, RecordedCommand, SimCommand } from "./sim";
 
 const canvas = document.querySelector<HTMLCanvasElement>("#game-canvas");
@@ -83,6 +85,9 @@ let previousPhase: GamePhase = state.phase;
 // and isn't paused.
 let runStarted = false;
 let paused = false;
+// Banner shown on the leaderboard after a run is auto-submitted post-sign-in.
+let leaderboardNotice: string | null = null;
+let pendingRunHandled = false;
 
 installPointerInput({
   canvas: gameCanvas,
@@ -188,15 +193,50 @@ function openSectorSelect(): void {
 
 function openLeaderboard(): void {
   leaderboardReturn = screen === "playing" ? "sectorSelect" : screen;
+  leaderboardNotice = null;
   screen = "leaderboard";
   hoverTile = null;
   audio.playUi("select");
 }
 
 function closeLeaderboard(): void {
+  leaderboardNotice = null;
   screen = leaderboardReturn;
   hoverTile = null;
   audio.playUi("select");
+}
+
+// Persists the just-finished run before an OAuth sign-in redirect so it can be
+// auto-submitted when the player returns signed in.
+function stashPendingRunForSignIn(): void {
+  pendingRunHandled = false;
+  savePendingRun({ seed: currentSeed, sector: currentSector, commands: recordedCommands });
+}
+
+// After sign-in completes (player has a session + handle), submit any run that
+// was stashed before the redirect, then surface the result on the leaderboard.
+async function maybeAutoSubmitPendingRun(): Promise<void> {
+  if (pendingRunHandled || accountState() !== "ready") {
+    return;
+  }
+  const pending = takePendingRun();
+  if (!pending) {
+    return;
+  }
+  pendingRunHandled = true;
+  const result = await submitScore({
+    seed: pending.seed,
+    sector: pending.sector,
+    commands: pending.commands,
+    accessToken: accessToken() ?? "",
+  });
+  leaderboardNotice = result.ok
+    ? result.improved
+      ? `Run logged — new best ${result.bestScore}! Global #${result.globalRank} · Sector #${result.sectorRank}.`
+      : `Run logged. Your best ${result.bestScore} stands — Global #${result.globalRank} · Sector #${result.sectorRank}.`
+    : `Couldn't log your last run: ${result.error}`;
+  screen = "leaderboard";
+  hoverTile = null;
 }
 
 function returnToTitle(): void {
@@ -303,14 +343,15 @@ function drawFrame(now: number): void {
       onNextSector: getNextSectorHandler(),
       onViewLeaderboard: openLeaderboard,
       onSubmitScore: leaderboardConfig.enabled
-        ? (handle: string) =>
+        ? () =>
             submitScore({
               seed: currentSeed,
               sector: currentSector,
               commands: recordedCommands,
-              handle,
+              accessToken: accessToken() ?? "",
             })
         : null,
+      onBeforeSignIn: stashPendingRunForSignIn,
     });
   } else {
     if (screen === "briefing" && briefingReturn === "playing") {
@@ -352,10 +393,20 @@ function drawFrame(now: number): void {
     onBackToTitle: returnToTitle,
     onShowLeaderboard: openLeaderboard,
     onCloseLeaderboard: closeLeaderboard,
+    leaderboardNotice,
   });
 
   requestAnimationFrame(drawFrame);
 }
+
+// Restore any existing session and complete a pending OAuth redirect so the
+// leaderboard knows who the player is. No-op when the leaderboard is offline.
+// When the player becomes signed-in with a handle, auto-submit a run that was
+// stashed before the redirect.
+onAccountChange(() => {
+  void maybeAutoSubmitPendingRun();
+});
+void initAccount();
 
 requestAnimationFrame(drawFrame);
 
