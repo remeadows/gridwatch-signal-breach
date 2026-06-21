@@ -6,6 +6,7 @@ import { SECTORS } from "../data/levels";
 import { fetchLeaderboard, type LeaderboardEntry } from "../leaderboard/api";
 import { leaderboardConfig } from "../leaderboard/config";
 import type { IconName } from "../render/iconPaths";
+import { createAccountPanel } from "./account";
 import { svgIcon } from "./iconsSvg";
 
 export type AppScreen =
@@ -361,7 +362,13 @@ function renderLeaderboardScreen(options: ScreenOptions): void {
   back.addEventListener("click", onCloseLeaderboard);
 
   header.append(eyebrow, title);
-  panel.append(header, tabs, list, back);
+  panel.append(header, tabs, list);
+  if (leaderboardConfig.enabled) {
+    const account = createAccountPanel({ mode: "manage" });
+    account.classList.add("leaderboard-account");
+    panel.append(account);
+  }
+  panel.append(back);
   screen.append(panel);
   root.append(screen);
   load();
