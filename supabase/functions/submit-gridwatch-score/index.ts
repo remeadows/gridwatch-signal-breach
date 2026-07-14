@@ -104,6 +104,20 @@ async function sha256Hex(input: string): Promise<string> {
     .join("");
 }
 
+// UTC ISO-8601 period stamps for the hub's Today / This Week boards. Byte-identical
+// in logic to the other GridWatch games' score workers and the Command Nexus hub's
+// src/lib/periods.ts — change together.
+function dailyCategory(now: Date): string {
+  return "daily-" + now.toISOString().slice(0, 10);
+}
+function weeklyCategory(now: Date): string {
+  const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const week = Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+  return `weekly-${d.getUTCFullYear()}-W${String(week).padStart(2, "0")}`;
+}
+
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -242,12 +256,56 @@ Deno.serve(async (req: Request) => {
     sector_rank: number;
   };
 
+  // Command Nexus hub alignment: the hub reads the shared board via
+  // get_leaderboard(game, 'standard' | 'daily-*' | 'weekly-*'). #25 originally wrote
+  // only sector:N rows, so the hub's Signal Breach board stayed empty. Feed it here:
+  //   standard    = campaign total (sum of the player's best per-sector scores)
+  //   daily/weekly = this run's score (best single-sector run of the period)
+  // BEST-EFFORT: wrapped so a failure never fails the primary sector submission above.
+  let campaignScore: number | null = null;
+  try {
+    const { data: gameRow } = await admin
+      .from("games").select("id").eq("slug", GAME_SLUG).maybeSingle();
+    const gameId = gameRow?.id as string | undefined;
+    if (gameId) {
+      const { data: sectorRows } = await admin
+        .from("scores").select("score")
+        .eq("game_id", gameId).eq("user_id", user.id)
+        .in("category", ["sector:1", "sector:2", "sector:3"]);
+      const rows = (sectorRows ?? []) as Array<{ score: number }>;
+      campaignScore = rows.reduce((sum, r) => sum + (r.score ?? 0), 0);
+      const now = new Date();
+      const aggProof = { kind: "aggregate", from: category };
+      const aggHash = await sha256Hex(JSON.stringify({ user: user.id, ...aggProof }));
+      const alignedWrites: Array<{ cat: string; sc: number; meta: Record<string, unknown>; agg: boolean }> = [
+        { cat: "standard", sc: campaignScore, meta: { kind: "campaign", sectors: rows.length }, agg: true },
+        { cat: dailyCategory(now), sc: score, meta: metadata, agg: false },
+        { cat: weeklyCategory(now), sc: score, meta: metadata, agg: false },
+      ];
+      for (const w of alignedWrites) {
+        await admin.rpc("record_score", {
+          p_user_id: user.id,
+          p_slug: GAME_SLUG,
+          p_category: w.cat,
+          p_score: w.sc,
+          p_rating: rating,
+          p_metadata: w.meta,
+          p_proof: w.agg ? aggProof : proof,
+          p_proof_hash: w.agg ? aggHash : proofHash,
+        });
+      }
+    }
+  } catch (err) {
+    console.error("hub-alignment writes failed (non-fatal):", err);
+  }
+
   return json(
     {
       ok: true,
       improved: row.improved,
       runScore: score,
       bestScore: row.stored_score,
+      campaignScore,
       rating,
       globalRank: row.global_rank,
       sectorRank: row.sector_rank,
