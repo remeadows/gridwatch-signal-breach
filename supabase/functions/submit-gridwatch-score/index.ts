@@ -259,8 +259,13 @@ Deno.serve(async (req: Request) => {
   // Command Nexus hub alignment: the hub reads the shared board via
   // get_leaderboard(game, 'standard' | 'daily-*' | 'weekly-*'). #25 originally wrote
   // only sector:N rows, so the hub's Signal Breach board stayed empty. Feed it here:
-  //   standard    = campaign total (sum of the player's best per-sector scores)
-  //   daily/weekly = this run's score (best single-sector run of the period)
+  //   standard    = campaign total = sum of best scores for CLEARED sectors only
+  //                 (metadata.phase === "won" per sector:N row — a lost attempt's
+  //                 score never counts toward the campaign total, even if it's the
+  //                 player's only recorded attempt at that sector; Russ-decided
+  //                 2026-07-14)
+  //   daily/weekly = this run's score (best single-sector run of the period,
+  //                 win or lose — unchanged from the original alignment)
   // BEST-EFFORT: wrapped so a failure never fails the primary sector submission above.
   let campaignScore: number | null = null;
   try {
@@ -269,16 +274,17 @@ Deno.serve(async (req: Request) => {
     const gameId = gameRow?.id as string | undefined;
     if (gameId) {
       const { data: sectorRows } = await admin
-        .from("scores").select("score")
+        .from("scores").select("score, metadata")
         .eq("game_id", gameId).eq("user_id", user.id)
         .in("category", ["sector:1", "sector:2", "sector:3"]);
-      const rows = (sectorRows ?? []) as Array<{ score: number }>;
-      campaignScore = rows.reduce((sum, r) => sum + (r.score ?? 0), 0);
+      const rows = (sectorRows ?? []) as Array<{ score: number; metadata: Record<string, unknown> | null }>;
+      const clearedRows = rows.filter((r) => r.metadata?.phase === "won");
+      campaignScore = clearedRows.reduce((sum, r) => sum + (r.score ?? 0), 0);
       const now = new Date();
       const aggProof = { kind: "aggregate", from: category };
       const aggHash = await sha256Hex(JSON.stringify({ user: user.id, ...aggProof }));
       const alignedWrites: Array<{ cat: string; sc: number; meta: Record<string, unknown>; agg: boolean }> = [
-        { cat: "standard", sc: campaignScore, meta: { kind: "campaign", sectors: rows.length }, agg: true },
+        { cat: "standard", sc: campaignScore, meta: { kind: "campaign", sectors: clearedRows.length }, agg: true },
         { cat: dailyCategory(now), sc: score, meta: metadata, agg: false },
         { cat: weeklyCategory(now), sc: score, meta: metadata, agg: false },
       ];
