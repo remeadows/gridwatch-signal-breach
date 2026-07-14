@@ -260,26 +260,78 @@ Deno.serve(async (req: Request) => {
   // get_leaderboard(game, 'standard' | 'daily-*' | 'weekly-*'). #25 originally wrote
   // only sector:N rows, so the hub's Signal Breach board stayed empty. Feed it here:
   //   standard    = campaign total = sum of best scores for CLEARED sectors only
-  //                 (metadata.phase === "won" per sector:N row — a lost attempt's
-  //                 score never counts toward the campaign total, even if it's the
-  //                 player's only recorded attempt at that sector; Russ-decided
-  //                 2026-07-14)
   //   daily/weekly = this run's score (best single-sector run of the period,
   //                 win or lose — unchanged from the original alignment)
-  // BEST-EFFORT: wrapped so a failure never fails the primary sector submission above.
+  //
+  // "Cleared" is tracked via a separate, append-only sector-cleared:N marker
+  // (fixed score of 1, written only when phase === "won") rather than derived
+  // from sector:N's stored metadata.phase. sector:N is a pure keep-best-by-raw-
+  // score row shared by wins and losses: a later, higher-scoring LOSS can
+  // overwrite a previously WON row (flipping metadata.phase back to "lost"), and
+  // a later, lower-scoring WIN never overwrites an existing higher-scoring LOSS
+  // (so the win would never be recorded at all). Neither direction may ever
+  // un-clear or silently drop a real clear, so "cleared" must be a monotonic
+  // fact independent of whichever attempt currently holds the best-score slot.
+  //
+  // Known follow-up (not fixed here, flagged for a product decision): the
+  // in-game "global" leaderboard screen (src/leaderboard/api.ts) queries
+  // get_leaderboard with p_category: null, which pools ALL categories for this
+  // game — including standard/daily/weekly/sector-cleared:N. Once a player
+  // clears 2+ sectors, the campaign total (`standard`) will exceed any single
+  // sector score and start winning that null-pooled "best score" query,
+  // silently changing what the existing global board displays. Fixing this
+  // requires either an RPC change (get_leaderboard excluding aggregate
+  // categories when p_category is null) or a frontend change (the global path
+  // querying sectors explicitly) — out of scope for this alignment PR.
+  //
+  // BEST-EFFORT: every write here is wrapped so a failure never fails the
+  // primary sector submission above; every Supabase {error} is logged
+  // explicitly (v2's .rpc()/query builder return {data,error} and do not
+  // throw by default, so a silent failure here would otherwise be invisible).
   let campaignScore: number | null = null;
   try {
-    const { data: gameRow } = await admin
+    const { data: gameRow, error: gameError } = await admin
       .from("games").select("id").eq("slug", GAME_SLUG).maybeSingle();
+    if (gameError) console.error("hub-alignment: games lookup error:", gameError);
     const gameId = gameRow?.id as string | undefined;
+
     if (gameId) {
-      const { data: sectorRows } = await admin
-        .from("scores").select("score, metadata")
-        .eq("game_id", gameId).eq("user_id", user.id)
-        .in("category", ["sector:1", "sector:2", "sector:3"]);
-      const rows = (sectorRows ?? []) as Array<{ score: number; metadata: Record<string, unknown> | null }>;
-      const clearedRows = rows.filter((r) => r.metadata?.phase === "won");
+      if (phase === "won") {
+        const markerCategory = `sector-cleared:${sector}`;
+        const { error: markerError } = await admin.rpc("record_score", {
+          p_user_id: user.id,
+          p_slug: GAME_SLUG,
+          p_category: markerCategory,
+          p_score: 1,
+          p_rating: rating,
+          p_metadata: { kind: "cleared-marker", sector },
+          p_proof: proof,
+          p_proof_hash: proofHash,
+        });
+        if (markerError) console.error(`hub-alignment: ${markerCategory} marker write error:`, markerError);
+      }
+
+      const [{ data: sectorRows, error: sectorError }, { data: clearedMarkerRows, error: clearedError }] =
+        await Promise.all([
+          admin.from("scores").select("category, score")
+            .eq("game_id", gameId).eq("user_id", user.id)
+            .in("category", ["sector:1", "sector:2", "sector:3"]),
+          admin.from("scores").select("category")
+            .eq("game_id", gameId).eq("user_id", user.id)
+            .in("category", ["sector-cleared:1", "sector-cleared:2", "sector-cleared:3"]),
+        ]);
+      if (sectorError) console.error("hub-alignment: sector scores fetch error:", sectorError);
+      if (clearedError) console.error("hub-alignment: cleared-marker fetch error:", clearedError);
+
+      const clearedSectors = new Set(
+        (clearedMarkerRows ?? []).map((r) => Number((r.category as string).split(":")[1])),
+      );
+      const sectorScoreRows = (sectorRows ?? []) as Array<{ category: string; score: number }>;
+      const clearedRows = sectorScoreRows.filter((r) =>
+        clearedSectors.has(Number(r.category.split(":")[1])),
+      );
       campaignScore = clearedRows.reduce((sum, r) => sum + (r.score ?? 0), 0);
+
       const now = new Date();
       const aggProof = { kind: "aggregate", from: category };
       const aggHash = await sha256Hex(JSON.stringify({ user: user.id, ...aggProof }));
@@ -289,7 +341,7 @@ Deno.serve(async (req: Request) => {
         { cat: weeklyCategory(now), sc: score, meta: metadata, agg: false },
       ];
       for (const w of alignedWrites) {
-        await admin.rpc("record_score", {
+        const { error: writeError } = await admin.rpc("record_score", {
           p_user_id: user.id,
           p_slug: GAME_SLUG,
           p_category: w.cat,
@@ -299,6 +351,7 @@ Deno.serve(async (req: Request) => {
           p_proof: w.agg ? aggProof : proof,
           p_proof_hash: w.agg ? aggHash : proofHash,
         });
+        if (writeError) console.error(`hub-alignment: ${w.cat} write error:`, writeError);
       }
     }
   } catch (err) {
