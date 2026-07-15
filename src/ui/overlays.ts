@@ -100,6 +100,8 @@ function renderTerminalOverlay(options: OverlayOptions): void {
   root.innerHTML = "";
   root.dataset.overlayKey = key;
   panel.className = "overlay-panel terminal-panel";
+  panel.dataset.result = state.phase;
+  panel.dataset.sector = String(state.config.sectorId);
   title.className = "overlay-title";
   title.textContent =
     state.phase === "won"

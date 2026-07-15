@@ -1,5 +1,40 @@
 # GridWatch Handoff
 
+## Active Phase 3 Work — 2026-07-15
+
+- Codex is implementing the approved visual-foundation slice on
+  `codex/visual-combat-feedback-phase-3`, stacked on the clean Phase 2 promotion
+  branch. PR #40 (`codex/promote-build-phase-clarity` → `main`) is required
+  because PR #39 was merged into the Phase 1 branch after Phase 1 had already
+  been squash-merged to `main`.
+- The title now uses a cinematic local CSS operator/rain treatment derived from
+  the approved attachment direction. Sector cards, briefing panels, results,
+  board chrome, and ambient page lighting share sector-aware visual tokens.
+- The top-down board has three cached floor moods: Perimeter lanes, Canyon
+  fractures, and Vault rings. Live feedback now includes hostile spawn portals,
+  ICE impact rings/sparks/damage values, neutralization bursts, intrusion
+  shadows, stronger corruption/damage treatment, Hunter hardware target locks,
+  and a labeled Goliath health plate.
+- Wave 12 receives an explicit `BOSS BUILD`, `GOLIATH INBOUND`, and `ENGAGE W12`
+  warning. The pure presentation helper was verified against the scripted
+  Goliath wave definition.
+- `prefers-reduced-motion` disables shake, bobbing, traveling route packets,
+  scan motion, and decorative animation while preserving state indicators.
+  `?quality=low` (also selected automatically on devices reporting four or fewer
+  logical processors) reduces cached texture marks and particle counts.
+- `docs/VISUAL_ASSET_MANIFEST.md` records provenance, palette semantics, scale,
+  timing, bundle policy, performance fallback, and the intake gate for future
+  approved GridWatchZero raster assets. No runtime asset or font request was
+  added.
+- This slice does not modify `src/sim`, waves, units, scoring, leaderboard code,
+  Supabase, or the validator bundle. GridWatchGamesDB remains untouched.
+- Browser verification passed at 320×568, 390×844, 568×320, and 1440×900 with
+  no mobile document overflow. Forced low-quality and reduced-motion modes were
+  exercised, offline mode made no non-static requests, and the browser console
+  had no errors. A 120-frame active Core Vault sample sustained the test
+  machine's 120 Hz refresh with a 9.7 ms p95 frame time; real mid-range phone
+  profiling remains the promotion gate.
+
 ## Active Phase 2 Work — 2026-07-15
 
 - Codex is implementing the approved economy/Build-phase clarity slice on
@@ -113,9 +148,12 @@ Note: the previous "zero network / no `import.meta.env`" invariant no longer hol
 
 ## Good Next Checks
 
-- On the Phase 2 Cloudflare Pages preview, run ten consecutive intended placements
+- Merge Phase 2 promotion PR #40 before merging the stacked Phase 3 visual PR;
+  then retarget Phase 3 to `main` if GitHub does not do so automatically.
+- On the Phase 3 Cloudflare Pages preview, run ten consecutive intended placements
   on real iOS and Android hardware in portrait and landscape. Confirm backgrounding
-  and rotation pause without advancing an unseen wave.
+  and rotation pause without advancing an unseen wave, reduced-motion behavior,
+  and sustained frame pacing during the busiest visible wave.
 - Playtest the Build-to-launch cadence across W1-W12 and record completion rate,
   first-failure wave, unused bandwidth, and most-used tools before changing
   economy values. Any later rules/tuning change must use the validator/Edge

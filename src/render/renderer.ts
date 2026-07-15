@@ -29,6 +29,7 @@ import { getBoardBackgroundLayer } from "./background";
 import { type CanvasSize, getBoardMetrics } from "./canvas";
 import { ICONS, type IconName } from "./iconPaths";
 import { drawIcon, getGlowSprite } from "./icons";
+import type { EffectsQuality } from "./visualTheme";
 
 export type RenderFrame = {
   interpolationAlpha: number;
@@ -39,6 +40,8 @@ export type RenderFrame = {
   focus: GridPosition | null;
   selectedTool: PlayerTool;
   buildMode: boolean;
+  reducedMotion: boolean;
+  effectsQuality: EffectsQuality;
 };
 
 const DEFAULT_RENDER_FRAME: RenderFrame = {
@@ -50,6 +53,8 @@ const DEFAULT_RENDER_FRAME: RenderFrame = {
   focus: null,
   selectedTool: "relay",
   buildMode: false,
+  reducedMotion: false,
+  effectsQuality: "high",
 };
 
 export function drawGrid(
@@ -62,7 +67,11 @@ export function drawGrid(
   const shake = getShakeOffset(state, frame);
 
   context.clearRect(0, 0, size.width, size.height);
-  context.drawImage(getBoardBackgroundLayer(size), 0, 0);
+  context.drawImage(
+    getBoardBackgroundLayer(size, state.config.sectorId, frame.effectsQuality),
+    0,
+    0,
+  );
   context.save();
   context.translate(shake.x, shake.y);
   drawTiles(context, originX, originY, tileSize, state, frame);
@@ -71,12 +80,16 @@ export function drawGrid(
   drawCorruptionFlashes(context, originX, originY, tileSize, state.events, frame);
   drawSignalRoute(context, originX, originY, tileSize, state.signal, frame);
   drawRouteCuts(context, originX, originY, tileSize, state.events, frame);
+  drawSpawnFlashes(context, originX, originY, tileSize, state.events, frame);
   drawFocusedToolRange(context, originX, originY, tileSize, state, frame);
   drawMarkers(context, originX, originY, tileSize, state, frame);
   drawHoverGhost(context, originX, originY, tileSize, state, frame);
+  drawHunterTargeting(context, originX, originY, tileSize, state, frame);
   drawHitFlashes(context, originX, originY, tileSize, state, frame);
   drawIntrusions(context, originX, originY, tileSize, state, frame);
+  drawBossStatus(context, originX, originY, tileSize, state);
   context.restore();
+  drawDamageVignette(context, size, state.events, frame);
 }
 
 function drawBuildThreatPreview(
@@ -99,7 +112,9 @@ function drawBuildThreatPreview(
   );
   const targets = routeTargets.length > 0 ? routeTargets : [state.config.core];
   const targetKeys = new Set(targets.map(positionKey));
-  const pulse = 0.58 + pulse01(frame.timeMs, 1050) * 0.28;
+  const pulse = frame.reducedMotion
+    ? 0.72
+    : 0.58 + pulse01(frame.timeMs, 1050) * 0.28;
 
   context.save();
   context.lineCap = "round";
@@ -138,7 +153,9 @@ function drawBuildThreatPreview(
     context.strokeStyle = `rgba(255, 95, 110, ${0.16 + pulse * 0.12})`;
     context.lineWidth = Math.max(2, tileSize * 0.05);
     context.setLineDash([tileSize * 0.18, tileSize * 0.16]);
-    context.lineDashOffset = -((frame.timeMs * 0.025) % tileSize);
+    context.lineDashOffset = frame.reducedMotion
+      ? 0
+      : -((frame.timeMs * 0.025) % tileSize);
     strokePolyline(context, centers);
   }
 
@@ -234,12 +251,16 @@ export function drawAmbientBackdrop(
   context: CanvasRenderingContext2D,
   size: CanvasSize,
   timeMs: number,
+  reducedMotion = false,
+  quality: EffectsQuality = "high",
 ): void {
   const { originX, originY, boardSize, tileSize } = getBoardMetrics(size);
-  const pulse = (timeMs * 0.04) % (boardSize + tileSize * 2);
+  const pulse = reducedMotion
+    ? boardSize * 0.5
+    : (timeMs * 0.04) % (boardSize + tileSize * 2);
 
   context.clearRect(0, 0, size.width, size.height);
-  context.drawImage(getBoardBackgroundLayer(size), 0, 0);
+  context.drawImage(getBoardBackgroundLayer(size, 1, quality), 0, 0);
 
   context.save();
   context.globalAlpha = 0.72;
@@ -270,9 +291,12 @@ export function drawAmbientBackdrop(
 
   context.strokeStyle = "rgba(255, 79, 145, 0.18)";
   context.lineWidth = 1;
-  for (let y = 0; y < GRID_SIZE; y += 2) {
+  const rowStride = quality === "high" ? 2 : 4;
+  for (let y = 0; y < GRID_SIZE; y += rowStride) {
     const rowY = originY + y * tileSize + tileSize * 0.5;
-    const drift = (timeMs * 0.015 + y * tileSize) % boardSize;
+    const drift = reducedMotion
+      ? boardSize * 0.42
+      : (timeMs * 0.015 + y * tileSize) % boardSize;
     context.beginPath();
     context.moveTo(originX + drift - tileSize, rowY);
     context.lineTo(originX + drift + tileSize * 1.5, rowY);
@@ -305,7 +329,7 @@ function drawTiles(
       } else if (kind === "void") {
         drawVoidTile(context, originX, originY, tileSize, position);
       } else {
-        context.fillStyle = getTileFill(kind, x, y);
+        context.fillStyle = getTileFill(kind, x, y, state.config.sectorId);
         context.fillRect(
           originX + x * tileSize + inset,
           originY + y * tileSize + inset,
@@ -328,7 +352,9 @@ function drawOverclockLinks(
   state: GameState,
   frame: RenderFrame,
 ): void {
-  const pulse = 0.5 + pulse01(frame.timeMs, 1100) * 0.28;
+  const pulse = frame.reducedMotion
+    ? 0.68
+    : 0.5 + pulse01(frame.timeMs, 1100) * 0.28;
 
   context.save();
   context.lineCap = "round";
@@ -412,7 +438,7 @@ function drawCorruptedTile(
   const top = originY + position.y * tileSize + 3;
   const size = tileSize - 6;
   const hash = hashTile(position.x, position.y);
-  const flickerStep = Math.floor(frame.timeMs / 120);
+  const flickerStep = frame.reducedMotion ? 0 : Math.floor(frame.timeMs / 120);
 
   context.fillStyle = "#35131e";
   context.fillRect(left, top, size, size);
@@ -508,8 +534,12 @@ function drawSourceBroadcastRings(
   frame: RenderFrame,
 ): void {
   for (let index = 0; index < 2; index += 1) {
-    const radius = (frame.timeMs * 0.03 + index * tileSize * 0.5) % tileSize;
-    const alpha = Math.max(0, 1 - radius / tileSize) * 0.34;
+    const radius = frame.reducedMotion
+      ? tileSize * (0.42 + index * 0.2)
+      : (frame.timeMs * 0.03 + index * tileSize * 0.5) % tileSize;
+    const alpha = frame.reducedMotion
+      ? 0.24 - index * 0.06
+      : Math.max(0, 1 - radius / tileSize) * 0.34;
 
     context.strokeStyle = `rgba(34, 224, 196, ${alpha})`;
     context.lineWidth = 2;
@@ -528,7 +558,7 @@ function drawCoreRing(
   frame: RenderFrame,
 ): void {
   const radius = tileSize * 0.38;
-  const rotation = frame.timeMs * 0.0004;
+  const rotation = frame.reducedMotion ? 0 : frame.timeMs * 0.0004;
   const integrityRatio = state.coreIntegrity / state.config.coreIntegrityMax;
   const arcColor =
     integrityRatio > 0.45
@@ -861,9 +891,15 @@ function drawSignalRoute(
   context.strokeStyle = "rgba(215, 255, 247, 0.94)";
   context.lineWidth = 2;
   context.setLineDash([6, tileSize]);
-  context.lineDashOffset = -((frame.timeMs * 0.12) % (tileSize + 6));
+  context.lineDashOffset = frame.reducedMotion
+    ? 0
+    : -((frame.timeMs * 0.12) % (tileSize + 6));
   strokePolyline(context, centers);
   context.setLineDash([]);
+
+  if (frame.reducedMotion) {
+    return;
+  }
 
   const routeLength = polylineLength(centers);
   const packet = pointAlongPolyline(
@@ -950,6 +986,126 @@ function drawRouteCuts(
   }
 }
 
+function drawSpawnFlashes(
+  context: CanvasRenderingContext2D,
+  originX: number,
+  originY: number,
+  tileSize: number,
+  events: readonly SimEvent[],
+  frame: RenderFrame,
+): void {
+  const alpha = frame.reducedMotion ? Math.min(0.8, frame.flashAlpha + 0.2) : frame.flashAlpha;
+
+  if (alpha <= 0) {
+    return;
+  }
+
+  for (const event of events) {
+    if (event.type !== "intrusionSpawned") {
+      continue;
+    }
+
+    const center = getTileCenter(originX, originY, tileSize, event.position);
+    const isBoss = event.kind === "goliath";
+    const progress = frame.reducedMotion ? 0.45 : 1 - alpha;
+    const radius = tileSize * ((isBoss ? 0.42 : 0.28) + progress * 0.32);
+    const shardCount = frame.effectsQuality === "high" ? (isBoss ? 12 : 8) : 4;
+
+    context.save();
+    context.strokeStyle = isBoss
+      ? `rgba(255, 41, 87, ${0.92 * alpha})`
+      : `rgba(255, 79, 145, ${0.78 * alpha})`;
+    context.lineWidth = isBoss ? 5 : 3;
+    context.beginPath();
+    context.arc(center.x, center.y, radius, 0, Math.PI * 2);
+    context.stroke();
+
+    context.strokeStyle = isBoss
+      ? `rgba(255, 209, 224, ${0.78 * alpha})`
+      : `rgba(182, 140, 255, ${0.62 * alpha})`;
+    context.lineWidth = 2;
+    for (let index = 0; index < shardCount; index += 1) {
+      const angle = (Math.PI * 2 * index) / shardCount + event.intrusionId * 0.37;
+      const inner = radius * 0.62;
+      const outer = radius * (0.92 + (index % 3) * 0.12);
+      context.beginPath();
+      context.moveTo(center.x + Math.cos(angle) * inner, center.y + Math.sin(angle) * inner);
+      context.lineTo(center.x + Math.cos(angle) * outer, center.y + Math.sin(angle) * outer);
+      context.stroke();
+    }
+    context.restore();
+  }
+}
+
+function drawHunterTargeting(
+  context: CanvasRenderingContext2D,
+  originX: number,
+  originY: number,
+  tileSize: number,
+  state: GameState,
+  frame: RenderFrame,
+): void {
+  for (const intrusion of state.intrusions) {
+    if (intrusion.kind !== "hunter") {
+      continue;
+    }
+
+    const target = getNearestUnitPosition(state, intrusion.position);
+    if (!target) {
+      continue;
+    }
+
+    const from = getTileCenter(originX, originY, tileSize, intrusion.position);
+    const to = getTileCenter(originX, originY, tileSize, target);
+    const pulse = frame.reducedMotion ? 0.62 : 0.42 + pulse01(frame.timeMs, 620) * 0.34;
+
+    context.save();
+    context.strokeStyle = `rgba(255, 79, 145, ${pulse})`;
+    context.lineWidth = 2;
+    context.setLineDash([tileSize * 0.12, tileSize * 0.1]);
+    context.lineDashOffset = frame.reducedMotion ? 0 : -(frame.timeMs * 0.03) % tileSize;
+    context.beginPath();
+    context.moveTo(from.x, from.y);
+    context.lineTo(to.x, to.y);
+    context.stroke();
+    context.setLineDash([]);
+
+    const radius = tileSize * 0.27;
+    context.translate(to.x, to.y);
+    context.rotate(Math.PI / 4);
+    context.strokeRect(-radius, -radius, radius * 2, radius * 2);
+    context.restore();
+  }
+}
+
+function getNearestUnitPosition(
+  state: GameState,
+  from: GridPosition,
+): GridPosition | null {
+  let best: GridPosition | null = null;
+  let bestDistance = Number.POSITIVE_INFINITY;
+
+  for (let index = 0; index < state.grid.tiles.length; index += 1) {
+    const tile = state.grid.tiles[index];
+    if (!getUnitKind(tile.kind)) {
+      continue;
+    }
+
+    const position = {
+      x: index % state.grid.size,
+      y: Math.floor(index / state.grid.size),
+    };
+    const distance = Math.abs(position.x - from.x) + Math.abs(position.y - from.y);
+
+    if (distance < bestDistance) {
+      best = position;
+      bestDistance = distance;
+    }
+  }
+
+  return best;
+}
+
 function drawHitFlashes(
   context: CanvasRenderingContext2D,
   originX: number,
@@ -988,6 +1144,39 @@ function drawHitFlashes(
       context.moveTo(from.x, from.y);
       context.lineTo(to.x, to.y);
       context.stroke();
+
+      const impactRadius = tileSize * (0.1 + (1 - alpha) * 0.18);
+      context.strokeStyle = isBoosted
+        ? `rgba(255, 241, 168, ${0.9 * alpha})`
+        : `rgba(213, 236, 255, ${0.88 * alpha})`;
+      context.lineWidth = 3;
+      context.beginPath();
+      context.arc(to.x, to.y, impactRadius, 0, Math.PI * 2);
+      context.stroke();
+
+      const sparkCount = frame.effectsQuality === "high" ? 6 : 3;
+      for (let index = 0; index < sparkCount; index += 1) {
+        const angle = (Math.PI * 2 * index) / sparkCount + event.targetId * 0.51;
+        const length = tileSize * (0.15 + (index % 2) * 0.06);
+        context.beginPath();
+        context.moveTo(
+          to.x + Math.cos(angle) * impactRadius * 0.45,
+          to.y + Math.sin(angle) * impactRadius * 0.45,
+        );
+        context.lineTo(
+          to.x + Math.cos(angle) * (impactRadius + length),
+          to.y + Math.sin(angle) * (impactRadius + length),
+        );
+        context.stroke();
+      }
+
+      context.fillStyle = isBoosted
+        ? `rgba(255, 241, 168, ${alpha})`
+        : `rgba(213, 236, 255, ${alpha})`;
+      context.font = `800 ${Math.max(9, tileSize * 0.16)}px ui-monospace, "SF Mono", Consolas, monospace`;
+      context.textAlign = "center";
+      context.textBaseline = "bottom";
+      context.fillText(`-${event.damage}`, to.x, to.y - tileSize * 0.24);
     }
 
     if (event.type === "intrusionNeutralized") {
@@ -999,6 +1188,23 @@ function drawHitFlashes(
       context.beginPath();
       context.arc(center.x, center.y, radius, 0, Math.PI * 2);
       context.stroke();
+
+      const burstCount = frame.effectsQuality === "high" ? 10 : 5;
+      for (let index = 0; index < burstCount; index += 1) {
+        const angle = (Math.PI * 2 * index) / burstCount + event.intrusionId * 0.29;
+        const inner = radius * 0.45;
+        const outer = radius * (0.86 + (index % 3) * 0.18);
+        context.beginPath();
+        context.moveTo(
+          center.x + Math.cos(angle) * inner,
+          center.y + Math.sin(angle) * inner,
+        );
+        context.lineTo(
+          center.x + Math.cos(angle) * outer,
+          center.y + Math.sin(angle) * outer,
+        );
+        context.stroke();
+      }
     }
 
     if (event.type === "unitDamaged") {
@@ -1140,16 +1346,45 @@ function drawIntrusions(
       current.x === previous.x && current.y === previous.y
         ? 0
         : Math.atan2(current.y - previous.y, current.x - previous.x);
-    const breath =
-      intrusion.kind === "crawler"
+    const breath = frame.reducedMotion
+      ? 1
+      : intrusion.kind === "crawler"
         ? 1 + 0.06 * Math.sin(frame.timeMs * 0.004 + intrusion.id)
         : intrusion.kind === "goliath"
           ? 1 + 0.04 * Math.sin(frame.timeMs * 0.003 + intrusion.id)
           : 1;
-    const bob =
-      intrusion.kind === "goliath"
+    const bob = frame.reducedMotion
+      ? 0
+      : intrusion.kind === "goliath"
         ? Math.sin(frame.timeMs * 0.006 + intrusion.id) * tileSize * 0.025
         : 0;
+
+    context.fillStyle = "rgba(0, 0, 0, 0.44)";
+    context.beginPath();
+    context.ellipse(
+      x + tileSize * 0.035,
+      y + radius * 0.76,
+      radius * 0.92,
+      radius * 0.42,
+      0,
+      0,
+      Math.PI * 2,
+    );
+    context.fill();
+
+    if (intrusion.kind === "goliath") {
+      const warningPulse = frame.reducedMotion
+        ? 0.72
+        : 0.48 + pulse01(frame.timeMs, 720, intrusion.id) * 0.36;
+      context.strokeStyle = `rgba(255, 41, 87, ${warningPulse})`;
+      context.lineWidth = 3;
+      context.setLineDash([tileSize * 0.12, tileSize * 0.08]);
+      context.lineDashOffset = frame.reducedMotion ? 0 : -(frame.timeMs * 0.035) % tileSize;
+      context.beginPath();
+      context.arc(x, y, radius + tileSize * 0.12, 0, Math.PI * 2);
+      context.stroke();
+      context.setLineDash([]);
+    }
 
     context.fillStyle = "rgba(3, 9, 13, 0.74)";
     context.strokeStyle = ICONS[iconName].accent;
@@ -1164,7 +1399,9 @@ function drawIntrusions(
     }
 
     if (intrusion.kind === "spoof") {
-      const jitter = Math.sin(frame.timeMs * 0.02 + intrusion.id * 3) * 2;
+      const jitter = frame.reducedMotion
+        ? 0
+        : Math.sin(frame.timeMs * 0.02 + intrusion.id * 3) * 2;
       drawIcon(context, iconName, x - 2 - jitter, y, tileSize * 0.42, {
         alpha: 0.38,
       });
@@ -1206,6 +1443,71 @@ function drawIntrusions(
   }
 }
 
+function drawBossStatus(
+  context: CanvasRenderingContext2D,
+  originX: number,
+  originY: number,
+  tileSize: number,
+  state: GameState,
+): void {
+  const boss = state.intrusions.find((intrusion) => intrusion.kind === "goliath");
+
+  if (!boss) {
+    return;
+  }
+
+  const width = tileSize * 4.8;
+  const left = originX + (tileSize * state.grid.size - width) / 2;
+  const top = Math.max(4, originY - tileSize * 0.5);
+  const height = Math.max(18, tileSize * 0.34);
+  const hpRatio = Math.max(0, Math.min(1, boss.hp / boss.maxHp));
+
+  context.save();
+  context.fillStyle = "rgba(12, 4, 10, 0.92)";
+  context.strokeStyle = "rgba(255, 41, 87, 0.82)";
+  context.lineWidth = 2;
+  context.fillRect(left, top, width, height);
+  context.strokeRect(left, top, width, height);
+
+  context.fillStyle = "rgba(255, 41, 87, 0.26)";
+  context.fillRect(left + 3, top + 3, (width - 6) * hpRatio, height - 6);
+  context.fillStyle = "rgba(255, 209, 224, 0.96)";
+  context.font = `800 ${Math.max(9, tileSize * 0.13)}px ui-monospace, "SF Mono", Consolas, monospace`;
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.fillText(`GOLIATH // ${boss.hp} HP`, left + width / 2, top + height / 2);
+  context.restore();
+}
+
+function drawDamageVignette(
+  context: CanvasRenderingContext2D,
+  size: CanvasSize,
+  events: readonly SimEvent[],
+  frame: RenderFrame,
+): void {
+  const damaged = events.some(
+    (event) => event.type === "coreDamaged" || event.type === "coreBreach",
+  );
+
+  if (!damaged || frame.flashAlpha <= 0) {
+    return;
+  }
+
+  const alpha = frame.flashAlpha * (frame.reducedMotion ? 0.18 : 0.3);
+  const gradient = context.createRadialGradient(
+    size.width / 2,
+    size.height / 2,
+    Math.min(size.width, size.height) * 0.32,
+    size.width / 2,
+    size.height / 2,
+    Math.max(size.width, size.height) * 0.7,
+  );
+  gradient.addColorStop(0, "rgba(255, 41, 87, 0)");
+  gradient.addColorStop(1, `rgba(255, 41, 87, ${alpha})`);
+  context.fillStyle = gradient;
+  context.fillRect(0, 0, size.width, size.height);
+}
+
 function drawProbeSpinRing(
   context: CanvasRenderingContext2D,
   x: number,
@@ -1214,7 +1516,7 @@ function drawProbeSpinRing(
   frame: RenderFrame,
 ): void {
   const radius = tileSize * 0.29;
-  const start = frame.timeMs * 0.008;
+  const start = frame.reducedMotion ? -Math.PI / 2 : frame.timeMs * 0.008;
 
   context.strokeStyle = "rgba(242, 201, 76, 0.72)";
   context.lineWidth = 2;
@@ -1258,7 +1560,7 @@ function getShakeOffset(
     (event) => event.type === "coreDamaged" || event.type === "coreBreach",
   );
 
-  if (!hasCoreHit || frame.shakeMagnitude <= 0) {
+  if (frame.reducedMotion || !hasCoreHit || frame.shakeMagnitude <= 0) {
     return {
       x: 0,
       y: 0,
@@ -1285,7 +1587,12 @@ function getTileCenter(
   };
 }
 
-function getTileFill(kind: TileKind, x: number, y: number): string {
+function getTileFill(
+  kind: TileKind,
+  x: number,
+  y: number,
+  sectorId: number,
+): string {
   switch (kind) {
     case "relay":
       return "#12332f";
@@ -1302,7 +1609,19 @@ function getTileFill(kind: TileKind, x: number, y: number): string {
     case "corrupted":
       return "#35131e";
     case "empty":
-      return (x + y) % 2 === 0 ? "#0e1c24" : "#101f2a";
+      if (sectorId === 2) {
+        return (x + y) % 2 === 0
+          ? "rgba(17, 26, 33, 0.8)"
+          : "rgba(20, 29, 36, 0.76)";
+      }
+      if (sectorId === 3) {
+        return (x + y) % 2 === 0
+          ? "rgba(19, 17, 33, 0.8)"
+          : "rgba(16, 23, 33, 0.76)";
+      }
+      return (x + y) % 2 === 0
+        ? "rgba(14, 28, 36, 0.8)"
+        : "rgba(16, 31, 42, 0.76)";
   }
 }
 

@@ -75,8 +75,16 @@ export function createAudioEngine(): AudioEngine {
           case "intrusionNeutralized":
             playTone(context, 840, 0.045, 0.045, "triangle");
             break;
-          case "intrusionMoved":
           case "intrusionSpawned":
+            if (event.kind === "goliath") {
+              playTone(context, 54, 0.16, 0.1, "sawtooth");
+              playTone(context, 81, 0.18, 0.08, "square", 0.09);
+              playTone(context, 42, 0.22, 0.1, "sine", 0.18);
+            } else {
+              playTone(context, 220, 0.035, 0.026, "triangle");
+            }
+            break;
+          case "intrusionMoved":
           case "corruptionProgress":
             break;
         }

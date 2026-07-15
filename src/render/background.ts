@@ -2,11 +2,20 @@ import { GRID_SIZE } from "../data/levels";
 import type { CanvasSize } from "./canvas";
 import { getBoardMetrics } from "./canvas";
 import { hashTile } from "./animator";
+import {
+  getSectorVisualTheme,
+  type EffectsQuality,
+  type SectorVisualTheme,
+} from "./visualTheme";
 
 const backgroundCache = new Map<string, HTMLCanvasElement>();
 
-export function getBoardBackgroundLayer(size: CanvasSize): HTMLCanvasElement {
-  const key = `${size.width}:${size.height}`;
+export function getBoardBackgroundLayer(
+  size: CanvasSize,
+  sectorId: number,
+  quality: EffectsQuality,
+): HTMLCanvasElement {
+  const key = `${size.width}:${size.height}:${sectorId}:${quality}`;
   const cached = backgroundCache.get(key);
 
   if (cached) {
@@ -19,7 +28,7 @@ export function getBoardBackgroundLayer(size: CanvasSize): HTMLCanvasElement {
 
   const context = canvas.getContext("2d");
   if (context) {
-    drawBackgroundLayer(context, size);
+    drawBackgroundLayer(context, size, sectorId, quality);
   }
 
   backgroundCache.set(key, canvas);
@@ -34,23 +43,102 @@ export function clearBackgroundCache(): void {
 function drawBackgroundLayer(
   context: CanvasRenderingContext2D,
   size: CanvasSize,
+  sectorId: number,
+  quality: EffectsQuality,
 ): void {
   const { originX, originY, boardSize, tileSize } = getBoardMetrics(size);
+  const theme = getSectorVisualTheme(sectorId);
 
-  drawBackdrop(context, size);
-  drawCircuitTexture(context, originX, originY, tileSize);
-  drawGridLines(context, originX, originY, boardSize, tileSize);
-  drawCornerBrackets(context, originX, originY, boardSize, tileSize);
+  drawBackdrop(context, size, theme);
+  drawSectorFloor(context, originX, originY, boardSize, tileSize, theme, quality);
+  drawCircuitTexture(context, originX, originY, tileSize, quality);
+  drawGridLines(context, originX, originY, boardSize, tileSize, theme);
+  drawCornerBrackets(context, originX, originY, boardSize, tileSize, theme);
   drawVignette(context, size);
 }
 
-function drawBackdrop(context: CanvasRenderingContext2D, size: CanvasSize): void {
+function drawBackdrop(
+  context: CanvasRenderingContext2D,
+  size: CanvasSize,
+  theme: SectorVisualTheme,
+): void {
   const gradient = context.createLinearGradient(0, 0, size.width, size.height);
-  gradient.addColorStop(0, "#09141c");
-  gradient.addColorStop(0.5, "#071018");
-  gradient.addColorStop(1, "#0d1018");
+  gradient.addColorStop(0, theme.backgroundStart);
+  gradient.addColorStop(0.5, theme.backgroundMid);
+  gradient.addColorStop(1, theme.backgroundEnd);
   context.fillStyle = gradient;
   context.fillRect(0, 0, size.width, size.height);
+}
+
+function drawSectorFloor(
+  context: CanvasRenderingContext2D,
+  originX: number,
+  originY: number,
+  boardSize: number,
+  tileSize: number,
+  theme: SectorVisualTheme,
+  quality: EffectsQuality,
+): void {
+  context.save();
+  context.beginPath();
+  context.rect(originX, originY, boardSize, boardSize);
+  context.clip();
+
+  if (theme.floor === "lanes") {
+    const laneCount = quality === "high" ? 8 : 4;
+    context.lineWidth = Math.max(1, tileSize * 0.025);
+
+    for (let index = 0; index < laneCount; index += 1) {
+      const offset = ((index + 0.5) / laneCount) * boardSize;
+      context.strokeStyle =
+        index % 2 === 0 ? "rgba(34, 224, 196, 0.075)" : "rgba(255, 79, 145, 0.05)";
+      context.beginPath();
+      context.moveTo(originX, originY + offset);
+      context.lineTo(originX + boardSize, originY + offset - tileSize * 0.45);
+      context.stroke();
+    }
+  } else if (theme.floor === "canyon") {
+    const fractureCount = quality === "high" ? 11 : 6;
+    context.lineCap = "round";
+
+    for (let index = 0; index < fractureCount; index += 1) {
+      const hash = hashTile(index, 17);
+      const startX = originX + ((hash & 255) / 255) * boardSize;
+      const drift = (((hash >> 8) & 127) / 127 - 0.5) * tileSize * 1.8;
+      context.strokeStyle =
+        index % 3 === 0 ? "rgba(255, 137, 76, 0.08)" : "rgba(98, 199, 225, 0.07)";
+      context.lineWidth = index % 3 === 0 ? 2 : 1;
+      context.beginPath();
+      context.moveTo(startX, originY - tileSize);
+      context.lineTo(startX + drift, originY + boardSize * 0.36);
+      context.lineTo(startX - drift * 0.45, originY + boardSize * 0.7);
+      context.lineTo(startX + drift * 0.72, originY + boardSize + tileSize);
+      context.stroke();
+    }
+  } else {
+    const centerX = originX + boardSize / 2;
+    const centerY = originY + boardSize / 2;
+    const ringCount = quality === "high" ? 7 : 4;
+
+    for (let index = 1; index <= ringCount; index += 1) {
+      context.strokeStyle =
+        index % 2 === 0 ? "rgba(182, 140, 255, 0.07)" : "rgba(255, 41, 87, 0.045)";
+      context.lineWidth = index % 2 === 0 ? 2 : 1;
+      context.beginPath();
+      context.arc(centerX, centerY, (boardSize * 0.1 * index), 0, Math.PI * 2);
+      context.stroke();
+    }
+
+    context.strokeStyle = "rgba(182, 140, 255, 0.06)";
+    context.beginPath();
+    context.moveTo(centerX, originY);
+    context.lineTo(centerX, originY + boardSize);
+    context.moveTo(originX, centerY);
+    context.lineTo(originX + boardSize, centerY);
+    context.stroke();
+  }
+
+  context.restore();
 }
 
 function drawCircuitTexture(
@@ -58,12 +146,14 @@ function drawCircuitTexture(
   originX: number,
   originY: number,
   tileSize: number,
+  quality: EffectsQuality,
 ): void {
   context.save();
   context.lineWidth = 1;
+  const stride = quality === "high" ? 1 : 2;
 
-  for (let y = 0; y < GRID_SIZE; y += 1) {
-    for (let x = 0; x < GRID_SIZE; x += 1) {
+  for (let y = 0; y < GRID_SIZE; y += stride) {
+    for (let x = 0; x < GRID_SIZE; x += stride) {
       const hash = hashTile(x, y);
       const left = originX + x * tileSize;
       const top = originY + y * tileSize;
@@ -100,8 +190,9 @@ function drawGridLines(
   originY: number,
   boardSize: number,
   tileSize: number,
+  theme: SectorVisualTheme,
 ): void {
-  context.strokeStyle = "rgba(117, 255, 235, 0.18)";
+  context.strokeStyle = theme.grid;
   context.lineWidth = 1;
 
   for (let index = 0; index <= GRID_SIZE; index += 1) {
@@ -129,6 +220,7 @@ function drawCornerBrackets(
   originY: number,
   boardSize: number,
   tileSize: number,
+  theme: SectorVisualTheme,
 ): void {
   const length = tileSize * 0.44;
   const corners = [
@@ -138,7 +230,7 @@ function drawCornerBrackets(
     { x: originX + boardSize, y: originY + boardSize, sx: -1, sy: -1 },
   ] as const;
 
-  context.strokeStyle = "rgba(34, 224, 196, 0.45)";
+  context.strokeStyle = theme.accent;
   context.lineWidth = 3;
 
   for (const corner of corners) {

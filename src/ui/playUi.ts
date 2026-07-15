@@ -1,5 +1,5 @@
 import { getCurrentWave } from "../sim/waves";
-import type { EnemyKind, GameState, PlayerTool } from "../sim";
+import type { EnemyKind, GameState, PlayerTool, WaveDefinition } from "../sim";
 import { getToolReadout } from "./toolInfo";
 
 export type PlayNotice = Readonly<{
@@ -17,6 +17,13 @@ export type PlayUiOptions = Readonly<{
   notice: PlayNotice | null;
   now: number;
   onLaunchWave: () => void;
+}>;
+
+export type BuildWavePresentation = Readonly<{
+  isBossWave: boolean;
+  title: string;
+  detail: string;
+  action: string;
 }>;
 
 const ENEMY_LABELS: Readonly<Record<EnemyKind, string>> = {
@@ -74,26 +81,53 @@ function createBuildBar(state: GameState, onLaunchWave: () => void): HTMLElement
   const title = document.createElement("strong");
   const detail = document.createElement("span");
   const launch = document.createElement("button");
-  const enemies = getWaveEnemyLabels(wave.enemyWeights, wave.scriptedSpawns);
+  const presentation = getBuildWavePresentation(wave);
 
-  bar.className = "build-bar";
+  bar.className = presentation.isBossWave
+    ? "build-bar boss-build-bar"
+    : "build-bar";
   bar.setAttribute("aria-label", "Build phase wave intelligence");
   copy.className = "build-intel";
-  title.textContent = `BUILD · W${wave.id} · +${wave.bandwidthGrant} BW`;
-  detail.textContent =
-    wave.id === 1
-      ? `${wave.maxSpawnedIntrusions} ${enemies} · W · ICE attacks · Firewall blocks`
-      : `${wave.maxSpawnedIntrusions} ${enemies} · ${wave.spawnEdges
-          .map((edge) => edge[0].toUpperCase())
-          .join("/")}`;
+  title.textContent = presentation.title;
+  detail.textContent = presentation.detail;
   launch.type = "button";
   launch.className = "neon-button neon-button-primary build-launch";
-  launch.textContent = `LAUNCH W${wave.id} ▸`;
+  launch.textContent = presentation.action;
   launch.addEventListener("click", onLaunchWave);
 
   copy.append(title, detail);
   bar.append(copy, launch);
   return bar;
+}
+
+export function getBuildWavePresentation(
+  wave: WaveDefinition,
+): BuildWavePresentation {
+  const enemies = getWaveEnemyLabels(wave.enemyWeights, wave.scriptedSpawns);
+  const isBossWave =
+    wave.enemyWeights.goliath > 0 ||
+    (wave.scriptedSpawns ?? []).some((spawn) => spawn.kind === "goliath");
+
+  if (isBossWave) {
+    return {
+      isBossWave,
+      title: `⚠ BOSS BUILD · W${wave.id} · +${wave.bandwidthGrant} BW`,
+      detail: `${wave.maxSpawnedIntrusions} ${enemies} · GOLIATH INBOUND · ALL EDGES`,
+      action: `ENGAGE W${wave.id} ▸`,
+    };
+  }
+
+  return {
+    isBossWave,
+    title: `BUILD · W${wave.id} · +${wave.bandwidthGrant} BW`,
+    detail:
+      wave.id === 1
+        ? `${wave.maxSpawnedIntrusions} ${enemies} · W · ICE attacks · Firewall blocks`
+        : `${wave.maxSpawnedIntrusions} ${enemies} · ${wave.spawnEdges
+            .map((edge) => edge[0].toUpperCase())
+            .join("/")}`,
+    action: `LAUNCH W${wave.id} ▸`,
+  };
 }
 
 function getWaveEnemyLabels(
