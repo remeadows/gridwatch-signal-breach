@@ -34,6 +34,12 @@
   had no errors. A 120-frame active Core Vault sample sustained the test
   machine's 120 Hz refresh with a 9.7 ms p95 frame time; real mid-range phone
   profiling remains the promotion gate.
+- Phase 2 promotion draft PR #40 is open at
+  `https://github.com/remeadows/gridwatch-signal-breach/pull/40`. Stacked Phase 3
+  draft PR #41 is open at
+  `https://github.com/remeadows/gridwatch-signal-breach/pull/41`; its Cloudflare
+  preview is
+  `https://codex-visual-combat-feedback.gridwatch-signal-breach.pages.dev`.
 
 ## Active Phase 2 Work — 2026-07-15
 
