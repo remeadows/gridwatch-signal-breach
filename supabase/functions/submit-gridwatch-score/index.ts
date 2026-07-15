@@ -288,29 +288,38 @@ Deno.serve(async (req: Request) => {
   // primary sector submission above; every Supabase {error} is logged
   // explicitly (v2's .rpc()/query builder return {data,error} and do not
   // throw by default, so a silent failure here would otherwise be invisible).
+  //
+  // record_score resolves the target game from p_slug internally, so it does
+  // NOT need our locally-fetched gameId — only the direct .from("scores")
+  // reads below (which filter by game_id, not slug) do. Keeping the marker
+  // write and the daily/weekly writes ungated means a transient `games`
+  // lookup failure can never silently drop them; only the `standard` write
+  // (which needs campaignScore, computed from those gated reads) is skipped
+  // when the lookup fails.
   let campaignScore: number | null = null;
   try {
+    if (phase === "won") {
+      const markerCategory = `sector-cleared:${sector}`;
+      const { error: markerError } = await admin.rpc("record_score", {
+        p_user_id: user.id,
+        p_slug: GAME_SLUG,
+        p_category: markerCategory,
+        p_score: 1,
+        p_rating: rating,
+        p_metadata: { kind: "cleared-marker", sector },
+        p_proof: proof,
+        p_proof_hash: proofHash,
+      });
+      if (markerError) console.error(`hub-alignment: ${markerCategory} marker write error:`, markerError);
+    }
+
     const { data: gameRow, error: gameError } = await admin
       .from("games").select("id").eq("slug", GAME_SLUG).maybeSingle();
     if (gameError) console.error("hub-alignment: games lookup error:", gameError);
     const gameId = gameRow?.id as string | undefined;
 
+    let clearedSectorCount = 0;
     if (gameId) {
-      if (phase === "won") {
-        const markerCategory = `sector-cleared:${sector}`;
-        const { error: markerError } = await admin.rpc("record_score", {
-          p_user_id: user.id,
-          p_slug: GAME_SLUG,
-          p_category: markerCategory,
-          p_score: 1,
-          p_rating: rating,
-          p_metadata: { kind: "cleared-marker", sector },
-          p_proof: proof,
-          p_proof_hash: proofHash,
-        });
-        if (markerError) console.error(`hub-alignment: ${markerCategory} marker write error:`, markerError);
-      }
-
       const [{ data: sectorRows, error: sectorError }, { data: clearedMarkerRows, error: clearedError }] =
         await Promise.all([
           admin.from("scores").select("category, score")
@@ -331,29 +340,32 @@ Deno.serve(async (req: Request) => {
         clearedSectors.has(Number(r.category.split(":")[1])),
       );
       campaignScore = clearedRows.reduce((sum, r) => sum + (r.score ?? 0), 0);
-
-      const now = new Date();
-      const aggProof = { kind: "aggregate", from: category };
-      const aggHash = await sha256Hex(JSON.stringify({ user: user.id, ...aggProof }));
-      const alignedWrites: Array<{ cat: string; sc: number; meta: Record<string, unknown>; agg: boolean }> = [
-        { cat: "standard", sc: campaignScore, meta: { kind: "campaign", sectors: clearedRows.length }, agg: true },
-        { cat: dailyCategory(now), sc: score, meta: metadata, agg: false },
-        { cat: weeklyCategory(now), sc: score, meta: metadata, agg: false },
-      ];
-      for (const w of alignedWrites) {
-        const { error: writeError } = await admin.rpc("record_score", {
-          p_user_id: user.id,
-          p_slug: GAME_SLUG,
-          p_category: w.cat,
-          p_score: w.sc,
-          p_rating: rating,
-          p_metadata: w.meta,
-          p_proof: w.agg ? aggProof : proof,
-          p_proof_hash: w.agg ? aggHash : proofHash,
-        });
-        if (writeError) console.error(`hub-alignment: ${w.cat} write error:`, writeError);
-      }
+      clearedSectorCount = clearedRows.length;
     }
+
+    const now = new Date();
+    const aggProof = { kind: "aggregate", from: category };
+    const aggHash = await sha256Hex(JSON.stringify({ user: user.id, ...aggProof }));
+    const alignedWrites: Array<{ cat: string; sc: number; meta: Record<string, unknown>; agg: boolean }> = [
+      ...(campaignScore !== null
+        ? [{ cat: "standard", sc: campaignScore, meta: { kind: "campaign", sectors: clearedSectorCount }, agg: true }]
+        : []),
+      { cat: dailyCategory(now), sc: score, meta: metadata, agg: false },
+      { cat: weeklyCategory(now), sc: score, meta: metadata, agg: false },
+    ];
+    await Promise.all(alignedWrites.map(async (w) => {
+      const { error: writeError } = await admin.rpc("record_score", {
+        p_user_id: user.id,
+        p_slug: GAME_SLUG,
+        p_category: w.cat,
+        p_score: w.sc,
+        p_rating: rating,
+        p_metadata: w.meta,
+        p_proof: w.agg ? aggProof : proof,
+        p_proof_hash: w.agg ? aggHash : proofHash,
+      });
+      if (writeError) console.error(`hub-alignment: ${w.cat} write error:`, writeError);
+    }));
   } catch (err) {
     console.error("hub-alignment writes failed (non-fatal):", err);
   }
