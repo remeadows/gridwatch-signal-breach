@@ -1,5 +1,13 @@
 import { GRID_SIZE } from "../data/levels";
-import { getOrthogonalNeighbors, getTile, getTileKind } from "../sim/grid";
+import {
+  getOrthogonalNeighbors,
+  getTile,
+  getTileKind,
+  positionKey,
+  samePosition,
+} from "../sim/grid";
+import { bfs } from "../sim/pathing";
+import { getCurrentWave } from "../sim/waves";
 import type {
   EnemyKind,
   GameState,
@@ -7,6 +15,7 @@ import type {
   PlayerTool,
   SignalState,
   SimEvent,
+  SpawnEdge,
   TileKind,
   UnitKind,
 } from "../sim/types";
@@ -27,7 +36,9 @@ export type RenderFrame = {
   shakeMagnitude: number;
   timeMs: number;
   hover: GridPosition | null;
+  focus: GridPosition | null;
   selectedTool: PlayerTool;
+  buildMode: boolean;
 };
 
 const DEFAULT_RENDER_FRAME: RenderFrame = {
@@ -36,7 +47,9 @@ const DEFAULT_RENDER_FRAME: RenderFrame = {
   shakeMagnitude: 0,
   timeMs: 0,
   hover: null,
+  focus: null,
   selectedTool: "relay",
+  buildMode: false,
 };
 
 export function drawGrid(
@@ -53,16 +66,168 @@ export function drawGrid(
   context.save();
   context.translate(shake.x, shake.y);
   drawTiles(context, originX, originY, tileSize, state, frame);
+  drawBuildThreatPreview(context, originX, originY, tileSize, state, frame);
   drawOverclockLinks(context, originX, originY, tileSize, state, frame);
   drawCorruptionFlashes(context, originX, originY, tileSize, state.events, frame);
   drawSignalRoute(context, originX, originY, tileSize, state.signal, frame);
   drawRouteCuts(context, originX, originY, tileSize, state.events, frame);
+  drawFocusedToolRange(context, originX, originY, tileSize, state, frame);
   drawMarkers(context, originX, originY, tileSize, state, frame);
   drawHoverGhost(context, originX, originY, tileSize, state, frame);
   drawHitFlashes(context, originX, originY, tileSize, state, frame);
   drawIntrusions(context, originX, originY, tileSize, state, frame);
-  drawStatus(context, size, state);
   context.restore();
+}
+
+function drawBuildThreatPreview(
+  context: CanvasRenderingContext2D,
+  originX: number,
+  originY: number,
+  tileSize: number,
+  state: GameState,
+  frame: RenderFrame,
+): void {
+  if (!frame.buildMode || state.phase !== "prep") {
+    return;
+  }
+
+  const wave = getCurrentWave(state);
+  const routeTargets = state.signal.route.filter(
+    (position) =>
+      !samePosition(position, state.config.source) &&
+      !samePosition(position, state.config.core),
+  );
+  const targets = routeTargets.length > 0 ? routeTargets : [state.config.core];
+  const targetKeys = new Set(targets.map(positionKey));
+  const pulse = 0.58 + pulse01(frame.timeMs, 1050) * 0.28;
+
+  context.save();
+  context.lineCap = "round";
+  context.lineJoin = "round";
+
+  for (const edge of wave.spawnEdges) {
+    drawSpawnEdgeMarker(context, originX, originY, tileSize, state.grid.size, edge, pulse);
+    const start = getPreviewStart(state, edge);
+
+    if (!start) {
+      continue;
+    }
+
+    const path = bfs({
+      start,
+      isGoal: (position) => targetKeys.has(positionKey(position)),
+      getNeighbors: (position) =>
+        getOrthogonalNeighbors(state.grid, position).filter((neighbor) => {
+          if (targetKeys.has(positionKey(neighbor))) {
+            return true;
+          }
+
+          const kind = getTileKind(state.grid, neighbor);
+          return kind === "empty" || kind === "corrupted";
+        }),
+      toKey: positionKey,
+    });
+
+    if (!path || path.length < 2) {
+      continue;
+    }
+
+    const centers = path.map((position) =>
+      getTileCenter(originX, originY, tileSize, position),
+    );
+    context.strokeStyle = `rgba(255, 95, 110, ${0.16 + pulse * 0.12})`;
+    context.lineWidth = Math.max(2, tileSize * 0.05);
+    context.setLineDash([tileSize * 0.18, tileSize * 0.16]);
+    context.lineDashOffset = -((frame.timeMs * 0.025) % tileSize);
+    strokePolyline(context, centers);
+  }
+
+  context.setLineDash([]);
+  context.restore();
+}
+
+function drawSpawnEdgeMarker(
+  context: CanvasRenderingContext2D,
+  originX: number,
+  originY: number,
+  tileSize: number,
+  gridSize: number,
+  edge: SpawnEdge,
+  pulse: number,
+): void {
+  const boardSize = tileSize * gridSize;
+  const inset = 3;
+  const arrow = tileSize * 0.18;
+  const centerX = originX + boardSize / 2;
+  const centerY = originY + boardSize / 2;
+
+  context.strokeStyle = `rgba(255, 79, 145, ${pulse})`;
+  context.lineWidth = Math.max(3, tileSize * 0.08);
+  context.setLineDash([]);
+  context.beginPath();
+
+  switch (edge) {
+    case "north":
+      context.moveTo(originX, originY + inset);
+      context.lineTo(originX + boardSize, originY + inset);
+      context.moveTo(centerX - arrow, originY - arrow);
+      context.lineTo(centerX, originY + arrow);
+      context.lineTo(centerX + arrow, originY - arrow);
+      break;
+    case "east":
+      context.moveTo(originX + boardSize - inset, originY);
+      context.lineTo(originX + boardSize - inset, originY + boardSize);
+      context.moveTo(originX + boardSize + arrow, centerY - arrow);
+      context.lineTo(originX + boardSize - arrow, centerY);
+      context.lineTo(originX + boardSize + arrow, centerY + arrow);
+      break;
+    case "south":
+      context.moveTo(originX, originY + boardSize - inset);
+      context.lineTo(originX + boardSize, originY + boardSize - inset);
+      context.moveTo(centerX - arrow, originY + boardSize + arrow);
+      context.lineTo(centerX, originY + boardSize - arrow);
+      context.lineTo(centerX + arrow, originY + boardSize + arrow);
+      break;
+    case "west":
+      context.moveTo(originX + inset, originY);
+      context.lineTo(originX + inset, originY + boardSize);
+      context.moveTo(originX - arrow, centerY - arrow);
+      context.lineTo(originX + arrow, centerY);
+      context.lineTo(originX - arrow, centerY + arrow);
+      break;
+  }
+
+  context.stroke();
+}
+
+function getPreviewStart(state: GameState, edge: SpawnEdge): GridPosition | null {
+  const last = state.grid.size - 1;
+  const middle = last / 2;
+  const candidates = Array.from({ length: state.grid.size }, (_, index) => {
+    switch (edge) {
+      case "north":
+        return { x: index, y: 0 };
+      case "east":
+        return { x: last, y: index };
+      case "south":
+        return { x: index, y: last };
+      case "west":
+        return { x: 0, y: index };
+    }
+  }).sort((a, b) => {
+    const aAxis = edge === "north" || edge === "south" ? a.x : a.y;
+    const bAxis = edge === "north" || edge === "south" ? b.x : b.y;
+    return Math.abs(aAxis - middle) - Math.abs(bAxis - middle);
+  });
+
+  return (
+    candidates.find(
+      (position) =>
+        !samePosition(position, state.config.source) &&
+        !samePosition(position, state.config.core) &&
+        getTileKind(state.grid, position) === "empty",
+    ) ?? null
+  );
 }
 
 export function drawAmbientBackdrop(
@@ -402,6 +567,46 @@ function drawCoreRing(
     Math.PI * 2 * integrityRatio - Math.PI / 2,
   );
   context.stroke();
+}
+
+function drawFocusedToolRange(
+  context: CanvasRenderingContext2D,
+  originX: number,
+  originY: number,
+  tileSize: number,
+  state: GameState,
+  frame: RenderFrame,
+): void {
+  const focus = frame.focus;
+
+  if (
+    !focus ||
+    frame.selectedTool === "sell" ||
+    getTileKind(state.grid, focus) !== frame.selectedTool
+  ) {
+    return;
+  }
+
+  drawToolRangeTelegraph(
+    context,
+    originX,
+    originY,
+    tileSize,
+    state,
+    focus,
+    frame.selectedTool,
+  );
+
+  context.strokeStyle = "rgba(242, 201, 76, 0.9)";
+  context.lineWidth = 2;
+  context.setLineDash([5, 4]);
+  context.strokeRect(
+    originX + focus.x * tileSize + 5,
+    originY + focus.y * tileSize + 5,
+    tileSize - 10,
+    tileSize - 10,
+  );
+  context.setLineDash([]);
 }
 
 function drawHoverGhost(
@@ -1043,26 +1248,6 @@ function drawHpBar(
     context.roundRect(left, y, width * clampedRatio, height, height / 2);
     context.fill();
   }
-}
-
-function drawStatus(
-  context: CanvasRenderingContext2D,
-  size: CanvasSize,
-  state: GameState,
-): void {
-  const statusText =
-    state.signal.status === "live"
-      ? `SIGNAL LIVE / CORE ${state.coreIntegrity} / INTRUSIONS ${state.intrusions.length} / ICE ${state.neutralizedCount}`
-      : `SIGNAL SEVERED / CORE ${state.coreIntegrity} / INTRUSIONS ${state.intrusions.length} / ICE ${state.neutralizedCount}`;
-
-  context.fillStyle =
-    state.signal.status === "live"
-      ? "rgba(164, 255, 243, 0.92)"
-      : "rgba(255, 209, 224, 0.92)";
-  context.font = "700 16px ui-monospace, \"SF Mono\", Consolas, monospace";
-  context.textAlign = "center";
-  context.textBaseline = "bottom";
-  context.fillText(statusText, size.width / 2, size.height - 16);
 }
 
 function getShakeOffset(

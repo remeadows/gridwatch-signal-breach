@@ -1,13 +1,11 @@
 import type { SubmitResult } from "../leaderboard/api";
 import { calculateScore } from "../sim/scoring";
-import { getCurrentWave } from "../sim/waves";
 import type { GameState } from "../sim/types";
 import { createAccountPanel } from "./account";
 
 export type OverlayOptions = Readonly<{
   root: HTMLElement;
   state: GameState;
-  onSkipPrep: () => void;
   onRestart: () => void;
   onReturnToTitle: () => void;
   onSectorSelect: () => void;
@@ -18,26 +16,15 @@ export type OverlayOptions = Readonly<{
   onSubmitScore: (() => Promise<SubmitResult>) | null;
   // Persists the finished run before an OAuth sign-in redirect.
   onBeforeSignIn: () => void;
-  // UI clock gates. Before the run is started, a START cover holds the prep
-  // timer; while paused, a PAUSE cover obscures the grid. Both take precedence
-  // over the phase-driven overlays.
-  runStarted: boolean;
+  // The Build phase is rendered by playUi.ts without covering the grid. Only a
+  // true pause needs a full-board clock-gate cover here.
   paused: boolean;
-  onStartRun: () => void;
   onResume: () => void;
 }>;
 
 export function renderOverlay(options: OverlayOptions): void {
-  const { root, state, onSkipPrep, runStarted, paused, onStartRun, onResume } = options;
+  const { root, state, paused, onResume } = options;
   root.className = "overlay-root";
-
-  // Clock-gate covers win over phase overlays: the player must START the run,
-  // and a PAUSE cover can interrupt an active wave.
-  if (!runStarted) {
-    root.hidden = false;
-    renderStartCover(root, state, onStartRun);
-    return;
-  }
 
   if (paused) {
     root.hidden = false;
@@ -45,59 +32,14 @@ export function renderOverlay(options: OverlayOptions): void {
     return;
   }
 
-  if (state.phase === "active") {
+  if (state.phase === "prep" || state.phase === "active") {
     root.hidden = true;
-    root.dataset.overlayKey = "active";
+    root.dataset.overlayKey = state.phase;
     return;
   }
 
   root.hidden = false;
-
-  if (state.phase === "prep") {
-    renderPrepOverlay(root, state, onSkipPrep);
-    return;
-  }
-
   renderTerminalOverlay(options);
-}
-
-// Full-grid cover shown before a run begins. The prep countdown stays frozen
-// until the player presses START.
-function renderStartCover(
-  root: HTMLElement,
-  state: GameState,
-  onStartRun: () => void,
-): void {
-  if (root.dataset.overlayKey === "start") {
-    return;
-  }
-
-  const wave = getCurrentWave(state);
-  const cover = document.createElement("div");
-  const panel = document.createElement("section");
-  const eyebrow = document.createElement("p");
-  const title = document.createElement("h2");
-  const detail = document.createElement("p");
-  const button = document.createElement("button");
-
-  root.innerHTML = "";
-  root.dataset.overlayKey = "start";
-  cover.className = "overlay-cover";
-  panel.className = "overlay-panel start-panel";
-  eyebrow.className = "overlay-eyebrow";
-  eyebrow.textContent = `${state.config.sectorName} // WAVE ${wave.id}`;
-  title.className = "overlay-title";
-  title.textContent = "Stand by to defend";
-  detail.textContent =
-    "The prep timer is frozen. Press START to begin — then place your defenses before the wave hits.";
-  button.type = "button";
-  button.className = "neon-button neon-button-primary";
-  button.textContent = "▸ START";
-  button.addEventListener("click", onStartRun);
-
-  panel.append(eyebrow, title, detail, button);
-  cover.append(panel);
-  root.append(cover);
 }
 
 // Full-grid cover shown while the match is paused.
@@ -127,51 +69,6 @@ function renderPauseCover(root: HTMLElement, onResume: () => void): void {
   panel.append(title, detail, button);
   cover.append(panel);
   root.append(cover);
-}
-
-function renderPrepOverlay(root: HTMLElement, state: GameState, onSkipPrep: () => void): void {
-  const wave = getCurrentWave(state);
-  const key = `prep-${wave.id}`;
-
-  if (root.dataset.overlayKey !== key) {
-    const panel = document.createElement("section");
-    const title = document.createElement("h2");
-    const taunt = document.createElement("p");
-    const countdown = document.createElement("p");
-    const button = document.createElement("button");
-
-    root.innerHTML = "";
-    root.dataset.overlayKey = key;
-    panel.className = "overlay-panel prep-panel";
-    title.dataset.overlayTitle = "true";
-    title.className = "overlay-title";
-    taunt.className = "overlay-taunt";
-    taunt.dataset.overlayTaunt = "true";
-    countdown.className = "overlay-countdown";
-    countdown.dataset.overlayCountdown = "true";
-    button.type = "button";
-    button.className = "neon-button neon-button-primary";
-    button.textContent = "Skip prep";
-    button.addEventListener("click", onSkipPrep);
-    panel.append(title, taunt, countdown, button);
-    root.append(panel);
-  }
-
-  const title = root.querySelector<HTMLElement>("[data-overlay-title]");
-  const taunt = root.querySelector<HTMLElement>("[data-overlay-taunt]");
-  const countdown = root.querySelector<HTMLElement>("[data-overlay-countdown]");
-
-  if (title) {
-    title.textContent = `Wave ${wave.id}: ${wave.label}`;
-  }
-
-  if (taunt) {
-    taunt.textContent = `> incoming transmission: ${state.activeTaunt}`;
-  }
-
-  if (countdown) {
-    countdown.textContent = `${Math.ceil((state.prepTicksRemaining * state.config.simulationTickMs) / 1000)}s`;
-  }
 }
 
 function renderTerminalOverlay(options: OverlayOptions): void {
