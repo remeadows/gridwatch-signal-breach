@@ -4,6 +4,9 @@
   --amber: #f2c94c;
   --bg-deep: #090f14;
   --panel-bg: rgba(7, 16, 23, 0.9);
+  --sector-accent: #22e0c4;
+  --sector-secondary: #ff4f91;
+  --sector-haze: rgba(34, 224, 196, 0.16);
   --font-display: ui-monospace, "Cascadia Code", "SF Mono", "JetBrains Mono",
     Consolas, "Liberation Mono", monospace;
   color: #d7fff7;
@@ -13,6 +16,18 @@
     sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
+}
+
+html[data-sector="2"] {
+  --sector-accent: #62c7e1;
+  --sector-secondary: #ff894c;
+  --sector-haze: rgba(98, 199, 225, 0.15);
+}
+
+html[data-sector="3"] {
+  --sector-accent: #b68cff;
+  --sector-secondary: #ff2957;
+  --sector-haze: rgba(182, 140, 255, 0.16);
 }
 
 /*
@@ -47,8 +62,8 @@ body {
   padding: 18px;
   background:
     linear-gradient(180deg, rgba(9, 15, 20, 0.72), rgba(9, 15, 20, 0.96)),
-    radial-gradient(circle at 20% 20%, rgba(28, 210, 184, 0.18), transparent 34%),
-    radial-gradient(circle at 80% 70%, rgba(255, 61, 129, 0.14), transparent 34%),
+    radial-gradient(circle at 20% 20%, var(--sector-haze), transparent 34%),
+    radial-gradient(circle at 80% 70%, color-mix(in srgb, var(--sector-secondary) 15%, transparent), transparent 34%),
     #090f14;
 }
 
@@ -135,6 +150,18 @@ body {
     ),
     radial-gradient(circle at center, transparent 58%, rgba(0, 0, 0, 0.32));
   opacity: 0.72;
+}
+
+.game-panel::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  z-index: -1;
+  pointer-events: none;
+  border: 1px solid color-mix(in srgb, var(--sector-accent) 46%, transparent);
+  box-shadow:
+    0 0 34px color-mix(in srgb, var(--sector-accent) 16%, transparent),
+    inset 0 0 22px color-mix(in srgb, var(--sector-secondary) 8%, transparent);
 }
 
 #game-canvas {
@@ -681,9 +708,73 @@ body {
 }
 
 .screen-title {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   align-content: center;
   gap: 22px;
   text-align: center;
+  background:
+    linear-gradient(90deg, rgba(3, 8, 12, 0.97) 0 42%, rgba(3, 8, 12, 0.64) 66%, rgba(3, 8, 12, 0.88)),
+    radial-gradient(circle at 78% 40%, rgba(34, 224, 196, 0.2), transparent 22%),
+    radial-gradient(circle at 88% 62%, rgba(255, 79, 145, 0.2), transparent 27%),
+    #04090d;
+}
+
+.screen-title::before {
+  content: "";
+  position: absolute;
+  top: 8%;
+  right: clamp(-90px, 2vw, 40px);
+  bottom: -8%;
+  width: min(48vw, 620px);
+  z-index: -2;
+  background:
+    radial-gradient(circle at 53% 20%, rgba(215, 255, 247, 0.12) 0 8%, transparent 9%),
+    radial-gradient(ellipse at 52% 22%, #0d1e28 0 15%, transparent 15.5%),
+    radial-gradient(ellipse at 50% 66%, #09141c 0 38%, transparent 38.5%),
+    linear-gradient(112deg, transparent 25%, rgba(34, 224, 196, 0.42) 47%, transparent 49%),
+    linear-gradient(72deg, transparent 55%, rgba(255, 79, 145, 0.38) 71%, transparent 73%);
+  filter: drop-shadow(-16px 0 28px rgba(34, 224, 196, 0.12));
+  clip-path: polygon(24% 4%, 78% 0, 88% 24%, 76% 39%, 96% 100%, 10% 100%, 22% 52%, 12% 30%);
+  opacity: 0.9;
+}
+
+.screen-title::after {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  z-index: -1;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    104deg,
+    transparent 0 18px,
+    rgba(215, 255, 247, 0.07) 19px,
+    transparent 20px 42px
+  );
+  transform: translate3d(0, -8%, 0);
+  animation: rain-drift 2400ms linear infinite;
+  opacity: 0.5;
+}
+
+.screen-title > * {
+  position: relative;
+  z-index: 1;
+}
+
+.screen-title-kicker {
+  width: fit-content;
+  margin: 0 auto -12px;
+  padding: 5px 9px;
+  border: 1px solid rgba(34, 224, 196, 0.44);
+  background: rgba(3, 9, 13, 0.68);
+  color: var(--neon-cyan);
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 0 0 20px rgba(34, 224, 196, 0.12);
 }
 
 .screen-logo {
@@ -832,6 +923,9 @@ body {
 }
 
 .sector-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   min-height: 248px;
   display: grid;
   align-content: start;
@@ -850,6 +944,43 @@ body {
     border-color 180ms ease,
     box-shadow 180ms ease,
     transform 120ms ease;
+}
+
+.sector-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.sector-card[data-sector="1"]::before {
+  background:
+    linear-gradient(90deg, transparent 0 58%, rgba(34, 224, 196, 0.14)),
+    repeating-linear-gradient(0deg, transparent 0 19px, rgba(34, 224, 196, 0.07) 20px);
+}
+
+.sector-card[data-sector="2"]::before {
+  background:
+    linear-gradient(115deg, transparent 0 36%, rgba(255, 137, 76, 0.12) 37% 38%, transparent 39% 55%, rgba(98, 199, 225, 0.12) 56% 57%, transparent 58%),
+    radial-gradient(circle at 82% 18%, rgba(255, 137, 76, 0.15), transparent 28%);
+}
+
+.sector-card[data-sector="3"]::before {
+  background:
+    repeating-radial-gradient(circle at 82% 30%, transparent 0 20px, rgba(182, 140, 255, 0.08) 21px 22px),
+    radial-gradient(circle at 82% 30%, rgba(255, 41, 87, 0.18), transparent 22%);
+}
+
+.sector-card[data-sector="2"] .sector-card-name,
+.sector-card[data-sector="2"] .sector-card-status {
+  color: #ffb278;
+}
+
+.sector-card[data-sector="3"] .sector-card-name,
+.sector-card[data-sector="3"] .sector-card-status {
+  color: #c7aaff;
 }
 
 .sector-card:hover:not(:disabled) {
@@ -939,6 +1070,8 @@ body {
 }
 
 .briefing-panel {
+  position: relative;
+  isolation: isolate;
   width: min(680px, 92vw);
   max-height: calc(100dvh - 56px);
   display: grid;
@@ -959,6 +1092,56 @@ body {
     0 28px 80px rgba(0, 0, 0, 0.52),
     0 0 40px rgba(34, 224, 196, 0.1);
   clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
+}
+
+.briefing-panel::before {
+  content: "";
+  position: absolute;
+  top: 18px;
+  bottom: 18px;
+  left: 0;
+  width: 4px;
+  background: linear-gradient(180deg, transparent, var(--sector-accent), var(--sector-secondary), transparent);
+  box-shadow: 0 0 18px var(--sector-haze);
+}
+
+.terminal-panel[data-result="won"] {
+  background:
+    radial-gradient(circle at 88% 8%, rgba(34, 224, 196, 0.2), transparent 30%),
+    linear-gradient(180deg, rgba(7, 28, 31, 0.96), rgba(4, 12, 17, 0.98));
+  box-shadow:
+    0 0 46px rgba(34, 224, 196, 0.16),
+    0 26px 70px rgba(0, 0, 0, 0.52);
+}
+
+.terminal-panel[data-result="lost"] {
+  background:
+    radial-gradient(circle at 88% 8%, rgba(255, 41, 87, 0.2), transparent 30%),
+    linear-gradient(180deg, rgba(34, 8, 18, 0.96), rgba(8, 7, 13, 0.98));
+  box-shadow:
+    0 0 46px rgba(255, 41, 87, 0.16),
+    0 26px 70px rgba(0, 0, 0, 0.52);
+}
+
+.boss-build-bar {
+  border-color: rgba(255, 41, 87, 0.82);
+  background:
+    linear-gradient(90deg, rgba(64, 5, 20, 0.94), rgba(15, 6, 16, 0.96)),
+    rgba(7, 16, 23, 0.96);
+  box-shadow:
+    0 0 24px rgba(255, 41, 87, 0.2),
+    inset 0 0 18px rgba(255, 41, 87, 0.12);
+  animation: boss-alert 1200ms ease-in-out infinite alternate;
+}
+
+.boss-build-bar .build-intel strong {
+  color: #ffd1e0;
+}
+
+.boss-build-bar .build-launch {
+  border-color: #ff2957;
+  background: rgba(255, 41, 87, 0.18);
+  color: #ffd1e0;
 }
 
 .briefing-content {
@@ -1196,6 +1379,54 @@ body {
   46%,
   100% {
     opacity: 0;
+  }
+}
+
+@keyframes rain-drift {
+  from {
+    transform: translate3d(0, -8%, 0);
+  }
+
+  to {
+    transform: translate3d(-4%, 8%, 0);
+  }
+}
+
+@keyframes boss-alert {
+  from {
+    border-color: rgba(255, 41, 87, 0.58);
+  }
+
+  to {
+    border-color: rgba(255, 209, 224, 0.94);
+  }
+}
+
+html[data-effects-quality="low"] .game-panel::after {
+  opacity: 0.46;
+}
+
+html[data-effects-quality="low"] .screen-title::after {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+
+  .screen-title::after {
+    transform: none;
+    opacity: 0.22;
+  }
+
+  .screen-logo-scanline::after {
+    transform: translateX(90%);
   }
 }
 
@@ -1453,6 +1684,16 @@ body {
 
   .screen-logo-main {
     font-size: 42px;
+  }
+
+  .screen-title::before {
+    right: -28%;
+    width: 84vw;
+    opacity: 0.54;
+  }
+
+  .screen-title::after {
+    opacity: 0.34;
   }
 
   .screen-logo-subtitle {

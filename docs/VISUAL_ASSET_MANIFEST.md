@@ -1,0 +1,63 @@
+# GridWatch Visual Foundation Manifest
+
+Last reviewed: 2026-07-15
+
+## Shipping Policy
+
+GridWatch remains fully playable offline. Every shipped visual is local,
+deterministic, and rendered with HTML, CSS, SVG path data, or Canvas2D. There are
+no CDN images, runtime generation calls, external fonts, or new network requests.
+
+The supplied GridWatchZero attachment establishes the cinematic direction:
+operator silhouette, rain, cyan/magenta edge light, strong negative space, and
+small monospaced mission labels. It is a design reference only in this slice;
+the original attachment is not copied into the public repository because its
+source license and crop-safe master have not yet been documented.
+
+## Current Visual Inventory
+
+| Asset family | Source / provenance | Format | Intended role | Budget |
+|---|---|---|---|---:|
+| Operator terminal silhouette | Project-authored CSS shapes and gradients | CSS | Title and mission atmosphere | 0 transferred bytes beyond CSS |
+| Perimeter Run floor | Project-authored deterministic Canvas2D lanes | Canvas2D | Sector 1 board mood | Cached layer |
+| Relay Canyon floor | Project-authored deterministic Canvas2D fractures | Canvas2D | Sector 2 board mood | Cached layer |
+| Core Vault floor | Project-authored deterministic Canvas2D rings | Canvas2D | Sector 3 board mood | Cached layer |
+| Unit and intrusion glyphs | Existing project-owned path definitions | Canvas2D/SVG | Tactical silhouettes | Existing bundle |
+| Combat effects | Project-authored deterministic Canvas2D primitives | Canvas2D | Spawn, hit, kill, corruption, boss, and damage feedback | Per-frame only |
+| Sector key-art fields | Project-authored CSS gradients and geometric motifs | CSS | Sector-select cards | 0 transferred bytes beyond CSS |
+
+## Palette and Tactical Semantics
+
+- Signal / success: `#22e0c4`
+- Hostile / breach: `#ff4f91` and `#ff2957`
+- Firewall / boosted attack: `#f2c94c`
+- ICE attack: `#4da3ff`
+- Corruption / spoofing: `#b68cff`
+- Cleanse / recovery: `#5ee08a`
+
+Color is never the only state indicator. Hostile effects use angular shards and
+warning rings; friendly effects use circles, route pulses, checks, and labels.
+
+## Scale and Timing
+
+- Normal intrusion body: about 48% of one tile.
+- Goliath body: about 64% of one tile plus a labeled boss health plate.
+- Impact feedback: one simulation interpolation window (350 ms at current tuning).
+- Spawn portal: one simulation interpolation window with a persistent silhouette.
+- Motion reduction: remove shake, bobbing, scan sweeps, traveling sparks, and
+  decorative transitions while retaining static state rings and health bars.
+
+## Performance Policy
+
+- Board floor art is cached by canvas size, sector, and quality tier.
+- `?quality=low` forces the low-effects tier for testing and older devices.
+- Devices reporting four or fewer logical processors default to low effects.
+- Low effects reduce background marks, particles, bloom layers, and animation.
+- No effect may change hit targets, board geometry, simulation state, or replay.
+
+## Future Approved-Asset Intake
+
+Before importing a raster GridWatchZero asset, record its owner, approval or
+license, source dimensions, crop-safe area, optimized dimensions, compressed
+size, and exact screen role here. Keep title/briefing/sector/results art separate
+from the live board so cinematic detail never obscures tactical cells.

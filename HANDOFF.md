@@ -1,9 +1,48 @@
 # GridWatch Handoff
 
-## Active Phase 2 Work — 2026-07-15
+## Active Phase 3 Work — 2026-07-15
 
-- Codex is implementing the approved economy/Build-phase clarity slice on
-  `codex/build-phase-clarity`, stacked on the Phase 1 branch and draft PR #38.
+- Codex is implementing the approved visual-foundation slice on
+  `codex/visual-combat-feedback-phase-3`. Phase 2 promotion PR #40 is merged,
+  and the Phase 3 branch has been rebased onto that new `main` tip so its review
+  diff contains only Phase 3.
+- The title now uses a cinematic local CSS operator/rain treatment derived from
+  the approved attachment direction. Sector cards, briefing panels, results,
+  board chrome, and ambient page lighting share sector-aware visual tokens.
+- The top-down board has three cached floor moods: Perimeter lanes, Canyon
+  fractures, and Vault rings. Live feedback now includes hostile spawn portals,
+  ICE impact rings/sparks/damage values, neutralization bursts, intrusion
+  shadows, stronger corruption/damage treatment, Hunter hardware target locks,
+  and a labeled Goliath health plate.
+- Wave 12 receives an explicit `BOSS BUILD`, `GOLIATH INBOUND`, and `ENGAGE W12`
+  warning. The pure presentation helper was verified against the scripted
+  Goliath wave definition.
+- `prefers-reduced-motion` disables shake, bobbing, traveling route packets,
+  scan motion, and decorative animation while preserving state indicators.
+  `?quality=low` (also selected automatically on devices reporting four or fewer
+  logical processors) reduces cached texture marks and particle counts.
+- `docs/VISUAL_ASSET_MANIFEST.md` records provenance, palette semantics, scale,
+  timing, bundle policy, performance fallback, and the intake gate for future
+  approved GridWatchZero raster assets. No runtime asset or font request was
+  added.
+- This slice does not modify `src/sim`, waves, units, scoring, leaderboard code,
+  Supabase, or the validator bundle. GridWatchGamesDB remains untouched.
+- Browser verification passed at 320×568, 390×844, 568×320, and 1440×900 with
+  no mobile document overflow. Forced low-quality and reduced-motion modes were
+  exercised, offline mode made no non-static requests, and the browser console
+  had no errors. A 120-frame active Core Vault sample sustained the test
+  machine's 120 Hz refresh with a 9.7 ms p95 frame time; real mid-range phone
+  profiling remains the promotion gate.
+- Phase 2 promotion PR #40 is merged. Phase 3 PR #41 is ready for review at
+  `https://github.com/remeadows/gridwatch-signal-breach/pull/41`; its Cloudflare
+  preview is
+  `https://codex-visual-combat-feedback.gridwatch-signal-breach.pages.dev`.
+
+## Completed Phase 2 — 2026-07-15
+
+- The approved economy/Build-phase clarity slice was implemented on
+  `codex/build-phase-clarity`, merged through PR #39, and promoted to `main`
+  through PR #40 after the Phase 1 work in PR #38.
 - Every prep interval is now an unlimited, player-controlled Build phase. The
   player can place or sell hardware while deterministic time is frozen, then
   press `LAUNCH W#` (or Enter) to record the existing `skipPrep` command and run
@@ -29,9 +68,7 @@
   feedback, affordability updates, Enter/click launch, next-wave Build re-entry,
   pause, four-tool and six-tool docks, and a request/error-free offline run were
   checked. Real iOS and Android hardware remains the promotion gate.
-- Draft PR #39 is open at
-  `https://github.com/remeadows/gridwatch-signal-breach/pull/39`. Its Cloudflare
-  branch preview is
+- The historical Phase 2 branch preview remains at
   `https://codex-build-phase-clarity.gridwatch-signal-breach.pages.dev`.
 
 ## Active Mobile Work — 2026-07-15
@@ -113,9 +150,11 @@ Note: the previous "zero network / no `import.meta.env`" invariant no longer hol
 
 ## Good Next Checks
 
-- On the Phase 2 Cloudflare Pages preview, run ten consecutive intended placements
+- Review and merge Phase 3 PR #41, which now targets `main` directly.
+- On the Phase 3 Cloudflare Pages preview, run ten consecutive intended placements
   on real iOS and Android hardware in portrait and landscape. Confirm backgrounding
-  and rotation pause without advancing an unseen wave.
+  and rotation pause without advancing an unseen wave, reduced-motion behavior,
+  and sustained frame pacing during the busiest visible wave.
 - Playtest the Build-to-launch cadence across W1-W12 and record completion rate,
   first-failure wave, unused bandwidth, and most-used tools before changing
   economy values. Any later rules/tuning change must use the validator/Edge

@@ -2,6 +2,7 @@ import "./style.css";
 import { SECTORS } from "./data/levels";
 import { installPointerInput } from "./input/pointer";
 import { drawAmbientBackdrop, drawGrid } from "./render/renderer";
+import { getEffectsQuality } from "./render/visualTheme";
 import { applyCommand, createGameState, tick } from "./sim";
 import { createAudioEngine } from "./ui/audio";
 import { renderHud } from "./ui/hud";
@@ -50,6 +51,14 @@ const playUiContainer = playUiRoot;
 const screenContainer = screenRoot;
 const audio = createAudioEngine();
 const MAX_SECTOR_ID = SECTORS.length;
+const effectsQuality = getEffectsQuality();
+const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+let reducedMotion = reducedMotionQuery.matches;
+
+document.documentElement.dataset.effectsQuality = effectsQuality;
+reducedMotionQuery.addEventListener("change", (event) => {
+  reducedMotion = event.matches;
+});
 
 function makeRunSeed(): string {
   const fixed = new URLSearchParams(window.location.search).get("seed");
@@ -75,6 +84,7 @@ function dispatch(command: SimCommand): void {
 
 let progress: CampaignProgress = loadCampaignProgress();
 let currentSector = getInitialSector(progress);
+document.documentElement.dataset.sector = String(currentSector);
 let currentSeed = "";
 let recordedCommands: RecordedCommand[] = [];
 let state = createRunState();
@@ -158,6 +168,7 @@ function enterPlaying(playStartAudio = true): void {
 
 function startSector(sectorId: number): void {
   currentSector = clampSector(sectorId, progress.highestUnlockedSector);
+  document.documentElement.dataset.sector = String(currentSector);
   state = createRunState();
   selectedTool = getDefaultTool(state);
   hoverTile = null;
@@ -379,6 +390,8 @@ function drawFrame(now: number): void {
       focus: inspectedTile,
       selectedTool,
       buildMode: state.phase === "prep" && !runStarted,
+      reducedMotion,
+      effectsQuality,
     });
     hudContainer.hidden = false;
     unitPickerContainer.hidden = false;
@@ -441,9 +454,17 @@ function drawFrame(now: number): void {
         focus: null,
         selectedTool,
         buildMode: false,
+        reducedMotion,
+        effectsQuality,
       });
     } else {
-      drawAmbientBackdrop(renderContext, canvasSize, now);
+      drawAmbientBackdrop(
+        renderContext,
+        canvasSize,
+        now,
+        reducedMotion,
+        effectsQuality,
+      );
     }
 
     hoverTile = null;

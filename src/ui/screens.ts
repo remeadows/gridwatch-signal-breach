@@ -148,6 +148,7 @@ function renderTitleScreen(options: ScreenOptions): void {
   }
 
   const screen = document.createElement("section");
+  const kicker = document.createElement("span");
   const logo = document.createElement("div");
   const title = document.createElement("strong");
   const subtitle = document.createElement("span");
@@ -162,6 +163,8 @@ function renderTitleScreen(options: ScreenOptions): void {
   root.innerHTML = "";
   root.dataset.screenKey = "title";
   screen.className = "screen screen-title";
+  kicker.className = "screen-title-kicker";
+  kicker.textContent = "OPERATOR LINK // LIVE";
   logo.className = "screen-logo";
   title.className = "screen-logo-main";
   title.dataset.text = "GRIDWATCH";
@@ -189,7 +192,7 @@ function renderTitleScreen(options: ScreenOptions): void {
 
   logo.append(title, subtitle, scanline);
   actions.append(startButton, briefingButton, leaderboardButton);
-  screen.append(logo, tagline, actions, footer);
+  screen.append(kicker, logo, tagline, actions, footer);
   root.append(screen);
 }
 
@@ -256,6 +259,7 @@ function createSectorCard(
 
   button.type = "button";
   button.className = `sector-card ${isUnlocked ? "unlocked" : "locked"} ${isCleared ? "cleared" : ""}`;
+  button.dataset.sector = String(sector.id);
   button.disabled = !isUnlocked;
   button.addEventListener("click", () => onSelectSector(sector.id));
 
@@ -462,6 +466,7 @@ function renderBriefingScreen(options: ScreenOptions): void {
   root.dataset.screenKey = key;
   screen.className = "screen screen-briefing";
   panel.className = "briefing-panel";
+  panel.dataset.sector = String(options.briefingMaxSector);
   content.className = "briefing-content";
   nav.className = "briefing-nav";
   navLeft.className = "briefing-nav-left";
