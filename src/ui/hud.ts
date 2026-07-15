@@ -36,7 +36,7 @@ export function renderHud(root: HTMLElement, state: GameState, options: HudOptio
   updateHudMetric(
     root,
     "wave",
-    `WAVE ${wave.id} · ${state.waveIndex + 1}/${state.config.waves.length}`,
+    `W${wave.id} · ${state.waveIndex + 1}/${state.config.waves.length}`,
   );
   updateHudMetric(root, "phase", phaseLabel);
   updateHudMetric(root, "signal", state.signal.status.toUpperCase(), state.signal.status);

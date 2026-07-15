@@ -141,6 +141,9 @@ body {
   width: 100%;
   height: 100%;
   display: block;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
   border: 1px solid rgba(120, 255, 238, 0.42);
   background: #071017;
   box-shadow:
@@ -1085,73 +1088,206 @@ body {
 }
 
 @media (max-width: 760px) {
+  html,
   body {
-    overflow: auto;
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
   }
 
   .app-shell {
-    min-height: auto;
-    padding: 12px;
+    width: 100%;
+    height: 100dvh;
+    min-height: 100dvh;
+    align-content: stretch;
+    gap: 0;
+    padding:
+      calc(6px + env(safe-area-inset-top))
+      calc(8px + env(safe-area-inset-right))
+      calc(6px + env(safe-area-inset-bottom))
+      calc(8px + env(safe-area-inset-left));
+  }
+
+  .game-logo {
+    display: none;
   }
 
   .game-layout {
+    width: 100%;
+    height: 100%;
     grid-template-columns: 1fr;
-    width: min(100%, 560px);
-    gap: 12px;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 6px;
+    align-items: center;
+    justify-items: stretch;
   }
 
   .control-panel {
-    gap: 10px;
-    padding: 12px;
+    display: contents;
+  }
+
+  .control-panel::before {
+    display: none;
   }
 
   .game-panel {
-    width: min(100%, 720px);
+    grid-column: 1;
+    grid-row: 2;
+    width: min(100%, calc(100dvh - 230px));
+    min-width: 0;
+    min-height: 0;
     justify-self: center;
+    align-self: center;
   }
 
   .hud {
-    gap: 9px;
+    grid-column: 1;
+    grid-row: 1;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px;
+    padding: 6px;
+    border: 1px solid rgba(120, 255, 238, 0.28);
+    background:
+      linear-gradient(180deg, rgba(10, 28, 36, 0.94), rgba(5, 12, 18, 0.96)),
+      rgba(7, 16, 23, 0.96);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+    clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
   }
 
-  .hud-hero {
-    gap: 8px;
-  }
-
-  .hud-metric-primary {
-    padding: 8px;
-  }
-
-  .hud-metric-primary strong {
-    font-size: 24px;
-  }
-
+  .hud-hero,
   .hud-rail {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: 10px;
+    display: contents;
   }
 
-  .hud-briefing-button {
+  .hud-metric,
+  .hud-metric-primary {
+    min-width: 0;
+    min-height: 40px;
+    display: grid;
+    align-content: center;
+    justify-items: start;
+    gap: 2px;
+    padding: 5px 6px;
+    border: 1px solid rgba(120, 255, 238, 0.2);
+    background: rgba(3, 9, 13, 0.5);
+  }
+
+  .hud-metric span,
+  .hud-metric-primary span {
+    max-width: 100%;
+    overflow: hidden;
+    color: rgba(215, 255, 247, 0.58);
+    font-size: 8px;
+    line-height: 1;
+    text-overflow: clip;
+    white-space: nowrap;
+  }
+
+  .hud-metric strong,
+  .hud-metric-primary strong {
+    max-width: 100%;
+    overflow: hidden;
+    font-size: clamp(11px, 3.5vw, 16px);
+    line-height: 1;
+    text-overflow: clip;
+    white-space: nowrap;
+  }
+
+  .hud-metric-secondary {
+    border-bottom: 1px solid rgba(120, 255, 238, 0.2);
+  }
+
+  .hud-metric[data-hud-metric="sector"],
+  .hud-metric[data-hud-metric="phase"],
+  .hud-metric[data-hud-metric="intrusions"],
+  .hud-metric[data-hud-metric="neutralized"] {
+    display: none;
+  }
+
+  .hud-actions {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px;
+    margin: 0;
+  }
+
+  .hud-actions:has(.hud-pause-button[hidden]) .hud-briefing-button {
     grid-column: 1 / -1;
   }
 
+  .hud-pause-button,
+  .hud-briefing-button {
+    min-height: 44px;
+    padding: 6px 10px;
+    font-size: 10px;
+  }
+
   .unit-picker {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-column: 1;
+    grid-row: 3;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px;
+    padding: 6px;
+    border: 1px solid rgba(120, 255, 238, 0.28);
+    background:
+      linear-gradient(180deg, rgba(10, 28, 36, 0.94), rgba(5, 12, 18, 0.96)),
+      rgba(7, 16, 23, 0.96);
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.28);
+    clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  }
+
+  .unit-picker[data-tool-count="5"],
+  .unit-picker[data-tool-count="6"] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .tool-button {
-    min-height: 42px;
-    gap: 8px;
+    min-width: 0;
+    min-height: 54px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: 24px auto;
+    gap: 1px 3px;
+    padding: 3px 4px;
+  }
+
+  .tool-icon {
+    width: 22px;
+    height: 22px;
+    grid-column: 1 / -1;
+    justify-self: center;
+  }
+
+  .tool-name,
+  .tool-cost {
+    overflow: hidden;
+    font-size: clamp(8px, 2.5vw, 10px);
+    line-height: 1;
+    text-overflow: clip;
+    white-space: nowrap;
+  }
+
+  .tool-cost {
+    justify-self: end;
   }
 
   .overlay-root {
-    padding: 10px;
-    align-items: start;
+    padding: 8px;
   }
 
   .overlay-panel {
     width: min(100%, 420px);
-    padding: 14px;
+    padding: 12px;
+  }
+
+  .start-panel .overlay-title,
+  .pause-panel .overlay-title {
+    font-size: clamp(16px, 5vw, 20px);
+  }
+
+  .start-panel p,
+  .pause-panel p {
+    font-size: clamp(12px, 3.7vw, 16px);
   }
 
   .overlay-countdown {
@@ -1224,19 +1360,85 @@ body {
   .briefing-nav .neon-button {
     width: 100%;
   }
+
+  .overlay-root[data-overlay-key^="won"],
+  .overlay-root[data-overlay-key^="lost"] {
+    position: fixed;
+    inset: 0;
+    z-index: 15;
+    display: block;
+    padding:
+      calc(12px + env(safe-area-inset-top))
+      calc(12px + env(safe-area-inset-right))
+      calc(12px + env(safe-area-inset-bottom))
+      calc(12px + env(safe-area-inset-left));
+    overflow-y: auto;
+    background: rgba(3, 7, 11, 0.96);
+  }
+
+  .overlay-root[data-overlay-key^="won"] .terminal-panel,
+  .overlay-root[data-overlay-key^="lost"] .terminal-panel {
+    width: min(100%, 530px);
+    margin: 0 auto;
+  }
 }
 
-@media (max-width: 420px) {
-  .hud-rail {
+@media (max-width: 760px) and (max-height: 520px) and (orientation: landscape) {
+  .app-shell {
+    padding:
+      calc(4px + env(safe-area-inset-top))
+      calc(6px + env(safe-area-inset-right))
+      calc(4px + env(safe-area-inset-bottom))
+      calc(6px + env(safe-area-inset-left));
+  }
+
+  .game-layout {
+    grid-template-columns: minmax(116px, 1fr) minmax(240px, calc(100dvh - 24px)) minmax(116px, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    gap: 6px;
+  }
+
+  .hud {
+    grid-column: 1;
+    grid-row: 1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-content: center;
+    padding: 4px;
+  }
+
+  .hud-actions {
+    grid-column: 1 / -1;
     grid-template-columns: 1fr;
   }
 
-  .tool-button {
-    grid-template-columns: 24px 1fr;
+  .hud-pause-button,
+  .hud-briefing-button {
+    min-height: 38px;
   }
 
-  .tool-cost {
+  .game-panel {
     grid-column: 2;
+    grid-row: 1;
+    width: 100%;
+    max-height: 100%;
+  }
+
+  .unit-picker,
+  .unit-picker[data-tool-count="5"],
+  .unit-picker[data-tool-count="6"] {
+    grid-column: 3;
+    grid-row: 1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-content: center;
+    padding: 4px;
+  }
+
+  .tool-button {
+    min-height: 52px;
+  }
+
+  .overlay-panel {
+    font-size: 12px;
   }
 }
 
