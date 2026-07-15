@@ -6,6 +6,7 @@ import { applyCommand, createGameState, tick } from "./sim";
 import { createAudioEngine } from "./ui/audio";
 import { renderHud } from "./ui/hud";
 import { renderOverlay } from "./ui/overlays";
+import { renderPlayUi, type PlayNotice } from "./ui/playUi";
 import {
   hasSeenBriefing,
   loadCampaignProgress,
@@ -15,19 +16,22 @@ import {
   type CampaignProgress,
 } from "./ui/screens";
 import { renderUnitPicker } from "./ui/unitPicker";
+import { getCommandFeedback } from "./ui/toolInfo";
 import { leaderboardConfig } from "./leaderboard/config";
 import { submitScore } from "./leaderboard/api";
 import { accessToken, accountState, initAccount, onAccountChange } from "./leaderboard/account";
 import { savePendingRun, takePendingRun } from "./leaderboard/pendingRun";
 import type { GamePhase, GridPosition, PlayerTool, RecordedCommand, SimCommand } from "./sim";
+import { getCurrentWave } from "./sim/waves";
 
 const canvas = document.querySelector<HTMLCanvasElement>("#game-canvas");
 const hudRoot = document.querySelector<HTMLElement>("#hud-root");
 const unitPickerRoot = document.querySelector<HTMLElement>("#unit-picker-root");
 const overlayRoot = document.querySelector<HTMLElement>("#overlay-root");
+const playUiRoot = document.querySelector<HTMLElement>("#play-ui-root");
 const screenRoot = document.querySelector<HTMLElement>("#screen-root");
 
-if (!canvas || !hudRoot || !unitPickerRoot || !overlayRoot || !screenRoot) {
+if (!canvas || !hudRoot || !unitPickerRoot || !overlayRoot || !playUiRoot || !screenRoot) {
   throw new Error("Game shell elements not found.");
 }
 
@@ -42,6 +46,7 @@ const renderContext = context;
 const hudContainer = hudRoot;
 const unitPickerContainer = unitPickerRoot;
 const overlayContainer = overlayRoot;
+const playUiContainer = playUiRoot;
 const screenContainer = screenRoot;
 const audio = createAudioEngine();
 const MAX_SECTOR_ID = SECTORS.length;
@@ -78,13 +83,15 @@ let screen: AppScreen = "title";
 let briefingReturn: AppScreen = "sectorSelect";
 let leaderboardReturn: AppScreen = "title";
 let hoverTile: GridPosition | null = null;
+let inspectedTile: GridPosition | null = null;
 let lastTickTime = performance.now();
 let previousPhase: GamePhase = state.phase;
-// UI-only clock gates (no effect on the deterministic sim or the recorded
-// command log): the sim ticks on wall-clock only while a run has been started
-// and isn't paused.
+// UI-only clock gates (no effect on the deterministic sim or replay format):
+// each prep phase is an unlimited Build phase. LAUNCH records the existing
+// skipPrep command, then the sim ticks only while that wave is running.
 let runStarted = false;
 let paused = false;
+let gameplayNotice: PlayNotice | null = createWaveGrantNotice(state);
 // Banner shown on the leaderboard after a run is auto-submitted post-sign-in.
 let leaderboardNotice: string | null = null;
 let pendingRunHandled = false;
@@ -93,19 +100,28 @@ installPointerInput({
   canvas: gameCanvas,
   getState: () => state,
   getSelectedTool: () => selectedTool,
-  isEnabled: () => screen === "playing" && runStarted && !paused,
+  isEnabled: () => screen === "playing" && !paused && isMatchInProgress(),
   onHover: (position) => {
     hoverTile = position;
   },
-  dispatch: (command) => {
-    dispatch(command);
-  },
+  dispatch: handlePlayerCommand,
 });
 
 // Keyboard pause toggle. Escape / P mirror the HUD pause button during a live
 // match. (Space is intentionally excluded — it activates focused buttons and
 // scrolls the page.)
 window.addEventListener("keydown", (event) => {
+  if (
+    event.key === "Enter" &&
+    screen === "playing" &&
+    state.phase === "prep" &&
+    !runStarted
+  ) {
+    event.preventDefault();
+    launchWave();
+    return;
+  }
+
   if (event.key !== "Escape" && event.key !== "p" && event.key !== "P") {
     return;
   }
@@ -145,7 +161,9 @@ function startSector(sectorId: number): void {
   state = createRunState();
   selectedTool = getDefaultTool(state);
   hoverTile = null;
+  inspectedTile = null;
   armRun();
+  gameplayNotice = createWaveGrantNotice(state);
   enterPlaying();
 }
 
@@ -153,12 +171,14 @@ function retrySector(): void {
   state = createRunState();
   selectedTool = getDefaultTool(state);
   hoverTile = null;
+  inspectedTile = null;
   armRun();
+  gameplayNotice = createWaveGrantNotice(state);
   enterPlaying();
 }
 
-// Resets the clock gates for a fresh run: the prep timer stays frozen behind
-// the START cover until the player explicitly begins.
+// Resets the clock gates for a fresh Build phase. Placement remains enabled,
+// but deterministic time stays frozen until the player launches the wave.
 function armRun(): void {
   runStarted = false;
   paused = false;
@@ -170,12 +190,16 @@ function isMatchInProgress(): boolean {
   return state.phase === "prep" || state.phase === "active";
 }
 
-function startRun(): void {
-  if (runStarted) {
+function launchWave(): void {
+  if (runStarted || state.phase !== "prep") {
     return;
   }
+
+  const wave = getCurrentWave(state);
+  dispatch({ type: "skipPrep" });
   runStarted = true;
   lastTickTime = performance.now();
+  showGameplayNotice(`Wave ${wave.id} live · hold the signal`, "info", 2400);
   audio.playUi("start");
 }
 
@@ -205,6 +229,7 @@ function resumeMatch(): void {
 function openSectorSelect(): void {
   screen = "sectorSelect";
   hoverTile = null;
+  inspectedTile = null;
   audio.playUi("select");
 }
 
@@ -213,6 +238,7 @@ function openLeaderboard(): void {
   leaderboardNotice = null;
   screen = "leaderboard";
   hoverTile = null;
+  inspectedTile = null;
   audio.playUi("select");
 }
 
@@ -220,6 +246,7 @@ function closeLeaderboard(): void {
   leaderboardNotice = null;
   screen = leaderboardReturn;
   hoverTile = null;
+  inspectedTile = null;
   audio.playUi("select");
 }
 
@@ -259,6 +286,7 @@ async function maybeAutoSubmitPendingRun(): Promise<void> {
 function returnToTitle(): void {
   screen = "title";
   hoverTile = null;
+  inspectedTile = null;
   audio.playUi("select");
 }
 
@@ -266,6 +294,7 @@ function showBriefing(returnScreen: AppScreen): void {
   briefingReturn = returnScreen;
   screen = "briefing";
   hoverTile = null;
+  inspectedTile = null;
   audio.playUi("select");
 }
 
@@ -287,8 +316,8 @@ function drawFrame(now: number): void {
 
   if (screen === "playing") {
     const tickMs = state.config.simulationTickMs;
-    // Hold the sim clock until the player presses START, and freeze it while
-    // paused. Advancing lastTickTime on resume/start avoids a catch-up burst.
+    // Hold deterministic time throughout Build and while paused. Advancing
+    // lastTickTime on launch/resume avoids a catch-up burst.
     const clockRunning = runStarted && !paused;
 
     while (
@@ -297,15 +326,39 @@ function drawFrame(now: number): void {
       state.phase !== "lost" &&
       now - lastTickTime >= tickMs
     ) {
+      const phaseBeforeTick = state.phase;
+      const bandwidthBeforeTick = state.bandwidth;
       state = tick(state);
+      const enteredBuild = phaseBeforeTick === "active" && state.phase === "prep";
 
       if (previousPhase !== "won" && state.phase === "won") {
         progress = markSectorCleared(progress, currentSector);
       }
 
+      if (state.bandwidth > bandwidthBeforeTick && !enteredBuild) {
+        showGameplayNotice(
+          `+${state.bandwidth - bandwidthBeforeTick} BW · signal trickle`,
+          "good",
+        );
+      }
+
       previousPhase = state.phase;
       audio.playEvents(state.events);
       lastTickTime += tickMs;
+
+      if (enteredBuild) {
+        runStarted = false;
+        paused = false;
+        inspectedTile = null;
+        lastTickTime = now;
+        const nextWave = getCurrentWave(state);
+        showGameplayNotice(
+          `+${nextWave.bandwidthGrant} BW · wave ${nextWave.id} grant`,
+          "good",
+          3200,
+        );
+        break;
+      }
     }
 
     const interpolationAlpha = Math.min(
@@ -323,7 +376,9 @@ function drawFrame(now: number): void {
         : 0,
       timeMs: now,
       hover: hoverTile,
+      focus: inspectedTile,
       selectedTool,
+      buildMode: state.phase === "prep" && !runStarted,
     });
     hudContainer.hidden = false;
     unitPickerContainer.hidden = false;
@@ -339,21 +394,26 @@ function drawFrame(now: number): void {
       selectedTool,
       onSelect: (tool) => {
         selectedTool = tool;
+        inspectedTile = null;
+        gameplayNotice = null;
         audio.playUi("select");
       },
+    });
+    renderPlayUi({
+      root: playUiContainer,
+      state,
+      selectedTool,
+      buildMode: state.phase === "prep" && !runStarted,
+      paused,
+      notice: gameplayNotice,
+      now,
+      onLaunchWave: launchWave,
     });
     renderOverlay({
       root: overlayContainer,
       state,
-      runStarted,
       paused,
-      onStartRun: startRun,
       onResume: resumeMatch,
-      onSkipPrep: () => {
-        dispatch({ type: "skipPrep" });
-        lastTickTime = performance.now();
-        audio.playUi("start");
-      },
       onRestart: retrySector,
       onReturnToTitle: returnToTitle,
       onSectorSelect: openSectorSelect,
@@ -378,7 +438,9 @@ function drawFrame(now: number): void {
         shakeMagnitude: 0,
         timeMs: now,
         hover: null,
+        focus: null,
         selectedTool,
+        buildMode: false,
       });
     } else {
       drawAmbientBackdrop(renderContext, canvasSize, now);
@@ -388,6 +450,7 @@ function drawFrame(now: number): void {
     hudContainer.hidden = true;
     unitPickerContainer.hidden = true;
     overlayContainer.hidden = true;
+    playUiContainer.hidden = true;
   }
 
   renderScreens({
@@ -436,6 +499,43 @@ function getInitialSector(currentProgress: CampaignProgress): number {
   return Number.isFinite(requested)
     ? clampSector(requested, currentProgress.highestUnlockedSector)
     : 1;
+}
+
+function handlePlayerCommand(command: SimCommand): void {
+  const before = state;
+  dispatch(command);
+  const feedback = getCommandFeedback(before, state, command);
+
+  if (command.type === "placeUnit" && state !== before) {
+    inspectedTile = command.position;
+  } else if (command.type === "sellUnit" && state !== before) {
+    inspectedTile = null;
+  }
+
+  if (feedback) {
+    showGameplayNotice(feedback.message, feedback.tone);
+  }
+}
+
+function createWaveGrantNotice(runState: ReturnType<typeof createGameState>): PlayNotice {
+  const wave = getCurrentWave(runState);
+  return {
+    message: `+${wave.bandwidthGrant} BW · wave ${wave.id} grant`,
+    tone: "good",
+    expiresAt: performance.now() + 4000,
+  };
+}
+
+function showGameplayNotice(
+  message: string,
+  tone: PlayNotice["tone"],
+  durationMs = 1800,
+): void {
+  gameplayNotice = {
+    message,
+    tone,
+    expiresAt: performance.now() + durationMs,
+  };
 }
 
 function getNextSectorHandler(): (() => void) | null {
