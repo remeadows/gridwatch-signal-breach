@@ -1,5 +1,39 @@
 # GridWatch Handoff
 
+## Active Phase 2 Work — 2026-07-15
+
+- Codex is implementing the approved economy/Build-phase clarity slice on
+  `codex/build-phase-clarity`, stacked on the Phase 1 branch and draft PR #38.
+- Every prep interval is now an unlimited, player-controlled Build phase. The
+  player can place or sell hardware while deterministic time is frozen, then
+  press `LAUNCH W#` (or Enter) to record the existing `skipPrep` command and run
+  the wave. The next Build phase freezes immediately after the previous wave.
+- Build intel now identifies the wave grant, intrusion count/types, and entry
+  edges. Canvas entry markers and likely-path previews make the threat readable
+  before launch; Wave 1 explicitly teaches that ICE attacks and Firewalls block.
+- Tool cards now explain purpose, show costs as bandwidth, and distinguish an
+  unaffordable `NEED #` state from the Scrubber's `WAIT` state. The in-canvas
+  readout reports grants, placement costs, sale refunds, invalid placement
+  reasons, and bandwidth trickle. A successful placement keeps its range or
+  effect area highlighted for touch players.
+- This slice does not change `src/sim`, wave/unit tuning, scoring, leaderboard
+  code, the Supabase schema, or the score-validation Edge Function. A replay
+  boundary check confirmed that placements before launch and between waves
+  reproduce exactly through the existing command log and validator. The
+  generated validator bundle remains byte-identical.
+- Full Build-phase refunds are deliberately deferred: changing the existing
+  partial-refund rule would alter deterministic economy and requires a versioned
+  ruleset/validator release. The UI reports the actual refund instead.
+- Browser verification passed at 320×568, 390×844, 568×320, and 1440×900 with
+  zero mobile document scroll. Pre-launch placement, clock freeze, invalid-tile
+  feedback, affordability updates, Enter/click launch, next-wave Build re-entry,
+  pause, four-tool and six-tool docks, and a request/error-free offline run were
+  checked. Real iOS and Android hardware remains the promotion gate.
+- Draft PR #39 is open at
+  `https://github.com/remeadows/gridwatch-signal-breach/pull/39`. Its Cloudflare
+  branch preview is
+  `https://codex-build-phase-clarity.gridwatch-signal-breach.pages.dev`.
+
 ## Active Mobile Work — 2026-07-15
 
 - Codex is implementing the approved Phase 0/Phase 1 mobile-playability slice on
@@ -79,12 +113,13 @@ Note: the previous "zero network / no `import.meta.env`" invariant no longer hol
 
 ## Good Next Checks
 
-- On the Phase 1 Cloudflare Pages preview, run ten consecutive intended placements
+- On the Phase 2 Cloudflare Pages preview, run ten consecutive intended placements
   on real iOS and Android hardware in portrait and landscape. Confirm backgrounding
   and rotation pause without advancing an unseen wave.
-- After the real-device gate, begin Phase 2 economy/Build-phase clarity. Any Build
-  timing change that affects replay must be versioned and released with the
-  validator/Edge Function compatibility sequence in the plan.
+- Playtest the Build-to-launch cadence across W1-W12 and record completion rate,
+  first-failure wave, unused bandwidth, and most-used tools before changing
+  economy values. Any later rules/tuning change must use the validator/Edge
+  Function compatibility sequence in the plan.
 - Do not start the old Phase 5 projection work before Phase 2 clarity is validated;
   re-evaluate 2.5D depth only after the game is legible and controllable.
 - Playtest W1-W12 after any tuning change and confirm W1 is forgiving, sector 2 introduces hunter/splitter plus scrubber pressure cleanly, and sector 3's overclock tool has visible value against the scripted goliath.

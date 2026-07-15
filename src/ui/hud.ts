@@ -135,7 +135,7 @@ function updateHudMetric(
 function getPhaseLabel(state: GameState): string {
   switch (state.phase) {
     case "prep":
-      return `PREP ${Math.ceil((state.prepTicksRemaining * state.config.simulationTickMs) / 1000)}s`;
+      return "BUILD";
     case "active":
       return "LIVE";
     case "won":

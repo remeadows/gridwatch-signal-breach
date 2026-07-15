@@ -42,7 +42,8 @@ export const BRIEFING_COPY = {
   arsenalTitle: "YOUR ARSENAL",
   protocolsTitle: "PROTOCOLS",
   threatsTitle: "THE THREATS",
-  arsenalIntro: "Click a tool, click a tile. SELL refunds part of the cost.",
+  arsenalIntro:
+    "Choose a tool, place it on the grid, then LAUNCH WAVE when your route and defenses are ready. SELL returns the listed refund.",
   threatsIntro:
     "Intrusions corrupt your hardware by standing on it, chew through walls when boxed in, and drain the Core by touch. Clear every wave of the sector.",
 } as const;
@@ -139,9 +140,9 @@ export const BRIEFING_PROTOCOLS: readonly BriefingRow[] = [
   },
   {
     icon: "source",
-    name: "Prep",
+    name: "Build + Launch",
     summary:
-      "between waves the clock pauses for you. Build, sell, then SKIP PREP to start early.",
+      "between waves time is frozen. Read the entry intel, build without a timer, then press LAUNCH WAVE to begin combat.",
   },
 ] as const;
 
