@@ -3,10 +3,9 @@
 ## Active Phase 3 Work — 2026-07-15
 
 - Codex is implementing the approved visual-foundation slice on
-  `codex/visual-combat-feedback-phase-3`, stacked on the clean Phase 2 promotion
-  branch. PR #40 (`codex/promote-build-phase-clarity` → `main`) is required
-  because PR #39 was merged into the Phase 1 branch after Phase 1 had already
-  been squash-merged to `main`.
+  `codex/visual-combat-feedback-phase-3`. Phase 2 promotion PR #40 is merged,
+  and the Phase 3 branch has been rebased onto that new `main` tip so its review
+  diff contains only Phase 3.
 - The title now uses a cinematic local CSS operator/rain treatment derived from
   the approved attachment direction. Sector cards, briefing panels, results,
   board chrome, and ambient page lighting share sector-aware visual tokens.
@@ -34,9 +33,7 @@
   had no errors. A 120-frame active Core Vault sample sustained the test
   machine's 120 Hz refresh with a 9.7 ms p95 frame time; real mid-range phone
   profiling remains the promotion gate.
-- Phase 2 promotion draft PR #40 is open at
-  `https://github.com/remeadows/gridwatch-signal-breach/pull/40`. Stacked Phase 3
-  draft PR #41 is open at
+- Phase 2 promotion PR #40 is merged. Phase 3 PR #41 is ready for review at
   `https://github.com/remeadows/gridwatch-signal-breach/pull/41`; its Cloudflare
   preview is
   `https://codex-visual-combat-feedback.gridwatch-signal-breach.pages.dev`.
@@ -154,8 +151,7 @@ Note: the previous "zero network / no `import.meta.env`" invariant no longer hol
 
 ## Good Next Checks
 
-- Merge Phase 2 promotion PR #40 before merging the stacked Phase 3 visual PR;
-  then retarget Phase 3 to `main` if GitHub does not do so automatically.
+- Review and merge Phase 3 PR #41, which now targets `main` directly.
 - On the Phase 3 Cloudflare Pages preview, run ten consecutive intended placements
   on real iOS and Android hardware in portrait and landscape. Confirm backgrounding
   and rotation pause without advancing an unseen wave, reduced-motion behavior,
