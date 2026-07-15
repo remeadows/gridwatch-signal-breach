@@ -12,6 +12,7 @@ import type {
   EnemyKind,
   GameState,
   GridPosition,
+  IntrusionState,
   PlayerTool,
   SignalState,
   SimEvent,
@@ -1055,7 +1056,14 @@ function drawHunterTargeting(
       continue;
     }
 
-    const from = getTileCenter(originX, originY, tileSize, intrusion.position);
+    const from = getIntrusionRenderPosition(
+      originX,
+      originY,
+      tileSize,
+      intrusion,
+      state.tickCount,
+      frame.interpolationAlpha,
+    );
     const to = getTileCenter(originX, originY, tileSize, target);
     const pulse = frame.reducedMotion ? 0.62 : 0.42 + pulse01(frame.timeMs, 620) * 0.34;
 
@@ -1336,10 +1344,15 @@ function drawIntrusions(
   for (const intrusion of state.intrusions) {
     const current = getTileCenter(originX, originY, tileSize, intrusion.position);
     const previous = getTileCenter(originX, originY, tileSize, intrusion.previousPosition);
-    const alpha =
-      intrusion.lastMoveTick === state.tickCount ? frame.interpolationAlpha : 1;
-    const x = previous.x + (current.x - previous.x) * alpha;
-    const y = previous.y + (current.y - previous.y) * alpha;
+    const renderPosition = getIntrusionRenderPosition(
+      originX,
+      originY,
+      tileSize,
+      intrusion,
+      state.tickCount,
+      frame.interpolationAlpha,
+    );
+    const { x, y } = renderPosition;
     const radius = tileSize * (intrusion.kind === "goliath" ? 0.32 : 0.24);
     const iconName = getEnemyIconName(intrusion.kind);
     const movementAngle =
@@ -1584,6 +1597,24 @@ function getTileCenter(
   return {
     x: originX + position.x * tileSize + tileSize / 2,
     y: originY + position.y * tileSize + tileSize / 2,
+  };
+}
+
+function getIntrusionRenderPosition(
+  originX: number,
+  originY: number,
+  tileSize: number,
+  intrusion: IntrusionState,
+  tickCount: number,
+  interpolationAlpha: number,
+): GridPosition {
+  const current = getTileCenter(originX, originY, tileSize, intrusion.position);
+  const previous = getTileCenter(originX, originY, tileSize, intrusion.previousPosition);
+  const alpha = intrusion.lastMoveTick === tickCount ? interpolationAlpha : 1;
+
+  return {
+    x: previous.x + (current.x - previous.x) * alpha,
+    y: previous.y + (current.y - previous.y) * alpha,
   };
 }
 

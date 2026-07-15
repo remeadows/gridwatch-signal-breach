@@ -38,10 +38,11 @@
   preview is
   `https://codex-visual-combat-feedback.gridwatch-signal-breach.pages.dev`.
 
-## Active Phase 2 Work — 2026-07-15
+## Completed Phase 2 — 2026-07-15
 
-- Codex is implementing the approved economy/Build-phase clarity slice on
-  `codex/build-phase-clarity`, stacked on the Phase 1 branch and draft PR #38.
+- The approved economy/Build-phase clarity slice was implemented on
+  `codex/build-phase-clarity`, merged through PR #39, and promoted to `main`
+  through PR #40 after the Phase 1 work in PR #38.
 - Every prep interval is now an unlimited, player-controlled Build phase. The
   player can place or sell hardware while deterministic time is frozen, then
   press `LAUNCH W#` (or Enter) to record the existing `skipPrep` command and run
@@ -67,9 +68,7 @@
   feedback, affordability updates, Enter/click launch, next-wave Build re-entry,
   pause, four-tool and six-tool docks, and a request/error-free offline run were
   checked. Real iOS and Android hardware remains the promotion gate.
-- Draft PR #39 is open at
-  `https://github.com/remeadows/gridwatch-signal-breach/pull/39`. Its Cloudflare
-  branch preview is
+- The historical Phase 2 branch preview remains at
   `https://codex-build-phase-clarity.gridwatch-signal-breach.pages.dev`.
 
 ## Active Mobile Work — 2026-07-15
