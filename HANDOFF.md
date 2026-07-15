@@ -35,6 +35,10 @@
   any later sim/tuning change needs replay ruleset versioning, validator-bundle
   synchronization, additive score handling, and a compatible Edge Function-first
   release.
+- Draft PR #38 is open at
+  `https://github.com/remeadows/gridwatch-signal-breach/pull/38`. Its Cloudflare
+  branch preview is
+  `https://codex-mobile-playability-pha.gridwatch-signal-breach.pages.dev`.
 
 ## Current State
 
@@ -75,9 +79,9 @@ Note: the previous "zero network / no `import.meta.env`" invariant no longer hol
 
 ## Good Next Checks
 
-- Publish the Phase 1 branch to a Cloudflare Pages preview and run ten consecutive
-  intended placements on real iOS and Android hardware in portrait and landscape.
-  Confirm backgrounding and rotation pause without advancing an unseen wave.
+- On the Phase 1 Cloudflare Pages preview, run ten consecutive intended placements
+  on real iOS and Android hardware in portrait and landscape. Confirm backgrounding
+  and rotation pause without advancing an unseen wave.
 - After the real-device gate, begin Phase 2 economy/Build-phase clarity. Any Build
   timing change that affects replay must be versioned and released with the
   validator/Edge Function compatibility sequence in the plan.
