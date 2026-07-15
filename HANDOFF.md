@@ -29,6 +29,10 @@
   feedback, affordability updates, Enter/click launch, next-wave Build re-entry,
   pause, four-tool and six-tool docks, and a request/error-free offline run were
   checked. Real iOS and Android hardware remains the promotion gate.
+- Draft PR #39 is open at
+  `https://github.com/remeadows/gridwatch-signal-breach/pull/39`. Its Cloudflare
+  branch preview is
+  `https://codex-build-phase-clarity.gridwatch-signal-breach.pages.dev`.
 
 ## Active Mobile Work — 2026-07-15
 
