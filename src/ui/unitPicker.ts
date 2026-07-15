@@ -29,6 +29,7 @@ export function renderUnitPicker(options: UnitPickerOptions): void {
   const { root, state, selectedTool, onSelect } = options;
   const toolsKey = state.config.toolsUnlocked.join(",");
   root.className = "unit-picker";
+  root.dataset.toolCount = String(state.config.toolsUnlocked.length);
 
   if (root.dataset.ready !== toolsKey) {
     root.innerHTML = "";
@@ -81,7 +82,9 @@ export function renderUnitPicker(options: UnitPickerOptions): void {
     const cost = state.config.units[unit].cost;
     const costElement = button.querySelector<HTMLElement>("[data-tool-cost]");
 
-    button.className = selectedTool === unit ? "tool-button selected" : "tool-button";
+    const selected = selectedTool === unit;
+    button.className = selected ? "tool-button selected" : "tool-button";
+    button.setAttribute("aria-pressed", String(selected));
     button.disabled =
       state.phase === "won" ||
       state.phase === "lost" ||
@@ -98,7 +101,9 @@ export function renderUnitPicker(options: UnitPickerOptions): void {
     return;
   }
 
-  sellButton.className = selectedTool === "sell" ? "tool-button selected" : "tool-button";
+  const sellSelected = selectedTool === "sell";
+  sellButton.className = sellSelected ? "tool-button selected" : "tool-button";
+  sellButton.setAttribute("aria-pressed", String(sellSelected));
   sellButton.disabled = state.phase === "won" || state.phase === "lost";
 }
 

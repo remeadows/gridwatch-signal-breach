@@ -119,6 +119,17 @@ window.addEventListener("keydown", (event) => {
   }
 });
 
+// Mobile browsers can suspend the page or rotate the viewport without a clean
+// animation-frame handoff. Pause before either transition so returning to the
+// game never advances an unseen wave or creates a catch-up burst.
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    pauseForInterruption();
+  }
+});
+window.addEventListener("pagehide", pauseForInterruption);
+window.screen.orientation?.addEventListener("change", pauseForInterruption);
+
 function enterPlaying(playStartAudio = true): void {
   screen = "playing";
   lastTickTime = performance.now();
@@ -174,6 +185,12 @@ function pauseMatch(): void {
   }
   paused = true;
   audio.playUi("select");
+}
+
+function pauseForInterruption(): void {
+  if (screen === "playing" && runStarted && !paused && isMatchInProgress()) {
+    pauseMatch();
+  }
 }
 
 function resumeMatch(): void {
