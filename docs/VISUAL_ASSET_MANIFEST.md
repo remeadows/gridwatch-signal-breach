@@ -25,7 +25,7 @@ source license and crop-safe master have not yet been documented.
 | Unit and intrusion glyphs | Existing project-owned path definitions | Canvas2D/SVG | Tactical silhouettes | Existing bundle |
 | Combat effects | Project-authored deterministic Canvas2D primitives | Canvas2D | Spawn, hit, kill, corruption, boss, and damage feedback | Per-frame only |
 | Sector key-art fields | Project-authored CSS gradients and geometric motifs | CSS | Sector-select cards | 0 transferred bytes beyond CSS |
-| Phase 6 Source, Core, Relay, Firewall, ICE turret, Probe, Crawler, Spoof, Hunter | OpenAI ImageGen source masters; local chroma-key extraction; prompt/hash manifest | Local PNG/WebP + Canvas2D | Opt-in visual slices (`?art=phase6`) | 512 KiB runtime cap |
+| Phase 6 Source, Core, Relay, Firewall, ICE turret, Probe, Crawler, Spoof, Hunter, Splitter, Goliath | OpenAI ImageGen source masters; local chroma-key extraction; prompt/hash manifest | Local PNG/WebP + Canvas2D | Opt-in visual slices (`?art=phase6`) | 768 KiB runtime cap |
 
 ## Palette and Tactical Semantics
 
@@ -94,3 +94,13 @@ procedural. Their source masters, prompt records, alpha extraction, dimensions,
 and SHA-256 records are in the machine-readable manifest. These three new
 pieces await contextual desktop/mobile approval; Probe remains the approved
 hostile anchor. Glyph mode remains the default and fallback for every enemy.
+
+## Phase 6D-B Final Enemy Slice
+
+Splitter and Goliath complete the current enemy roster on the same opt-in
+Canvas2D path. Splitter retains the procedural death-spawn behavior from the
+simulation, and Goliath retains its procedural warning ring, boss health plate,
+and reduced-motion-safe feedback. Goliath uses a 384px alpha WebP runtime asset
+within its 160 KiB per-boss limit; the aggregate cap is raised to 768 KiB, still
+well inside the Phase 6 plan's 1.5 MiB full-roster ceiling. Both assets await
+contextual desktop/mobile approval. Glyph mode remains the default and fallback.
