@@ -1,9 +1,11 @@
 # GridWatch Phase 5, 3D Asset, and 30-Level Expansion Plan
 
-Status: Phase 6B authorizes only the opt-in, render-only Relay/ICE-turret/Probe
-vertical slice in PR #44. Owner contextual visual acceptance is still required
-before merge; full-roster generation and the thirty-level expansion remain
-blocked pending their separate approvals.
+Status: Phase 6's full thirteen-family roster is owner-approved and is the
+default board presentation after PR #51; `?art=glyphs` remains the rollback and
+automatic load-failure fallback. The owner approved the `expansion-1` level
+definition below. The required documentation-only scope-authority PR is now in
+review; no expansion code, content, assets, database behavior, or deployment is
+authorized until it merges.
 
 Date: 2026-07-16
 
@@ -37,7 +39,7 @@ proposed definition is:
 - no persistent stat upgrades;
 - a new immutable replay ruleset and isolated leaderboard categories.
 
-This level definition is an approval item. It follows the original product goal
+This level definition is owner-approved. It follows the original product goal
 of five rounds per level, but it turns the expansion into a substantial content
 program rather than a single feature.
 
@@ -106,30 +108,46 @@ tool costs, and board state are readable. The weakness is the piece language:
   height, and contact with the board while retaining immediate recognition at
   approximately 40-55 CSS pixels on a phone.
 
-## 4. Required approvals before implementation
+## 4. Approval record and implementation gates
 
-The owner must approve these four decisions before production implementation:
+The owner approved the campaign definition and its isolation from the accepted
+campaign. The existing owner-approved Phase 6 roster establishes the current
+rendering direction. Expansion implementation remains gated as follows:
 
-1. **Level semantics:** thirty levels means six chapters of five levels, with
-   five waves per level, for 150 new waves.
-2. **Rendering strategy:** realistic pre-rendered 3D sprites on the existing
-   top-down Canvas2D board, not a runtime 3D engine or tilted board.
-3. **Visual selection process:** generate exactly three contextual style-frame
-   options, choose one, then generate production assets one family at a time.
-4. **Campaign isolation:** keep the current campaign and leaderboard frozen;
-   place the thirty levels in a new campaign, ruleset, progress namespace, and
-   leaderboard namespace.
+1. **Level semantics — approved:** thirty standalone 8x8 levels means six
+   chapters of five levels, with five waves per level, for 150 new waves.
+2. **Rendering strategy — approved:** realistic pre-rendered 3D sprites on the
+   existing top-down Canvas2D board, not a runtime 3D engine or tilted board.
+3. **Future expansion visual families — separately gated:** use the approved
+   Phase 6 visual language and generate/approve each family through the asset
+   intake process before it ships; do not bulk-generate an expansion roster.
+   The asset, Supabase migration, and Edge Function compatibility/owner-approval
+   gates in Sections 9, 15, and 18 also apply.
+4. **Campaign isolation — approved:** identify each expansion run by campaign
+   and level, never by `sector`; use a new immutable ruleset, replay identity,
+   progress namespace, and isolated leaderboard categories. Preserve `phase4-v1`
+   byte-for-byte and leave `grid-drift`/`gridwatch-match` shared-database
+   behavior unchanged.
 
 ### 4.1 Scope-authority update
 
-The current `AGENTS.md` and `CONTEXT.md` correctly prohibit sectors beyond the
-existing three and waves beyond the current twelve. This planning document does
-not override those repository instructions. After the four decisions above are
-approved, the first documentation-only expansion change must amend
-`AGENTS.md`, `CONTEXT.md`, and `HANDOFF.md` to authorize exactly the approved
-thirty-level expansion while keeping the original campaign capped at three
-sectors and twelve waves. No model may add expansion code, content, assets, or
-database behavior before that scope-authority change is reviewed and merged.
+The current `AGENTS.md` and `CONTEXT.md` preserve the original three-sector,
+twelve-wave campaign and now define the separate approved expansion envelope.
+This planning document does not itself authorize code. The first
+documentation-only expansion change must amend `AGENTS.md`, `CONTEXT.md`, and
+`HANDOFF.md` to authorize exactly the approved thirty-level expansion while
+keeping the original campaign capped at three sectors and twelve waves. No model
+may add expansion code, content, assets, or database behavior before that
+scope-authority change is reviewed and merged.
+
+After that merge, Phase 7 may establish architecture only: exactly 30 standalone
+8x8 expansion levels in six chapters of five, with five waves per level. It must
+identify every expansion run by campaign and level, never by a new `sector`
+value; use a new immutable ruleset, separate replay identity, progress namespace,
+and isolated leaderboard categories. `phase4-v1` behavior must remain
+byte-equivalent, including its replay payloads and score categories, and the
+existing `grid-drift`/`gridwatch-match` shared-GridWatchGamesDB behavior must
+remain unchanged. Do not add expansion-level content in Phase 7.
 
 ## 5. Phase numbering
 
