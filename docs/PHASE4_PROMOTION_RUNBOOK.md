@@ -232,10 +232,10 @@ service-role credential.
 Prepare the two request bodies outside the repository:
 
 ```sh
-cp docs/fixtures/phase4-promotion-replay.json /tmp/gridwatch-legacy.json
-jq '. + {ruleset: "phase4-v1"}' \
+jq 'del(.ruleset)' \
   docs/fixtures/phase4-promotion-replay.json \
-  > /tmp/gridwatch-phase4.json
+  > /tmp/gridwatch-legacy.json
+cp docs/fixtures/phase4-promotion-replay.json /tmp/gridwatch-phase4.json
 ```
 
 Submit the legacy body first (no `ruleset` field), then the current body. Both

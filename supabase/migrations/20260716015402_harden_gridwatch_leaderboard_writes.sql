@@ -1,12 +1,7 @@
--- Keep GridWatch Signal Breach's legacy global board scoped to the three
--- historical sector categories, expose a phase4-v1 global selector that pools
--- only that ruleset's sector rows, and return ranks within the same comparable
--- ruleset. The shared RPCs also serve other games, so their behavior remains
--- deliberately unchanged.
---
--- Phase 4 categories are explicit and prefixed. These filters prevent tuned
--- rows, plus existing aggregate, daily/weekly, and clear-marker rows, from
--- leaking into old GridWatch clients that still request p_category = null.
+-- Follow-up for environments where 20260716000516 was already applied.
+-- Give Signal Breach tied scores the same displayed rank and make keep-best
+-- writes atomic. Other games retain row_number() ordering so Grid Drift's
+-- separate get_rank RPC continues to match its visible leaderboard exactly.
 create or replace function public.get_leaderboard(
   p_game text,
   p_category text default null
@@ -83,19 +78,6 @@ as $$
   limit 20;
 $$;
 
-revoke all on function public.get_leaderboard(text, text) from public;
-
--- Anonymous and authenticated execution is intentional: this is the public,
--- read-only Top 20 leaderboard API. SECURITY DEFINER is required because the
--- scores table has RLS enabled with no direct client policies; the function
--- exposes only its bounded result set and uses an empty search_path.
-grant execute on function public.get_leaderboard(text, text) to anon;
-grant execute on function public.get_leaderboard(text, text) to authenticated;
-grant execute on function public.get_leaderboard(text, text) to service_role;
-
--- Keep the existing shared keep-best behavior, but compute GridWatch's global
--- rank only among comparable sector rows from the same immutable ruleset.
--- Other games and non-sector categories retain the prior all-category rank.
 create or replace function public.record_score(
   p_user_id uuid,
   p_slug text,
@@ -230,44 +212,3 @@ begin
   return next;
 end;
 $$;
-
-revoke all on function public.record_score(
-  uuid,
-  text,
-  text,
-  integer,
-  text,
-  jsonb,
-  jsonb,
-  text
-) from public;
-revoke all on function public.record_score(
-  uuid,
-  text,
-  text,
-  integer,
-  text,
-  jsonb,
-  jsonb,
-  text
-) from anon;
-revoke all on function public.record_score(
-  uuid,
-  text,
-  text,
-  integer,
-  text,
-  jsonb,
-  jsonb,
-  text
-) from authenticated;
-grant execute on function public.record_score(
-  uuid,
-  text,
-  text,
-  integer,
-  text,
-  jsonb,
-  jsonb,
-  text
-) to service_role;

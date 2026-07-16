@@ -1,8 +1,8 @@
 # GridWatch Mobile, Gameplay, Visual, and Deployment Plan
 
-Status: Phases 1–3 are merged. The initial `phase4-v1` tuning and compatibility
-path are frozen in draft PR #42; production remains unchanged pending the
-approved server-first promotion gate.
+Status: Phases 1–3 are merged. The `phase4-v1` server-first replay gate is
+complete and PR #42 is ready for review; production Pages promotion remains
+pending a clean final review.
 
 Date: 2026-07-15
 
@@ -169,9 +169,8 @@ production.
 
 - Label the resource consistently as `BW / BANDWIDTH` with the same icon wherever
   it appears.
-- At each sector's opening Build, animate the accepted `+30 BW` (W1), `+42 BW`
-  (W6), or `+56 BW` (W10) grant; during combat, show each trickle or bounty as a
-  floating `+1 BW` and in a short event log.
+- At each sector's opening Build, label the accepted grant as `+N BW · wave X
+  grant`; during combat, label earned bandwidth as `+N BW · signal trickle`.
 - Each tool shows `owned purpose + cost + range/HP` rather than only a name and
   number.
 - Disabled states show the exact shortage. Affordable states should be visually
