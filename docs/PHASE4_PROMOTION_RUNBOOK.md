@@ -113,12 +113,11 @@ the worktree remains clean.
 Use a read-only query and save the result in the maintenance log:
 
 ```sql
-select s.category, count(*) as row_count, max(s.score) as max_score
-from public.scores s
-join public.games g on g.id = s.game_id
-where g.slug = 'gridwatch-signal-breach'
-group by s.category
-order by s.category;
+select g.slug, s.category, count(*) as row_count, max(s.score) as max_score
+from public.games g
+left join public.scores s on s.game_id = g.id
+group by g.slug, s.category
+order by g.slug, s.category;
 
 select p.proname,
        pg_get_function_identity_arguments(p.oid) as arguments,
@@ -136,6 +135,41 @@ order by p.proname;
 
 Stop if Phase 4 categories already exist unexpectedly or the live functions no
 longer match the recorded privilege boundary.
+
+GridWatchGamesDB is shared by `grid-drift`, `gridwatch-match`, and
+`gridwatch-signal-breach`. When a follow-up changes either shared RPC, also hash
+the visible board results before and after the migration:
+
+```sql
+with cases(label, slug, category) as (
+  values
+    ('drift-global', 'grid-drift', null::text),
+    ('drift-standard', 'grid-drift', 'standard'),
+    ('match-global', 'gridwatch-match', null::text),
+    ('match-standard', 'gridwatch-match', 'standard'),
+    ('breach-legacy-global', 'gridwatch-signal-breach', null::text),
+    ('breach-phase4-global', 'gridwatch-signal-breach', 'phase4-v1:global'),
+    ('breach-legacy-standard', 'gridwatch-signal-breach', 'standard'),
+    ('breach-phase4-standard', 'gridwatch-signal-breach', 'phase4-v1:standard')
+), rows as (
+  select c.label, l.rank, l.score, l.created_at
+  from cases c
+  left join lateral public.get_leaderboard(c.slug, c.category) l on true
+)
+select label,
+       count(score) as rows,
+       min(score) as min_score,
+       max(score) as max_score,
+       md5(coalesce(string_agg(
+         coalesce(rank::text, '') || ':' ||
+         coalesce(score::text, '') || ':' ||
+         coalesce(created_at::text, ''),
+         '|' order by rank, score desc, created_at
+       ), '')) as snapshot
+from rows
+group by label
+order by label;
+```
 
 ## 3. Apply only the additive migration
 
@@ -185,6 +219,20 @@ direct policies; clients cannot read or write it directly. See Supabase's
 and [RLS-with-no-policy guidance](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy).
 
 Stop before Edge deployment if any verification differs.
+
+### Ready-state review follow-up
+
+If ledger version `20260716012745` is already present, apply the exact contents
+of `20260716015402_harden_gridwatch_leaderboard_writes.sql` next. It makes the
+shared `record_score` keep-best write atomic. Its leaderboard tie-rank change is
+explicitly limited to `gridwatch-signal-breach`; Grid Drift and GridWatch Match
+retain their timestamp-tiebroken `row_number()` order so Grid Drift's separate
+`get_rank` RPC remains aligned with its visible board.
+
+After the follow-up migration, repeat the cross-game snapshot query above and
+require every hash, row count, and score bound to match. Recheck the function
+privileges and empty search paths. Stop if any stored score/category changes or
+either non-Signal-Breach snapshot differs.
 
 ## 4. Deploy the backward-compatible Edge Function
 
