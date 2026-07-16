@@ -136,6 +136,14 @@ keeping the original campaign capped at three sectors and twelve waves. No model
 may add expansion code, content, assets, or database behavior before that
 scope-authority change is reviewed and merged.
 
+After that merge, Phase 7 may establish architecture only: exactly 30 standalone
+8x8 expansion levels in six chapters of five, with five waves per level. It must
+identify every expansion run by campaign and level, never by a new `sector`
+value; use a new immutable ruleset, progress namespace, and isolated leaderboard
+categories. `phase4-v1` payloads/categories and the existing
+`grid-drift`/`gridwatch-match` shared-GridWatchGamesDB behavior must remain
+unchanged. Do not add expansion level content in Phase 7.
+
 ## 5. Phase numbering
 
 The existing Phase 5 remains the current release-candidate phase.
