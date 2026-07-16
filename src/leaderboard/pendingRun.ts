@@ -1,5 +1,7 @@
 import type { RecordedCommand } from "../sim";
 
+const LEGACY_RULESET_ID = "legacy-v1";
+
 // Holds a finished run across an OAuth sign-in redirect (a full page reload),
 // so a signed-out player who signs in from the game-over screen doesn't lose the
 // run they just completed. The run is auto-submitted once they're signed in with
@@ -7,6 +9,7 @@ import type { RecordedCommand } from "../sim";
 const KEY = "gridwatch.pendingRun";
 
 export type PendingRun = Readonly<{
+  ruleset: string;
   seed: string;
   sector: number;
   commands: RecordedCommand[];
@@ -32,13 +35,21 @@ export function takePendingRun(): PendingRun | null {
   }
   if (!raw) return null;
   try {
-    const parsed = JSON.parse(raw) as PendingRun;
+    const parsed = JSON.parse(raw) as Partial<PendingRun>;
     if (
       typeof parsed?.seed === "string" &&
       typeof parsed?.sector === "number" &&
       Array.isArray(parsed?.commands)
     ) {
-      return parsed;
+      return {
+        ruleset:
+          typeof parsed.ruleset === "string" && parsed.ruleset.length > 0
+            ? parsed.ruleset
+            : LEGACY_RULESET_ID,
+        seed: parsed.seed,
+        sector: parsed.sector,
+        commands: parsed.commands,
+      };
     }
   } catch {
     // Corrupt entry — ignore.

@@ -127,9 +127,12 @@ function sellUnit(state: GameState, position: GridPosition): GameState {
     return state;
   }
 
+  const definition = state.config.units[kind];
+  const refund = state.phase === "prep" ? definition.cost : definition.sellRefund;
+
   return withRecomputedSignal({
     ...state,
-    bandwidth: state.bandwidth + state.config.units[kind].sellRefund,
+    bandwidth: state.bandwidth + refund,
     grid: setTileKind(state.grid, position, "empty"),
   });
 }

@@ -1,7 +1,8 @@
 # GridWatch Mobile, Gameplay, Visual, and Deployment Plan
 
-Status: planning only — no gameplay, UI, rendering, asset, simulation, database,
-or deployment code has been changed.
+Status: Phases 1–3 are merged. The initial `phase4-v1` tuning and compatibility
+path are frozen in draft PR #42; production remains unchanged pending the
+approved server-first promotion gate.
 
 Date: 2026-07-15
 
@@ -168,8 +169,9 @@ production.
 
 - Label the resource consistently as `BW / BANDWIDTH` with the same icon wherever
   it appears.
-- At Build start, animate `+26 WAVE GRANT`; during combat, show each trickle or
-  bounty as a floating `+1 BW` and in a short event log.
+- At each sector's opening Build, animate the accepted `+30 BW` (W1), `+42 BW`
+  (W6), or `+56 BW` (W10) grant; during combat, show each trickle or bounty as a
+  floating `+1 BW` and in a short event log.
 - Each tool shows `owned purpose + cost + range/HP` rather than only a name and
   number.
 - Disabled states show the exact shortage. Affordable states should be visually
@@ -191,22 +193,46 @@ production.
 Do not ship these values from intuition alone. Evaluate fixed-seed playthroughs
 for time-to-kill, bandwidth remaining, signal uptime, and sector clear rate.
 
-### Add direct agency carefully
+### Accepted `phase4-v1` tuning
 
-First make placement, range, path preview, and economy clear. Then playtest one
-universal deterministic countermeasure: a once-per-wave `SIGNAL PULSE` targeted
-at a board cell that briefly slows and damages intrusions in a small area. It
-should charge from live-signal uptime, reinforcing the routing objective. Keep it
-only if it improves fun without eclipsing ICE and Firewall placement. Adding it
-requires a replay command and ruleset-version release; it is not a visual-only
-feature.
+The fixed-seed campaign harness now replays the same readable per-sector plans
+across four seeds. The legacy baseline clears 1/4 Sector 1 runs and 0/4 in
+Sectors 2–3. The accepted ruleset clears 4/4 in all three sectors.
+
+| Item | `phase4-v1` |
+|---|---:|
+| Sector 1 opening grant (W1) | 30 BW |
+| Sector 2 opening grant (W6) | 42 BW |
+| Sector 3 opening grant (W10) | 56 BW |
+| Firewall cost / active refund | 8 / 4 BW |
+| ICE cost / active refund | 14 / 8 BW |
+| ICE range / damage | 2 / 3 per tick |
+| Build-phase refund | 100% |
+
+The larger Sector 3 opening grant buys distributed coverage against four entry
+edges; it does not reduce Goliath health or remove the need to place Overclock
+beside ICE. `npm run balance:report` is a CI gate and fails if any accepted
+fixture loses.
+
+### Rejected direct-agency experiment
+
+Phase 4 considered a once-per-wave `SIGNAL PULSE` targeted at a board cell that
+would slow and damage intrusions in a small area, charged by live-signal uptime.
+The experiment was rejected before implementation: adding it would require a
+new replay command and ruleset-version release, and no playtest evidence showed
+that it would improve fun without eclipsing ICE and Firewall placement.
+
+Decision for `phase4-v1`: do not ship Signal Pulse. The accepted placement and
+economy changes meet the fixed-seed clear target while retaining ICE, Firewall,
+Scrubber, and Overclock as the meaningful verbs. A universal attack would add a
+new replay surface without evidence that it improves fun beyond those choices.
 
 ## Twelve-Wave Campaign Plan
 
 ### Sector 1 — Perimeter Run, waves 1–5
 
 - Wave 1: guided west-edge Probe. Highlight two useful ICE cells and explicitly
-  say `26 BW received; ICE costs 18` (or the approved tuned values).
+  say `30 BW received; ICE costs 14`.
 - Wave 2: introduce multiple enemies and Firewall path shaping.
 - Wave 3: introduce the Spoof and explain why one wall can be jumped.
 - Wave 4: combine entry edges and teach selling/repositioning during Build.

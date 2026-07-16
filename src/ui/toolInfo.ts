@@ -31,8 +31,8 @@ export const TOOL_INFO: Readonly<Record<PlayerTool, ToolInfo>> = {
   },
   turret: {
     label: "ICE",
-    purpose: "Attack adjacent",
-    description: "Automatically attacks intrusions on adjacent tiles.",
+    purpose: "Attack nearby",
+    description: "Automatically attacks intrusions within two tiles.",
   },
   scrubber: {
     label: "Scrubber",
@@ -47,7 +47,7 @@ export const TOOL_INFO: Readonly<Record<PlayerTool, ToolInfo>> = {
   sell: {
     label: "Sell",
     purpose: "Recover BW",
-    description: "Removes hardware and returns its listed refund.",
+    description: "Removes hardware. Build-phase sales fully refund; live sales return a partial refund.",
   },
 };
 
@@ -59,7 +59,7 @@ export function getToolAvailability(
     const enabled = state.phase !== "won" && state.phase !== "lost";
     return {
       enabled,
-      costLabel: "REFUND",
+      costLabel: state.phase === "prep" ? "FULL REFUND" : "PARTIAL REFUND",
       reason: enabled ? null : "Run complete",
     };
   }

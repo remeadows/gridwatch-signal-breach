@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM"],
+    "resolveJsonModule": true,
+    "noEmit": true
+  },
+  "include": [
+    "scripts/*.ts",
+    "supabase/functions/submit-gridwatch-score/replayValidation.ts"
+  ]
+}

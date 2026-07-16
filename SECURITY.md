@@ -16,12 +16,19 @@ available, the advisory will be published and credit given to the reporter
 
 ## Scope
 
-GridWatch: Signal Breach is a fully static, client-side browser game. It has
-no backend, no API calls, no authentication, and handles no user data or
-secrets. The most relevant security concerns are therefore:
+GridWatch: Signal Breach is a static-first client-side browser game. The core
+game has no backend and remains fully playable offline. Its one sanctioned
+network feature is an optional Supabase leaderboard using OAuth, player handles,
+score rows, and server-side deterministic replay validation. The browser receives
+only a publishable key; the service-role key must remain in the Edge Function
+runtime. The most relevant security concerns are therefore:
 
 - Supply-chain issues in build/dev dependencies or GitHub Actions.
 - Client-side issues such as DOM-based XSS in rendering or input handling.
+- Supabase Auth/session handling, RLS and RPC privileges, handle/user ownership,
+  Edge Function CORS, replay-validation bypasses, and service-role exposure.
+- Compatibility failures that validate a run with a different simulation than
+  the client used or mix incomparable score rulesets.
 
 Reports about the deployed Cloudflare Pages site or the build pipeline are in
 scope. Findings that require a non-default browser configuration or that

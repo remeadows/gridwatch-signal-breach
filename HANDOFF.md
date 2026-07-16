@@ -1,11 +1,86 @@
 # GridWatch Handoff
 
-## Active Phase 3 Work — 2026-07-15
+## Active Phase 4 Work — 2026-07-16
 
-- Codex is implementing the approved visual-foundation slice on
-  `codex/visual-combat-feedback-phase-3`. Phase 2 promotion PR #40 is merged,
-  and the Phase 3 branch has been rebased onto that new `main` tip so its review
-  diff contains only Phase 3.
+- Codex is implementing the approved balance-and-agency foundation on
+  `codex/balance-agency-phase-4`, based directly on merged Phase 3 PR #41.
+- The initial `phase4-v1` ruleset is now frozen locally: opening grants are
+  30/42/56 BW for Sectors 1/2/3, Firewall costs 8 BW, and ICE costs 14 BW with
+  Manhattan range 2 and 3 damage per tick. Build-phase sales fully refund while
+  active-wave sales retain the existing partial refunds.
+- `npm run balance:report` replays readable guided plans across four fixed seeds
+  per sector. The legacy baseline clears 1/4 Sector 1 runs and 0/4 in Sectors 2
+  and 3. `phase4-v1` clears 4/4 in every sector; average Core integrity is 125.3,
+  127.8, and 150 respectively. The report fails CI if any Phase 4 fixture loses.
+- The optional Signal Pulse was not retained. The tuned routing, ICE, Firewall,
+  Scrubber, and Overclock decisions clear the campaign without a universal
+  attack that could eclipse placement.
+- `phase4-v1` is exported by the generated simulator bundle. Production Edge
+  Function version 7 keeps omitted/`legacy-v1` submissions on the validator pinned
+  to commit `fa0a5df`, while explicitly versioned submissions use the local
+  Phase 4 bundle and prefixed score categories. The tuned client submits the
+  explicit ruleset; pending OAuth runs preserve their original ruleset, and old
+  unversioned pending runs resolve to `legacy-v1`.
+- Phase 4 aggregate/daily/weekly rows are prefixed too. The existing Command
+  Nexus hub therefore continues showing its legacy `standard`/period boards and
+  will not display tuned runs until it explicitly opts into the new ruleset.
+  This is intentional score isolation; do not dual-write tuned scores into
+  legacy categories to make the hub appear current.
+- Replay validation and canonicalization are now pure/testable. Golden fixtures
+  cover a deterministic accepted win, accepted loss, repeated-run equality,
+  out-of-order commands, commands after terminal state, inert-field stripping,
+  unsupported rulesets, invalid units, Build/live refunds, current global
+  category isolation, and legacy/current OAuth pending-run compatibility.
+- The additive migration
+  `20260716000516_isolate_gridwatch_leaderboard_categories.sql` preserves the
+  legacy null-category board, adds an exact `phase4-v1:global` selector across
+  only the three tuned sector categories, and isolates returned global ranks by
+  ruleset. Other games using the shared RPC retain their existing behavior. It
+  also replaces implicit PUBLIC execute with explicit grants and pins both
+  SECURITY DEFINER functions to an empty search path. The reviewed SQL was
+  applied to GridWatchGamesDB as migration-ledger version `20260716012745`.
+- The approved server-first promotion is complete through the replay gate.
+  Edge version 7 is active with `verify_jwt=false` and bundle hash
+  `0460a604158edc6ed0720f5240f37a8990cbe0b806c2ff554c0f6992318f69be`.
+  The preview CORS origin remains `null`; localhost remains allowed.
+- Authenticated production checks under the existing `Russ` handle passed:
+  legacy returned score 500/rank 1, `phase4-v1` returned score 514/rank 1,
+  unsupported `phase4-v2` returned HTTP 400, and a command after terminal state
+  returned HTTP 422. Repeating the Phase 4 fixture returned `improved: false`
+  with best score 514. Legacy and Phase 4 global boards each contain only their
+  own comparable sector row.
+- An empty command log was initially used as the planned 422 probe, but the
+  deterministic sim correctly runs it to a terminal 33-point loss, which is a
+  valid submission under the existing win-or-loss policy. It did not improve
+  any stored best. The runbook now uses a post-terminal command as the 422
+  no-write probe instead.
+- Local verification passes build/tool typecheck/replay/balance/audit, produces
+  an idempotent validator bundle, and bundles the Edge Function with Deno/JSR
+  imports externalized. The migration applies cleanly to an ephemeral PostgreSQL
+  16 schema; seeded checks prove legacy and `phase4-v1` global boards exclude
+  each other's sector and aggregate rows. Browser checks at 320×568, 390×844,
+  568×320, and 1440×900 have no document overflow, console warning/error, or
+  non-static request. Build and live ICE sales return 14 and 8 BW respectively;
+  the constrained landscape dock keeps FULL/PARTIAL legible.
+- Draft PR #42 is open at
+  `https://github.com/remeadows/gridwatch-signal-breach/pull/42`. The frozen
+  implementation passed CI, CodeQL, CodeRabbit, and Cloudflare Pages. The PR
+  remains draft pending the promotion-record update, refreshed checks, review,
+  and separate owner authorization to mark ready or merge the Pages client.
+- The reported production URL issue was checked independently. The custom
+  domain serves HTTP 200, both hashed assets serve HTTP 200 with correct MIME
+  types, and the title/briefing flow works in Chromium and WebKit at desktop and
+  mobile-web viewports without console or request failures. Cloudflare production
+  is still `main` at `8dd86a8`; unmerged Phase 4 client changes did not cause the
+  reported failure.
+- A substantive CodeRabbit CLI review of the full branch found no critical or
+  warning issues. Its four minor copy/documentation inconsistencies were fixed;
+  the focused follow-up review returned zero findings.
+
+## Completed Phase 3 — 2026-07-15
+
+- The approved visual-foundation slice was implemented on
+  `codex/visual-combat-feedback-phase-3` and merged to `main` through PR #41.
 - The title now uses a cinematic local CSS operator/rain treatment derived from
   the approved attachment direction. Sector cards, briefing panels, results,
   board chrome, and ambient page lighting share sector-aware visual tokens.
@@ -33,9 +108,8 @@
   had no errors. A 120-frame active Core Vault sample sustained the test
   machine's 120 Hz refresh with a 9.7 ms p95 frame time; real mid-range phone
   profiling remains the promotion gate.
-- Phase 2 promotion PR #40 is merged. Phase 3 PR #41 is ready for review at
-  `https://github.com/remeadows/gridwatch-signal-breach/pull/41`; its Cloudflare
-  preview is
+- Phase 2 promotion PR #40 and Phase 3 PR #41 are merged. The historical Phase
+  3 Cloudflare preview remains at
   `https://codex-visual-combat-feedback.gridwatch-signal-breach.pages.dev`.
 
 ## Completed Phase 2 — 2026-07-15
@@ -60,23 +134,24 @@
   boundary check confirmed that placements before launch and between waves
   reproduce exactly through the existing command log and validator. The
   generated validator bundle remains byte-identical.
-- Full Build-phase refunds are deliberately deferred: changing the existing
-  partial-refund rule would alter deterministic economy and requires a versioned
-  ruleset/validator release. The UI reports the actual refund instead.
+- Phase 2 deliberately deferred full Build-phase refunds because they alter the
+  deterministic economy. Phase 4 now implements them inside the versioned
+  `phase4-v1` ruleset while preserving partial refunds during live waves.
 - Browser verification passed at 320×568, 390×844, 568×320, and 1440×900 with
   zero mobile document scroll. Pre-launch placement, clock freeze, invalid-tile
   feedback, affordability updates, Enter/click launch, next-wave Build re-entry,
   pause, four-tool and six-tool docks, and a request/error-free offline run were
-  checked. Real iOS and Android hardware remains the promotion gate.
+  checked. Real-device mobile-web testing in Safari on iPhone/iPad and Chrome
+  on Android remains the promotion gate; no native app work is in scope.
 - The historical Phase 2 branch preview remains at
   `https://codex-build-phase-clarity.gridwatch-signal-breach.pages.dev`.
 
-## Active Mobile Work — 2026-07-15
+## Completed Phase 1 Mobile Work — 2026-07-15
 
-- Codex is implementing the approved Phase 0/Phase 1 mobile-playability slice on
-  `codex/mobile-playability-phase-1`. The working tree now contains responsive
-  UI/input changes; the deterministic simulation, scoring, wave data,
-  leaderboard client, Supabase schema, and Edge Function remain untouched.
+- The approved Phase 0/Phase 1 mobile-playability slice was implemented on
+  `codex/mobile-playability-phase-1` and merged through PR #38. The deterministic
+  simulation, scoring, wave data, leaderboard client, Supabase schema, and Edge
+  Function remained untouched.
 - The required pre-read found no project-root `CLAUDE.md`, `MEMORY.md`, or prior
   `SKILLS.md`. `CONTEXT.md` was used as the available project memory, and a new
   `SKILLS.md` now records project-specific skill routing and verification lanes.
@@ -92,8 +167,9 @@
 - Browser verification passed at 320×568 portrait, 390×844 portrait, 568×320
   landscape, and 1440×900 desktop. Both mobile orientations had zero document
   scroll; a 24 px drag left bandwidth unchanged; `pagehide` produced the paused
-  overlay; and the desktop Canvas remained 720×720. Real iOS and Android hardware
-  placement testing remains a preview gate.
+  overlay; and the desktop Canvas remained 720×720. Real-device mobile-web
+  placement testing in Safari on iPhone/iPad and Chrome on Android remains a
+  preview gate; no native app work is in scope.
 - Current wave distribution remains 5/4/3 across the three sectors. The approved
   interpretation preserves the existing twelve-wave campaign.
 - Attachment 1 is recommended as the cinematic direction for title, briefing,
@@ -106,9 +182,7 @@
   any later sim/tuning change needs replay ruleset versioning, validator-bundle
   synchronization, additive score handling, and a compatible Edge Function-first
   release.
-- Draft PR #38 is open at
-  `https://github.com/remeadows/gridwatch-signal-breach/pull/38`. Its Cloudflare
-  branch preview is
+- The historical Phase 1 branch preview remains at
   `https://codex-mobile-playability-pha.gridwatch-signal-breach.pages.dev`.
 
 ## Current State
@@ -130,13 +204,21 @@
 npm install
 npm run build
 npm run build:validator   # must produce no git diff (CI enforces this)
+npm run typecheck:tools
+npm run verify:replays
+npm run balance:report
+npm audit --audit-level=high
 npm run dev -- --host 127.0.0.1 --port 5173 --strictPort
 npm run preview -- --host 127.0.0.1 --port 4173 --strictPort
 rg -n "TODO|FIXME|XXX|HACK" src
 rg -n ": any\b" src
 ```
 
-Expected: install/build/build:validator/dev/preview succeed, the app renders at the host root (`/`), `build:validator` leaves `sim.bundle.js` unchanged, the `TODO` `rg` has no matches (the old `src/render/animator.ts` stub must stay gone), and the `any` `rg` has no matches.
+Expected: install/build/build:validator/tool typecheck/replay/balance/dev/preview
+succeed, audit finds no high vulnerabilities, the app renders at the host root
+(`/`), `build:validator` leaves `sim.bundle.js` unchanged, the `TODO` `rg` has
+no matches (the old `src/render/animator.ts` stub must stay gone), and the `any`
+`rg` has no matches.
 
 Note: the previous "zero network / no `import.meta.env`" invariant no longer holds — the optional leaderboard adds `fetch` calls in `src/leaderboard/` and reads `VITE_SUPABASE_*` env vars. The game still runs fully offline when those vars are unset.
 
@@ -150,15 +232,20 @@ Note: the previous "zero network / no `import.meta.env`" invariant no longer hol
 
 ## Good Next Checks
 
-- Review and merge Phase 3 PR #41, which now targets `main` directly.
+- Review the frozen Phase 4 PR without pointing its public preview at production
+  writes. The migration, dual validator, authenticated replay checks, category
+  isolation, keep-best behavior, ranks, logs, and advisors have passed.
+- After refreshed CI/review and separate owner authorization, mark PR #42 ready,
+  merge its tuned Pages client, wait for the production Pages deployment, and
+  run the client smoke checks in the promotion runbook.
 - On the Phase 3 Cloudflare Pages preview, run ten consecutive intended placements
-  on real iOS and Android hardware in portrait and landscape. Confirm backgrounding
-  and rotation pause without advancing an unseen wave, reduced-motion behavior,
-  and sustained frame pacing during the busiest visible wave.
-- Playtest the Build-to-launch cadence across W1-W12 and record completion rate,
-  first-failure wave, unused bandwidth, and most-used tools before changing
-  economy values. Any later rules/tuning change must use the validator/Edge
-  Function compatibility sequence in the plan.
+  as mobile web in Safari on iPhone/iPad and Chrome on Android, in portrait and
+  landscape. Confirm backgrounding and rotation pause without advancing an unseen
+  wave, reduced-motion behavior, and sustained frame pacing during the busiest
+  visible wave.
+- Run owner and real-device playtests across W1-W12 and record completion rate,
+  first-failure wave, unused bandwidth, and most-used tools. Any later tuning
+  change must receive a new immutable ruleset and repeat the server-first path.
 - Do not start the old Phase 5 projection work before Phase 2 clarity is validated;
   re-evaluate 2.5D depth only after the game is legible and controllable.
 - Playtest W1-W12 after any tuning change and confirm W1 is forgiving, sector 2 introduces hunter/splitter plus scrubber pressure cleanly, and sector 3's overclock tool has visible value against the scripted goliath.

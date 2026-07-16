@@ -1,4 +1,4 @@
-import type { RecordedCommand } from "../sim";
+import { SIM_RULESET_ID, type RecordedCommand } from "../sim";
 import { leaderboardConfig } from "./config";
 
 export type LeaderboardEntry = Readonly<{
@@ -11,6 +11,7 @@ export type LeaderboardEntry = Readonly<{
 }>;
 
 export type SubmitScoreInput = Readonly<{
+  ruleset: string;
   seed: string;
   sector: number;
   commands: readonly RecordedCommand[];
@@ -27,6 +28,7 @@ export type SubmitResult =
       // The score this run earned vs. the player's stored best (kept score).
       runScore: number;
       bestScore: number;
+      ruleset: string;
       rating: string;
       globalRank: number;
       sectorRank: number;
@@ -68,8 +70,8 @@ function authHeaders(): Record<string, string> {
 }
 
 // Submits a finished run for server-side validation. The server authenticates
-// the player from their access token, replays the run from {seed, sector,
-// commands}, stores the score it computes itself (never a client-claimed
+// the player from their access token, replays the run from {ruleset, seed,
+// sector, commands}, stores the score it computes itself (never a client-claimed
 // number), and keeps only their personal best. Network/parse failures degrade
 // to { ok: false } rather than throwing.
 export async function submitScore(input: SubmitScoreInput): Promise<SubmitResult> {
@@ -88,6 +90,7 @@ export async function submitScore(input: SubmitScoreInput): Promise<SubmitResult
           Authorization: `Bearer ${input.accessToken}`,
         },
         body: JSON.stringify({
+          ruleset: input.ruleset,
           seed: input.seed,
           sector: input.sector,
           commands: input.commands,
@@ -118,9 +121,10 @@ export async function submitScore(input: SubmitScoreInput): Promise<SubmitResult
   }
 }
 
-// Reads the Top 20. `sector` null → global board (all sectors); otherwise the
-// per-sector board. Returns { ok: false } on any transport/parse failure so the
-// UI can show "unavailable" rather than a misleading "no scores yet".
+// Reads the Top 20 for this immutable ruleset. `sector` null uses the special
+// ruleset-global category selector implemented by the companion migration;
+// otherwise the query is an exact, prefixed sector category. Historical rows
+// remain readable by legacy clients without mixing incomparable scores here.
 export async function fetchLeaderboard(
   sector: number | null,
 ): Promise<FetchLeaderboardResult> {
@@ -136,7 +140,10 @@ export async function fetchLeaderboard(
         headers: authHeaders(),
         body: JSON.stringify({
           p_game: leaderboardConfig.gameSlug,
-          p_category: sector !== null ? `sector:${sector}` : null,
+          p_category:
+            sector !== null
+              ? `${SIM_RULESET_ID}:sector:${sector}`
+              : `${SIM_RULESET_ID}:global`,
         }),
       },
     );

@@ -164,16 +164,16 @@ var UNIT_TUNING = {
     signalRange: 2
   },
   firewall: {
-    cost: 10,
+    cost: 8,
     sellRefund: 4,
     hp: 24
   },
   turret: {
-    cost: 18,
+    cost: 14,
     sellRefund: 8,
     hp: 10,
-    range: 1,
-    damagePerTick: 4
+    range: 2,
+    damagePerTick: 3
   },
   scrubber: {
     cost: 9,
@@ -195,7 +195,7 @@ var WAVE_TUNING = [
     id: 1,
     label: "Probe Trace",
     prepTicks: 14,
-    bandwidthGrant: 26,
+    bandwidthGrant: 30,
     bandwidthTricklePerTick: 0,
     bandwidthTrickleEveryTicks: 1,
     spawnFirstTick: 2,
@@ -305,7 +305,7 @@ var WAVE_TUNING = [
     id: 6,
     label: "Hunter Protocol",
     prepTicks: 20,
-    bandwidthGrant: 36,
+    bandwidthGrant: 42,
     bandwidthTricklePerTick: 1,
     bandwidthTrickleEveryTicks: 6,
     spawnFirstTick: 2,
@@ -405,7 +405,7 @@ var WAVE_TUNING = [
     id: 10,
     label: "Vault Siege",
     prepTicks: 20,
-    bandwidthGrant: 38,
+    bandwidthGrant: 56,
     bandwidthTricklePerTick: 1,
     bandwidthTrickleEveryTicks: 5,
     spawnFirstTick: 2,
@@ -1122,9 +1122,11 @@ function sellUnit(state, position) {
   if (!isUnitKind2(kind) || kind === "scrubber") {
     return state;
   }
+  const definition = state.config.units[kind];
+  const refund = state.phase === "prep" ? definition.cost : definition.sellRefund;
   return withRecomputedSignal({
     ...state,
-    bandwidth: state.bandwidth + state.config.units[kind].sellRefund,
+    bandwidth: state.bandwidth + refund,
     grid: setTileKind(state.grid, position, "empty")
   });
 }
@@ -1191,6 +1193,9 @@ function getOperatorRating(total, phase) {
   }
   return "Patch Runner";
 }
+
+// src/sim/ruleset.ts
+var SIM_RULESET_ID = "phase4-v1";
 
 // src/sim/combat.ts
 function applyTurretCombat(state) {
@@ -2012,6 +2017,7 @@ function replayRun(input) {
 export {
   MAX_REPLAY_TICKS,
   ReplayError,
+  SIM_RULESET_ID,
   applyCommand,
   calculateScore,
   createGameState,
