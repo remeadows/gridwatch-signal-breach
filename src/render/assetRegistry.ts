@@ -1,9 +1,18 @@
+import coreUrl from "../assets/board/phase6/gw-phase6-core-board-v1.webp";
+import firewallUrl from "../assets/board/phase6/gw-phase6-firewall-board-v1.png";
 import probeUrl from "../assets/board/phase6/gw-phase6-probe-board-v1.png";
 import relayUrl from "../assets/board/phase6/gw-phase6-relay-board-v1.png";
+import sourceUrl from "../assets/board/phase6/gw-phase6-source-board-v1.png";
 import turretUrl from "../assets/board/phase6/gw-phase6-turret-board-v1.png";
 
 export type BoardArtMode = "glyphs" | "phase6";
-export type Phase6BoardSpriteId = "relay" | "turret" | "probe";
+export type Phase6BoardSpriteId =
+  | "source"
+  | "core"
+  | "relay"
+  | "firewall"
+  | "turret"
+  | "probe";
 
 type SpriteState = "idle" | "loading" | "ready" | "failed";
 
@@ -13,7 +22,10 @@ type SpriteRecord = {
 };
 
 const PHASE6_SPRITES: Readonly<Record<Phase6BoardSpriteId, string>> = {
+  source: sourceUrl,
+  core: coreUrl,
   relay: relayUrl,
+  firewall: firewallUrl,
   turret: turretUrl,
   probe: probeUrl,
 };
