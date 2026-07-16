@@ -10,19 +10,17 @@
   fair, verified that ICE and Firewalls are useful, and accepted mobile-web
   playability. Keep Phase 5; the accepted balance is now frozen.
 - PR #44 merged the owner-accepted render-only Phase 6B Relay/ICE-turret/Probe
-  vertical slice as `922b78d`. The owner reviewed it on Mac and iPhone. It
-  preserves glyph fallback, remains behind `?art=phase6`, and makes no sim,
-  replay, score, database, Edge Function, or deployment change. The Phase 6C
-  Source/Core/Firewall foundation slice is complete in PR #45 on
-  `codex/phase6c-foundation-assets`; the owner accepted its visual direction and
-  the review gate is green. The clean promotion of Phase 6D-A Crawler, Spoof,
-  and Hunter reached `main` in PR #48 as `18a47bd`; CodeRabbit reported no
-  actionable comments and all checks passed. Phase 6D-B Splitter/Goliath merged
-  to `main` in PR #49 as `988fcf9`. Phase 6C-B is now actively being built on
-  `codex/phase6-final-hardware-assets`: it is limited to Scrubber and Overclock
-  and remains behind `?art=phase6` with glyph fallback. The thirty-level
-  expansion is still planning-only until its level semantics and a
-  documentation-only scope-authority update are separately approved and merged.
+  vertical slice as `922b78d`. The owner reviewed it on Mac and iPhone. The
+  Source/Core/Firewall foundation followed in PR #45; Crawler/Spoof/Hunter in
+  PR #48 (`18a47bd`); Splitter/Goliath in PR #49 (`988fcf9`); and the final
+  Scrubber/Overclock slice in PR #50 (`6a41353`). The owner then approved the
+  complete thirteen-family roster for the default board presentation. The
+  active rollout branch is `codex/phase6-default-art`: it promotes Phase 6 art
+  by default, preserves `?art=glyphs` and automatic per-sprite glyph fallback,
+  and makes no sim, replay, score, database, Edge Function, or deployment
+  change. The thirty-level expansion is still planning-only until its level
+  semantics and a documentation-only scope-authority update are separately
+  approved and merged.
 - The initial `phase4-v1` ruleset is now frozen locally: opening grants are
   30/42/56 BW for Sectors 1/2/3, Firewall costs 8 BW, and ICE costs 14 BW with
   Manhattan range 2 and 3 damage per tick. Build-phase sales fully refund while
@@ -299,15 +297,13 @@ Note: the previous "zero network / no `import.meta.env`" invariant no longer hol
 
 ## Good Next Checks
 
-- Review PR #44 with both `?art=phase6` and `?art=glyphs` at desktop and mobile
-  viewports. Confirm that Relay, ICE turret, and Probe remain identifiable,
-  tactical state stays readable, and glyph fallback works.
-- Record explicit owner acceptance before merging PR #44 or changing any
-  `ownerApproved` manifest flag. Keep the slice opt-in after merge.
-- Keep the full roster blocked until the accepted vertical slice has contextual,
-  mobile, and performance evidence. Keep the thirty-level expansion blocked
-  until its level semantics and documentation-only scope-authority update are
-  separately approved and merged.
+- Review the default Phase 6 presentation and forced `?art=glyphs` rollback at
+  desktop and mobile viewports. Confirm every current unit/enemy remains
+  identifiable, tactical state stays readable, and fallback works.
+- Keep glyph fallback through at least one production release after this
+  default-art rollout. Keep the thirty-level expansion blocked until its level
+  semantics and documentation-only scope-authority update are separately
+  approved and merged.
 - Keep every GitHub push behind both Codex and CodeRabbit review.
 - After any future Cloudflare Pages deploy, confirm
   `https://GridWatch-SignalBreach.warsignallabs.net` loads, hashed root-relative
