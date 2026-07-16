@@ -1801,7 +1801,9 @@ function getPhase6UnitSpriteId(kind: TileKind): Phase6BoardSpriteId | null {
     case "firewall":
       return "firewall";
     case "scrubber":
+      return "scrubber";
     case "overclock":
+      return "overclock";
     case "empty":
     case "void":
     case "corrupted":
@@ -1856,6 +1858,10 @@ function getPhase6UnitDrawSize(id: Phase6BoardSpriteId): number {
       return 0.72;
     case "goliath":
       return 0.82;
+    case "scrubber":
+      return 0.78;
+    case "overclock":
+      return 0.78;
   }
 }
 

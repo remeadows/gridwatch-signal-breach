@@ -17,9 +17,10 @@
   `codex/phase6c-foundation-assets`; the owner accepted its visual direction and
   the review gate is green. The clean promotion of Phase 6D-A Crawler, Spoof,
   and Hunter reached `main` in PR #48 as `18a47bd`; CodeRabbit reported no
-  actionable comments and all checks passed. Phase 6D-B is now actively being
-  built on `codex/phase6d-final-enemy-assets`: it is limited to Splitter and
-  Goliath and remains behind `?art=phase6` with glyph fallback. The thirty-level
+  actionable comments and all checks passed. Phase 6D-B Splitter/Goliath merged
+  to `main` in PR #49 as `988fcf9`. Phase 6C-B is now actively being built on
+  `codex/phase6-final-hardware-assets`: it is limited to Scrubber and Overclock
+  and remains behind `?art=phase6` with glyph fallback. The thirty-level
   expansion is still planning-only until its level semantics and a
   documentation-only scope-authority update are separately approved and merged.
 - The initial `phase4-v1` ruleset is now frozen locally: opening grants are

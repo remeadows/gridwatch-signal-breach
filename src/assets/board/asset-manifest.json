@@ -254,6 +254,34 @@
       "ownerApproved": false,
       "sourceSha256": "c66493a72fd8a5d697b9eb89c0b34c5423856440390b4b89cc8b2774d2418be9",
       "runtimeSha256": "198d4f6eeafd886aaee16f12a6e78e4769a363e7ba8a5a669cfccf1d740baa8b"
+    },
+    {
+      "id": "scrubber", "version": "phase6-v1", "role": "board-unit",
+      "source": "art/source/phase6/gw-phase6-scrubber-master-v1.png",
+      "runtime": "src/assets/board/phase6/gw-phase6-scrubber-board-v1.png",
+      "prompt": "art/prompts/phase6/gw-phase6-scrubber-prompt-v1.md",
+      "sourceDimensions": [1254, 1254], "runtimeDimensions": [256, 256],
+      "maxSourceBytes": 2000000, "maxBytes": 90000, "hasAlpha": true,
+      "generator": "OpenAI ImageGen", "generatedAt": "2026-07-16T18:14:34Z",
+      "referenceAssets": ["gw-phase6-relay-master-v1", "phase6-reactor-tech-style-frame"],
+      "promptSha256": "35b8d7d358fd0d87f3f172c6bbb5030df4d1b4dc4d64956554a140a3567fe41f",
+      "camera": "orthographic-70deg", "light": "upper-left", "semanticAccent": "recovery-green", "ownerApproved": false,
+      "sourceSha256": "ea6e1033dc1728e0bb007ce8c049725941f732fd71612b236e287529594ea638",
+      "runtimeSha256": "facf97562180fa494af05a2d59c63d9ff8be0d2016b7c05dfa2bfcfb85cb122b"
+    },
+    {
+      "id": "overclock", "version": "phase6-v1", "role": "board-unit",
+      "source": "art/source/phase6/gw-phase6-overclock-master-v1.png",
+      "runtime": "src/assets/board/phase6/gw-phase6-overclock-board-v1.png",
+      "prompt": "art/prompts/phase6/gw-phase6-overclock-prompt-v1.md",
+      "sourceDimensions": [1254, 1254], "runtimeDimensions": [256, 256],
+      "maxSourceBytes": 2000000, "maxBytes": 90000, "hasAlpha": true,
+      "generator": "OpenAI ImageGen", "generatedAt": "2026-07-16T18:14:34Z",
+      "referenceAssets": ["gw-phase6-relay-master-v1", "phase6-reactor-tech-style-frame"],
+      "promptSha256": "477bb1ef0a4ee49be797844cccc249cb38b36c8b96d60b9a7505e43a3f5b13e5",
+      "camera": "orthographic-70deg", "light": "upper-left", "semanticAccent": "power-gold", "ownerApproved": false,
+      "sourceSha256": "6becc8459fc4f03b47239d21c7de3d0a6d43864928cb5accacdc83fb5a15a298",
+      "runtimeSha256": "92e093986e4cbebea9d480804f5567415e5be38848baad6d2c5ab97dcf6c0ce7"
     }
   ]
 }

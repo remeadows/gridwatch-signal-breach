@@ -5,7 +5,9 @@ import goliathUrl from "../assets/board/phase6/gw-phase6-goliath-board-v1.webp";
 import hunterUrl from "../assets/board/phase6/gw-phase6-hunter-board-v1.png";
 import probeUrl from "../assets/board/phase6/gw-phase6-probe-board-v1.png";
 import relayUrl from "../assets/board/phase6/gw-phase6-relay-board-v1.png";
+import scrubberUrl from "../assets/board/phase6/gw-phase6-scrubber-board-v1.png";
 import sourceUrl from "../assets/board/phase6/gw-phase6-source-board-v1.png";
+import overclockUrl from "../assets/board/phase6/gw-phase6-overclock-board-v1.png";
 import splitterUrl from "../assets/board/phase6/gw-phase6-splitter-board-v1.png";
 import spoofUrl from "../assets/board/phase6/gw-phase6-spoof-board-v1.png";
 import turretUrl from "../assets/board/phase6/gw-phase6-turret-board-v1.png";
@@ -22,7 +24,9 @@ export type Phase6BoardSpriteId =
   | "spoof"
   | "hunter"
   | "splitter"
-  | "goliath";
+  | "goliath"
+  | "scrubber"
+  | "overclock";
 
 type SpriteState = "idle" | "loading" | "ready" | "failed";
 
@@ -43,6 +47,8 @@ const PHASE6_SPRITES: Readonly<Record<Phase6BoardSpriteId, string>> = {
   hunter: hunterUrl,
   splitter: splitterUrl,
   goliath: goliathUrl,
+  scrubber: scrubberUrl,
+  overclock: overclockUrl,
 };
 
 const records = new Map<Phase6BoardSpriteId, SpriteRecord>();
