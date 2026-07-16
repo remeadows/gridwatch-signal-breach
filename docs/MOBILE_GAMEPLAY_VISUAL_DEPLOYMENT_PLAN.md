@@ -169,8 +169,9 @@ production.
 
 - Label the resource consistently as `BW / BANDWIDTH` with the same icon wherever
   it appears.
-- At Build start, animate `+26 WAVE GRANT`; during combat, show each trickle or
-  bounty as a floating `+1 BW` and in a short event log.
+- At each sector's opening Build, animate the accepted `+30 BW` (W1), `+42 BW`
+  (W6), or `+56 BW` (W10) grant; during combat, show each trickle or bounty as a
+  floating `+1 BW` and in a short event log.
 - Each tool shows `owned purpose + cost + range/HP` rather than only a name and
   number.
 - Disabled states show the exact shortage. Affordable states should be visually
@@ -213,15 +214,13 @@ edges; it does not reduce Goliath health or remove the need to place Overclock
 beside ICE. `npm run balance:report` is a CI gate and fails if any accepted
 fixture loses.
 
-### Add direct agency carefully
+### Rejected direct-agency experiment
 
-First make placement, range, path preview, and economy clear. Then playtest one
-universal deterministic countermeasure: a once-per-wave `SIGNAL PULSE` targeted
-at a board cell that briefly slows and damages intrusions in a small area. It
-should charge from live-signal uptime, reinforcing the routing objective. Keep it
-only if it improves fun without eclipsing ICE and Firewall placement. Adding it
-requires a replay command and ruleset-version release; it is not a visual-only
-feature.
+Phase 4 considered a once-per-wave `SIGNAL PULSE` targeted at a board cell that
+would slow and damage intrusions in a small area, charged by live-signal uptime.
+The experiment was rejected before implementation: adding it would require a
+new replay command and ruleset-version release, and no playtest evidence showed
+that it would improve fun without eclipsing ICE and Firewall placement.
 
 Decision for `phase4-v1`: do not ship Signal Pulse. The accepted placement and
 economy changes meet the fixed-seed clear target while retaining ICE, Firewall,

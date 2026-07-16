@@ -55,6 +55,9 @@
   implementation at `ff527cc` passed CI, CodeQL, CodeRabbit, and Cloudflare
   Pages. The PR remains draft pending the explicitly approved server-first
   promotion and controlled replay checks.
+- A substantive CodeRabbit CLI review of the full branch found no critical or
+  warning issues. Its four minor copy/documentation inconsistencies were fixed;
+  the focused follow-up review returned zero findings.
 
 ## Completed Phase 3 — 2026-07-15
 

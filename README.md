@@ -75,8 +75,9 @@ The validator runs a bundle generated from `src/sim`:
 npm run build:validator   # regenerates supabase/functions/submit-gridwatch-score/sim.bundle.js
 ```
 
-CI fails if that bundle drifts from `src/sim`, so the server-side logic always
-matches the game.
+CI fails if the generated current-ruleset bundle drifts from `src/sim`, so
+`phase4-v1` server validation matches this game build. Legacy submissions use
+their deliberately pinned historical bundle instead.
 
 Sim-affecting releases must deploy their additive migration and backward-
 compatible Edge Function before the matching Pages client. See `HANDOFF.md` for

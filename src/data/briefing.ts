@@ -43,7 +43,7 @@ export const BRIEFING_COPY = {
   protocolsTitle: "PROTOCOLS",
   threatsTitle: "THE THREATS",
   arsenalIntro:
-    "Choose a tool, place it on the grid, then LAUNCH WAVE when your route and defenses are ready. SELL fully refunds Build changes; live sales return the listed partial refund.",
+    "Choose a tool, place it on the grid, then LAUNCH WAVE when your route and defenses are ready. Build-phase sales fully refund the unit cost; live sales return the listed partial refund.",
   threatsIntro:
     "Intrusions corrupt your hardware by standing on it, chew through walls when boxed in, and drain the Core by touch. Clear every wave of the sector.",
 } as const;
