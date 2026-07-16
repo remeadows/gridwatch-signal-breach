@@ -104,14 +104,20 @@ export function renderUnitPicker(options: UnitPickerOptions): void {
 
   const sellSelected = selectedTool === "sell";
   const sellAvailability = getToolAvailability(state, "sell");
+  const sellCost = sellButton.querySelector<HTMLElement>("[data-tool-cost]");
   sellButton.className = sellSelected ? "tool-button selected" : "tool-button";
   sellButton.setAttribute("aria-pressed", String(sellSelected));
   sellButton.disabled = !sellAvailability.enabled;
   sellButton.title = TOOL_INFO.sell.description;
   sellButton.setAttribute(
     "aria-label",
-    `${TOOL_INFO.sell.label}. ${TOOL_INFO.sell.description}`,
+    `${TOOL_INFO.sell.label}. ${TOOL_INFO.sell.description} ${sellAvailability.costLabel}.`,
   );
+  if (sellCost) {
+    // The dock already labels the action as Sell; omitting the repeated word
+    // "refund" keeps FULL/PARTIAL legible in the 568x320 landscape layout.
+    sellCost.textContent = sellAvailability.costLabel.replace(" REFUND", "");
+  }
 }
 
 function isUnitTool(tool: PlayerTool): tool is UnitKind {

@@ -42,6 +42,7 @@ jobs:
         run: |
           npm run typecheck:tools
           npm run verify:replays
+          npm run balance:report
 
       - name: Verify score validator bundle is in sync
         # The Edge Function replays runs with a bundle generated from src/sim.

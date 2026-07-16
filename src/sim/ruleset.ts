@@ -1,4 +1,4 @@
-// Identifier for the next score-comparable simulation ruleset. The Phase 4
-// client will not submit this value until the backward-compatible validator is
-// deployed. Legacy clients omit a ruleset and remain on the pinned legacy sim.
+// Immutable identifier for the tuned Phase 4 simulation. Legacy clients omit a
+// ruleset and remain on the pinned legacy sim; this client may ship only after
+// the backward-compatible validator is deployed and verified server-first.
 export const SIM_RULESET_ID = "phase4-v1";

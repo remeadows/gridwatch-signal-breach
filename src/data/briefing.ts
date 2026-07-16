@@ -43,7 +43,7 @@ export const BRIEFING_COPY = {
   protocolsTitle: "PROTOCOLS",
   threatsTitle: "THE THREATS",
   arsenalIntro:
-    "Choose a tool, place it on the grid, then LAUNCH WAVE when your route and defenses are ready. SELL returns the listed refund.",
+    "Choose a tool, place it on the grid, then LAUNCH WAVE when your route and defenses are ready. SELL fully refunds Build changes; live sales return the listed partial refund.",
   threatsIntro:
     "Intrusions corrupt your hardware by standing on it, chew through walls when boxed in, and drain the Core by touch. Clear every wave of the sector.",
 } as const;
@@ -65,7 +65,7 @@ export const BRIEFING_UNITS: readonly BriefingUnit[] = [
     kind: "turret",
     name: "ICE Turret",
     cost: UNIT_TUNING.turret.cost,
-    summary: "auto-fires at adjacent intrusions.",
+    summary: `auto-fires at intrusions within ${UNIT_TUNING.turret.range} tiles.`,
   },
   {
     kind: "scrubber",
@@ -124,7 +124,7 @@ export const BRIEFING_PROTOCOLS: readonly BriefingRow[] = [
     icon: "sell",
     name: "Bandwidth",
     summary:
-      "your build currency. Granted each wave, trickled during combat, spent to place, partly refunded on SELL.",
+      "your build currency. Granted each wave, trickled during combat, and spent to place. Build-phase sales fully refund; live sales only partly refund.",
   },
   {
     icon: "relay",

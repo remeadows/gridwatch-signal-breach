@@ -1,6 +1,9 @@
+import { applyCommand } from "../src/sim/commands";
 import type { RecordedCommand } from "../src/sim/replay";
 import { ReplayError, replayRun } from "../src/sim/replay";
 import { SIM_RULESET_ID } from "../src/sim/ruleset";
+import { createGameState } from "../src/sim/state";
+import { savePendingRun, takePendingRun } from "../src/leaderboard/pendingRun";
 import {
   LEGACY_RULESET_ID,
   ReplayValidationError,
@@ -37,9 +40,9 @@ const repeatedWin = replayRun({
 });
 
 expectEqual(win.state.phase, "won", "Golden win must finish won.");
-expectEqual(win.state.tickCount, 163, "Golden win tick count drifted.");
+expectEqual(win.state.tickCount, 146, "Golden win tick count drifted.");
 expectEqual(win.state.coreIntegrity, 150, "Golden win integrity drifted.");
-expectEqual(win.score.total, 500, "Golden win score drifted.");
+expectEqual(win.score.total, 514, "Golden win score drifted.");
 expectDeepEqual(repeatedWin, win, "Repeated replay must be byte-equivalent.");
 
 const loss = replayRun({
@@ -50,7 +53,28 @@ const loss = replayRun({
 
 expectEqual(loss.state.phase, "lost", "Golden loss must finish lost.");
 expectEqual(loss.state.tickCount, 84, "Golden loss tick count drifted.");
-expectEqual(loss.score.total, 36, "Golden loss score drifted.");
+expectEqual(loss.score.total, 38, "Golden loss score drifted.");
+
+const refundStart = createGameState({ seed: "refund-policy", sector: 1 });
+const refundPlaced = applyCommand(refundStart, {
+  type: "placeUnit",
+  position: { x: 1, y: 3 },
+  unit: "turret",
+});
+const refundInBuild = applyCommand(refundPlaced, {
+  type: "sellUnit",
+  position: { x: 1, y: 3 },
+});
+const refundActive = applyCommand(refundPlaced, { type: "skipPrep" });
+const refundDuringWave = applyCommand(refundActive, {
+  type: "sellUnit",
+  position: { x: 1, y: 3 },
+});
+
+expectEqual(refundStart.bandwidth, 30, "Wave 1 grant drifted.");
+expectEqual(refundPlaced.bandwidth, 16, "ICE cost drifted.");
+expectEqual(refundInBuild.bandwidth, 30, "Build sale must fully refund ICE.");
+expectEqual(refundDuringWave.bandwidth, 24, "Live sale must use the partial ICE refund.");
 
 expectThrows(
   () =>
@@ -83,6 +107,46 @@ expectEqual(
   `${SIM_RULESET_ID}:sector:1`,
   "Current category is not isolated.",
 );
+expectEqual(
+  categoryForRuleset(current, "global"),
+  `${SIM_RULESET_ID}:global`,
+  "Current global selector is not isolated.",
+);
+
+const pendingStorage = new Map<string, string>();
+Object.defineProperty(globalThis, "window", {
+  configurable: true,
+  value: {
+    localStorage: {
+      getItem: (key: string) => pendingStorage.get(key) ?? null,
+      removeItem: (key: string) => pendingStorage.delete(key),
+      setItem: (key: string, value: string) => pendingStorage.set(key, value),
+    },
+  },
+});
+
+pendingStorage.set(
+  "gridwatch.pendingRun",
+  JSON.stringify({ seed: "pre-ruleset-oauth", sector: 1, commands: [] }),
+);
+expectEqual(
+  takePendingRun()?.ruleset,
+  LEGACY_RULESET_ID,
+  "Unversioned OAuth pending runs must stay on the legacy validator.",
+);
+savePendingRun({
+  ruleset: SIM_RULESET_ID,
+  seed: "phase4-oauth",
+  sector: 2,
+  commands: [],
+});
+expectEqual(
+  takePendingRun()?.ruleset,
+  SIM_RULESET_ID,
+  "Versioned OAuth pending runs must preserve their original ruleset.",
+);
+expectEqual(takePendingRun(), null, "Pending runs must be consumed exactly once.");
+
 expectThrows(
   () => resolveRuleset("unknown", SIM_RULESET_ID),
   (error: unknown) => error instanceof ReplayValidationError,

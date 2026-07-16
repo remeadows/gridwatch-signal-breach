@@ -3,7 +3,7 @@ import { SECTORS } from "./data/levels";
 import { installPointerInput } from "./input/pointer";
 import { drawAmbientBackdrop, drawGrid } from "./render/renderer";
 import { getEffectsQuality } from "./render/visualTheme";
-import { applyCommand, createGameState, tick } from "./sim";
+import { applyCommand, createGameState, SIM_RULESET_ID, tick } from "./sim";
 import { createAudioEngine } from "./ui/audio";
 import { renderHud } from "./ui/hud";
 import { renderOverlay } from "./ui/overlays";
@@ -265,7 +265,12 @@ function closeLeaderboard(): void {
 // auto-submitted when the player returns signed in.
 function stashPendingRunForSignIn(): void {
   pendingRunHandled = false;
-  savePendingRun({ seed: currentSeed, sector: currentSector, commands: recordedCommands });
+  savePendingRun({
+    ruleset: SIM_RULESET_ID,
+    seed: currentSeed,
+    sector: currentSector,
+    commands: recordedCommands,
+  });
 }
 
 // After sign-in completes (player has a session + handle), submit any run that
@@ -280,6 +285,7 @@ async function maybeAutoSubmitPendingRun(): Promise<void> {
   }
   pendingRunHandled = true;
   const result = await submitScore({
+    ruleset: pending.ruleset,
     seed: pending.seed,
     sector: pending.sector,
     commands: pending.commands,
@@ -435,6 +441,7 @@ function drawFrame(now: number): void {
       onSubmitScore: leaderboardConfig.enabled
         ? () =>
             submitScore({
+              ruleset: SIM_RULESET_ID,
               seed: currentSeed,
               sector: currentSector,
               commands: recordedCommands,

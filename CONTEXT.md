@@ -27,6 +27,9 @@ the app is served from the root of its host (Cloudflare Pages).
 - Sector 2 unlocks Scrubbers, which cleanse corrupted tiles after 12 active ticks. Splitters spawn deterministic probes on death; the wave-12 Goliath is scripted and punishes unsupported walls.
 - The V2 campaign has exactly twelve waves split across three sectors. Prep commonly lasts `14` ticks, with `350ms` simulation ticks, so standard prep is about five seconds.
 - Scoring combines core integrity, neutralized intrusions, signal uptime percentage, and unused bandwidth efficiency.
+- Sim-affecting releases use immutable replay rulesets. `phase4-v1` uses tuned
+  data, explicit client payloads, the matching local validator bundle, and
+  prefixed score categories; omitted payloads remain on pinned `legacy-v1`.
 
 ## Build And Deploy
 
@@ -37,3 +40,5 @@ the app is served from the root of its host (Cloudflare Pages).
 - Supabase migrations and the score-validation Edge Function are promoted
   separately from Pages. Any sim-affecting client release must follow the
   compatible server-first order recorded in `HANDOFF.md`.
+- The `phase4-v1` client must not reach production before its additive migration
+  and backward-compatible Edge Function have been deployed and verified.

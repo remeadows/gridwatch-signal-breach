@@ -6,16 +6,16 @@ export const UNIT_TUNING = {
     signalRange: 2,
   },
   firewall: {
-    cost: 10,
+    cost: 8,
     sellRefund: 4,
     hp: 24,
   },
   turret: {
-    cost: 18,
+    cost: 14,
     sellRefund: 8,
     hp: 10,
-    range: 1,
-    damagePerTick: 4,
+    range: 2,
+    damagePerTick: 3,
   },
   scrubber: {
     cost: 9,

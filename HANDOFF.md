@@ -4,39 +4,51 @@
 
 - Codex is implementing the approved balance-and-agency foundation on
   `codex/balance-agency-phase-4`, based directly on merged Phase 3 PR #41.
-- This first slice deliberately does not change production economy, combat,
-  waves, scoring, or the client replay payload. It establishes evidence and
-  compatibility before live tuning.
-- `npm run balance:report` now runs the same guided Sector 1 build plan across
-  four fixed seeds. The current tuning clears 1/4 runs and stops at wave 2.8 on
-  average. The first experiment—30 BW on W1, Firewall at 8 BW, and ICE at 16 BW
-  with range 2 / damage 3—clears 4/4 and averages 125.3 Core integrity. These
-  values remain report-only until the versioned validator path is promoted.
+- The initial `phase4-v1` ruleset is now frozen locally: opening grants are
+  30/42/56 BW for Sectors 1/2/3, Firewall costs 8 BW, and ICE costs 14 BW with
+  Manhattan range 2 and 3 damage per tick. Build-phase sales fully refund while
+  active-wave sales retain the existing partial refunds.
+- `npm run balance:report` replays readable guided plans across four fixed seeds
+  per sector. The legacy baseline clears 1/4 Sector 1 runs and 0/4 in Sectors 2
+  and 3. `phase4-v1` clears 4/4 in every sector; average Core integrity is 125.3,
+  127.8, and 150 respectively. The report fails CI if any Phase 4 fixture loses.
+- The optional Signal Pulse was not retained. The tuned routing, ICE, Firewall,
+  Scrubber, and Overclock decisions clear the campaign without a universal
+  attack that could eclipse placement.
 - `phase4-v1` is exported by the generated simulator bundle. The Edge Function
   is prepared to keep omitted/`legacy-v1` submissions on the validator pinned
   to commit `fa0a5df`, while explicitly versioned submissions use the local
-  Phase 4 bundle and prefixed score categories. The production client still
-  omits the field, so merging this slice cannot move existing players or rows.
+  Phase 4 bundle and prefixed score categories. The tuned client submits the
+  explicit ruleset; pending OAuth runs preserve their original ruleset, and old
+  unversioned pending runs resolve to `legacy-v1`.
 - Replay validation and canonicalization are now pure/testable. Golden fixtures
   cover a deterministic accepted win, accepted loss, repeated-run equality,
   out-of-order commands, commands after terminal state, inert-field stripping,
-  unsupported rulesets, and invalid units.
+  unsupported rulesets, invalid units, Build/live refunds, current global
+  category isolation, and legacy/current OAuth pending-run compatibility.
 - The additive migration
-  `20260716000516_isolate_gridwatch_leaderboard_categories.sql` scopes only
-  GridWatch's null-category global read to historical `sector:1..3` rows. Other
-  games using the shared RPC retain their existing behavior. It also replaces
-  implicit PUBLIC execute with explicit `anon`, `authenticated`, and
-  `service_role` grants.
+  `20260716000516_isolate_gridwatch_leaderboard_categories.sql` preserves the
+  legacy null-category board, adds an exact `phase4-v1:global` selector across
+  only the three tuned sector categories, and isolates returned global ranks by
+  ruleset. Other games using the shared RPC retain their existing behavior. It
+  also replaces implicit PUBLIC execute with explicit grants and pins both
+  SECURITY DEFINER functions to an empty search path.
 - GridWatchGamesDB has not been changed and the Edge Function has not been
-  deployed. Do not deploy this compatibility-only bundle: a ruleset identifier
-  must never change simulation meaning after it becomes reachable. First land
-  and freeze the initial `phase4-v1` tuning in the generated bundle. Safe
-  promotion order is then migration first, backward-compatible Edge Function
-  second, controlled legacy/current submission checks third, and only then the
-  client that emits `phase4-v1`.
+  deployed. The ruleset is now immutable and ready for the controlled
+  server-first sequence: migration, backward-compatible Edge Function,
+  controlled legacy/current submission checks, then merge the Pages client.
+- Local verification passes build/tool typecheck/replay/balance/audit, produces
+  an idempotent validator bundle, and bundles the Edge Function with Deno/JSR
+  imports externalized. The migration applies cleanly to an ephemeral PostgreSQL
+  16 schema; seeded checks prove legacy and `phase4-v1` global boards exclude
+  each other's sector and aggregate rows. Browser checks at 320×568, 390×844,
+  568×320, and 1440×900 have no document overflow, console warning/error, or
+  non-static request. Build and live ICE sales return 14 and 8 BW respectively;
+  the constrained landscape dock keeps FULL/PARTIAL legible.
 - Draft PR #42 is open at
-  `https://github.com/remeadows/gridwatch-signal-breach/pull/42`. Its first full
-  check run passed CI, CodeQL, and Cloudflare Pages.
+  `https://github.com/remeadows/gridwatch-signal-breach/pull/42`. Its earlier
+  compatibility commit passed CI, CodeQL, CodeRabbit, and Cloudflare Pages; the
+  frozen tuning commit must receive a fresh green run before promotion.
 
 ## Completed Phase 3 — 2026-07-15
 
@@ -95,9 +107,9 @@
   boundary check confirmed that placements before launch and between waves
   reproduce exactly through the existing command log and validator. The
   generated validator bundle remains byte-identical.
-- Full Build-phase refunds are deliberately deferred: changing the existing
-  partial-refund rule would alter deterministic economy and requires a versioned
-  ruleset/validator release. The UI reports the actual refund instead.
+- Phase 2 deliberately deferred full Build-phase refunds because they alter the
+  deterministic economy. Phase 4 now implements them inside the versioned
+  `phase4-v1` ruleset while preserving partial refunds during live waves.
 - Browser verification passed at 320×568, 390×844, 568×320, and 1440×900 with
   zero mobile document scroll. Pre-launch placement, clock freeze, invalid-tile
   feedback, affordability updates, Enter/click launch, next-wave Build re-entry,
@@ -163,13 +175,21 @@
 npm install
 npm run build
 npm run build:validator   # must produce no git diff (CI enforces this)
+npm run typecheck:tools
+npm run verify:replays
+npm run balance:report
+npm audit --audit-level=high
 npm run dev -- --host 127.0.0.1 --port 5173 --strictPort
 npm run preview -- --host 127.0.0.1 --port 4173 --strictPort
 rg -n "TODO|FIXME|XXX|HACK" src
 rg -n ": any\b" src
 ```
 
-Expected: install/build/build:validator/dev/preview succeed, the app renders at the host root (`/`), `build:validator` leaves `sim.bundle.js` unchanged, the `TODO` `rg` has no matches (the old `src/render/animator.ts` stub must stay gone), and the `any` `rg` has no matches.
+Expected: install/build/build:validator/tool typecheck/replay/balance/dev/preview
+succeed, audit finds no high vulnerabilities, the app renders at the host root
+(`/`), `build:validator` leaves `sim.bundle.js` unchanged, the `TODO` `rg` has
+no matches (the old `src/render/animator.ts` stub must stay gone), and the `any`
+`rg` has no matches.
 
 Note: the previous "zero network / no `import.meta.env`" invariant no longer holds — the optional leaderboard adds `fetch` calls in `src/leaderboard/` and reads `VITE_SUPABASE_*` env vars. The game still runs fully offline when those vars are unset.
 
@@ -183,22 +203,19 @@ Note: the previous "zero network / no `import.meta.env`" invariant no longer hol
 
 ## Good Next Checks
 
-- Review the Phase 4 compatibility/baseline PR without applying its migration or
-  deploying its Edge Function against GridWatchGamesDB from a public preview.
-- Implement and freeze the first evidence-backed `phase4-v1` tuning without
-  deploying this compatibility-only Edge bundle. Then, in a controlled
-  maintenance window, apply the GridWatch-scoped migration, deploy the
-  backward-compatible Edge Function with that tuned bundle, and verify one
-  legacy plus one `phase4-v1` replay submission before the tuned client is made
-  ready.
+- Review the frozen Phase 4 PR without pointing its public preview at production
+  writes. GridWatchGamesDB and the production Edge Function remain unchanged.
+- With explicit owner approval, apply the GridWatch-scoped migration, deploy the
+  backward-compatible Edge Function, then verify Auth, handle, one legacy run,
+  one `phase4-v1` run, exact categories, keep-best behavior, both ranks, and
+  rollback before marking PR #42 ready and merging its tuned Pages client.
 - On the Phase 3 Cloudflare Pages preview, run ten consecutive intended placements
   on real iOS and Android hardware in portrait and landscape. Confirm backgrounding
   and rotation pause without advancing an unseen wave, reduced-motion behavior,
   and sustained frame pacing during the busiest visible wave.
-- Playtest the Build-to-launch cadence across W1-W12 and record completion rate,
-  first-failure wave, unused bandwidth, and most-used tools before changing
-  economy values. Any later rules/tuning change must use the validator/Edge
-  Function compatibility sequence in the plan.
+- Run owner and real-device playtests across W1-W12 and record completion rate,
+  first-failure wave, unused bandwidth, and most-used tools. Any later tuning
+  change must receive a new immutable ruleset and repeat the server-first path.
 - Do not start the old Phase 5 projection work before Phase 2 clarity is validated;
   re-evaluate 2.5D depth only after the game is legible and controllable.
 - Playtest W1-W12 after any tuning change and confirm W1 is forgiving, sector 2 introduces hunter/splitter plus scrubber pressure cleanly, and sector 3's overclock tool has visible value against the scripted goliath.

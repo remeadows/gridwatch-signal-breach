@@ -21,4 +21,9 @@ if (!source) {
   throw new Error(`No bundled output produced for ${entryPoint}.`);
 }
 
-await import(`data:text/javascript;base64,${Buffer.from(source).toString("base64")}`);
+try {
+  await import(`data:text/javascript;base64,${Buffer.from(source).toString("base64")}`);
+} catch (error) {
+  console.error(error instanceof Error ? error.message : String(error));
+  process.exitCode = 1;
+}

@@ -16,9 +16,9 @@ Codex scaffolded the Vite + TypeScript project, separated deterministic simulati
 
 ## Controls
 
-- Select `Relay`, `Firewall`, `ICE`, or `Sell` from the left control panel. Later sectors unlock `Scrubber` and `Overclock`.
-- Click a grid tile to place the selected unit or sell an existing unit.
-- Use `Skip prep` to start a wave early.
+- Select `Relay`, `Firewall`, `ICE`, or `Sell` from the tool dock. Later sectors unlock `Scrubber` and `Overclock`.
+- Tap or click a grid tile to place the selected unit or sell existing hardware.
+- Build phases freeze time. Press `LAUNCH W#` when the route and defenses are ready.
 - Use `BRIEFING` in the HUD to pause and review the mission notes.
 - Use `Retry Sector`, `Sector Select`, `Title`, or `Next Sector` from the end screen.
 
@@ -60,12 +60,14 @@ keep-best upsert (`record_score`) so replaying a sector only ever updates your o
 top score.
 
 **Anti-cheat by replay.** The simulation is pure and deterministic, so the client
-submits its run as `{ seed, sector, commands }` rather than a score. A Supabase
-Edge Function (`submit-gridwatch-score`) authenticates the player, replays the run
-with the *exact* game code, and stores the score **it** computes — the client's
-claimed number is never trusted, and a tampered or unfinished run is rejected. RLS
-blocks all direct writes/reads to the `scores` table; reads go through the
-`get_leaderboard` RPC, writes through the function's service role only.
+submits its run as `{ ruleset, seed, sector, commands }` rather than a score. A
+Supabase Edge Function (`submit-gridwatch-score`) authenticates the player,
+selects the immutable ruleset validator, replays the run, and stores the score
+**it** computes — the client's claimed number is never trusted, and a tampered or
+unfinished run is rejected. Legacy clients remain on a pinned validator while
+new score categories keep incomparable tuning separate. RLS blocks all direct
+writes/reads to the `scores` table; reads go through the `get_leaderboard` RPC,
+writes through the function's service role only.
 
 The validator runs a bundle generated from `src/sim`:
 
@@ -75,6 +77,10 @@ npm run build:validator   # regenerates supabase/functions/submit-gridwatch-scor
 
 CI fails if that bundle drifts from `src/sim`, so the server-side logic always
 matches the game.
+
+Sim-affecting releases must deploy their additive migration and backward-
+compatible Edge Function before the matching Pages client. See `HANDOFF.md` for
+the active promotion gate.
 
 ### Configuration
 

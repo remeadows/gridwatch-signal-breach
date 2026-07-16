@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "build:validator": "esbuild src/sim/index.ts --bundle --format=esm --platform=neutral --target=es2022 --legal-comments=none --outfile=supabase/functions/submit-gridwatch-score/sim.bundle.js",
     "balance:report": "node scripts/run-typescript.mjs scripts/balance-report.ts",
+    "balance:search": "node scripts/run-typescript.mjs scripts/search-balance.ts",
     "typecheck:tools": "tsc -p tsconfig.tools.json",
     "verify:replays": "node scripts/run-typescript.mjs scripts/verify-replays.ts"
   },
