@@ -1,8 +1,8 @@
 # GridWatch Mobile, Gameplay, Visual, and Deployment Plan
 
-Status: Phases 1–3 are merged. The `phase4-v1` server-first replay gate is
-complete and PR #42 is ready for review; production Pages promotion remains
-pending a clean final review.
+Status: Phases 1–4 are merged through PR #42, and the production Pages build is
+live. PR #43 is the current post-review hardening and shared-database promotion
+gate.
 
 Date: 2026-07-15
 

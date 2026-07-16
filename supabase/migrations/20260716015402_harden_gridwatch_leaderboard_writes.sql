@@ -1,7 +1,8 @@
 -- Follow-up for environments where 20260716000516 was already applied.
 -- Give Signal Breach tied scores the same displayed rank and make keep-best
--- writes atomic. Other games retain row_number() ordering so Grid Drift's
--- separate get_rank RPC continues to match its visible leaderboard exactly.
+-- writes atomic. Other games retain deterministic row_number() ordering, and
+-- Grid Drift's separate get_rank RPC receives the identical total ordering so
+-- it continues to match the visible leaderboard exactly.
 create or replace function public.get_leaderboard(
   p_game text,
   p_category text default null
@@ -21,6 +22,7 @@ set search_path = ''
 as $$
   with scoped as (
     select distinct on (s.user_id)
+      s.id,
       s.user_id,
       s.score,
       s.rating,
@@ -59,13 +61,13 @@ as $$
           )
         )
       )
-    order by s.user_id, s.score desc, s.created_at asc
+    order by s.user_id, s.score desc, s.created_at asc, s.id asc
   )
   select
     case
       when p_game = 'gridwatch-signal-breach'
         then rank() over (order by sc.score desc)
-      else row_number() over (order by sc.score desc, sc.created_at asc)
+      else row_number() over (order by sc.score desc, sc.created_at asc, sc.id asc)
     end as rank,
     p.handle,
     sc.score,
@@ -74,8 +76,44 @@ as $$
     sc.created_at
   from scoped sc
   join public.profiles p on p.user_id = sc.user_id
-  order by sc.score desc, sc.created_at asc
+  order by sc.score desc, sc.created_at asc, sc.id asc
   limit 20;
+$$;
+
+create or replace function public.get_rank(
+  p_game text,
+  p_category text default null
+)
+returns table(
+  rank bigint,
+  total bigint
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  with scoped as (
+    select distinct on (s.user_id)
+      s.id,
+      s.user_id,
+      s.score,
+      s.created_at
+    from public.scores s
+    join public.games g on g.id = s.game_id
+    where g.slug = p_game
+      and (p_category is null or s.category = p_category)
+    order by s.user_id, s.score desc, s.created_at asc, s.id asc
+  ), ranked as (
+    select
+      sc.user_id,
+      row_number() over (order by sc.score desc, sc.created_at asc, sc.id asc) as rank,
+      count(*) over () as total
+    from scoped sc
+  )
+  select r.rank, r.total
+  from ranked r
+  where r.user_id = auth.uid();
 $$;
 
 create or replace function public.record_score(
@@ -153,11 +191,27 @@ begin
 
   stored_score := v_best;
 
-  select count(*) + 1 into sector_rank
-  from public.scores s
-  where s.game_id = v_game_id
-    and s.category = p_category
-    and s.score > v_best;
+  if p_slug = 'gridwatch-signal-breach' then
+    select count(*) + 1 into sector_rank
+    from public.scores s
+    where s.game_id = v_game_id
+      and s.category = p_category
+      and s.score > v_best;
+  else
+    with ranked as (
+      select
+        s.user_id,
+        row_number() over (
+          order by s.score desc, s.created_at asc, s.id asc
+        ) as position
+      from public.scores s
+      where s.game_id = v_game_id
+        and s.category = p_category
+    )
+    select r.position into sector_rank
+    from ranked r
+    where r.user_id = p_user_id;
+  end if;
 
   if p_slug = 'gridwatch-signal-breach' then
     if p_category in ('sector:1', 'sector:2', 'sector:3') then
@@ -192,7 +246,7 @@ begin
     select count(*) + 1 into global_rank
     from per_user, me
     where per_user.best > me.best;
-  else
+  elsif p_slug = 'gridwatch-signal-breach' then
     with per_user as (
       select s.user_id, max(s.score) as best
       from public.scores s
@@ -207,6 +261,27 @@ begin
     select count(*) + 1 into global_rank
     from per_user, me
     where per_user.best > me.best;
+  else
+    with scoped as (
+      select distinct on (s.user_id)
+        s.id,
+        s.user_id,
+        s.score,
+        s.created_at
+      from public.scores s
+      where s.game_id = v_game_id
+      order by s.user_id, s.score desc, s.created_at asc, s.id asc
+    ), ranked as (
+      select
+        sc.user_id,
+        row_number() over (
+          order by sc.score desc, sc.created_at asc, sc.id asc
+        ) as position
+      from scoped sc
+    )
+    select r.position into global_rank
+    from ranked r
+    where r.user_id = p_user_id;
   end if;
 
   return next;

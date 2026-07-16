@@ -1,8 +1,8 @@
 # Phase 4 Server-First Promotion Runbook
 
-Status: server-first steps executed 2026-07-16; Pages client promotion pending.
-The completed server record below does not authorize the remaining PR ready or
-merge actions. Perform those only after separate owner authorization.
+Status: the original server-first steps and PR #42 Pages promotion were executed
+2026-07-16. PR #43 is the reviewed shared-RPC/Edge hardening follow-up; its
+production migration and Edge deployment remain pending.
 
 ## Scope and invariants
 
@@ -25,13 +25,14 @@ named migration below.
 | Artifact | Required value |
 |---|---|
 | Project | `GridWatchGamesDB` (`mggxfzzxrpjgpzhwiwqi`) |
-| Migration | `supabase/migrations/20260716000516_isolate_gridwatch_leaderboard_categories.sql` |
+| Original migration | `supabase/migrations/20260716000516_isolate_gridwatch_leaderboard_categories.sql` |
+| Follow-up migration | `supabase/migrations/20260716015402_harden_gridwatch_leaderboard_writes.sql` |
 | Applied migration ledger version | `20260716012745` |
 | Ruleset | `phase4-v1` |
 | Current validator SHA-256 | `48a3ecf68be9d05e57ccabb2c90e335669a1a1808fbda814ac7ea81a952dafa6` |
 | Legacy validator source | pinned commit `fa0a5df7a5bae70068772566913d13e99fe137f0` |
 | Replay fixture | `docs/fixtures/phase4-promotion-replay.json` |
-| Edge rollback source | `8dd86a8d65c8a1be1022951309f87fc311138614` |
+| Follow-up Edge rollback source | `ed0cdccd92386852a98091e64d1aec1c96e9a061` |
 
 The fixture is deliberately score-comparable only within its selected ruleset.
 It has been independently replayed against both implementations:
@@ -87,9 +88,9 @@ From the clean PR branch:
 
 ```sh
 git fetch origin --prune
-test "$(git rev-parse HEAD)" = "$(gh pr view 42 --json headRefOid --jq .headRefOid)"
+test "$(git rev-parse HEAD)" = "$(gh pr view 43 --json headRefOid --jq .headRefOid)"
 git status --short
-gh pr checks 42
+gh pr checks 43
 npm install
 npm run build
 npm run typecheck:tools
@@ -129,7 +130,7 @@ select p.proname,
 from pg_proc p
 join pg_namespace n on n.oid = p.pronamespace
 where n.nspname = 'public'
-  and p.proname in ('get_leaderboard', 'record_score')
+  and p.proname in ('get_leaderboard', 'get_rank', 'record_score')
 order by p.proname;
 ```
 
@@ -137,8 +138,36 @@ Stop if Phase 4 categories already exist unexpectedly or the live functions no
 longer match the recorded privilege boundary.
 
 GridWatchGamesDB is shared by `grid-drift`, `gridwatch-match`, and
-`gridwatch-signal-breach`. When a follow-up changes either shared RPC, also hash
-the visible board results before and after the migration:
+`gridwatch-signal-breach`. When a follow-up changes any shared RPC, first hash
+every persisted score row for those games:
+
+```sql
+select g.slug,
+       count(s.id) as score_rows,
+       count(distinct s.category) as categories,
+       md5(coalesce(jsonb_agg(jsonb_build_array(
+         s.id,
+         s.user_id,
+         s.category,
+         s.score,
+         s.rating,
+         s.metadata,
+         s.proof,
+         s.proof_hash,
+         to_char(
+           s.created_at at time zone 'UTC',
+           'YYYY-MM-DD"T"HH24:MI:SS.US"Z"'
+         )
+       ) order by s.id) filter (where s.id is not null), '[]'::jsonb)::text)
+         as all_score_rows_hash
+from public.games g
+left join public.scores s on s.game_id = g.id
+where g.slug in ('grid-drift', 'gridwatch-match', 'gridwatch-signal-breach')
+group by g.slug
+order by g.slug;
+```
+
+Also hash the visible board results before and after the migration:
 
 ```sql
 with cases(label, slug, category) as (
@@ -160,16 +189,62 @@ select label,
        count(score) as rows,
        min(score) as min_score,
        max(score) as max_score,
+       coalesce(jsonb_agg(
+         jsonb_build_array(score, created_at)
+         order by score desc, created_at
+       ) filter (where score is not null), '[]'::jsonb) as ordered_content,
+       md5(coalesce(string_agg(
+         coalesce(score::text, '') || ':' ||
+         coalesce(created_at::text, ''),
+         '|' order by score desc, created_at
+       ), '')) as content_snapshot,
        md5(coalesce(string_agg(
          coalesce(rank::text, '') || ':' ||
          coalesce(score::text, '') || ':' ||
          coalesce(created_at::text, ''),
-         '|' order by rank, score desc, created_at
-       ), '')) as snapshot
+         '|' order by score desc, created_at
+       ), '')) as rank_snapshot
 from rows
 group by label
 order by label;
+
+with cases(label, category) as (
+  values
+    ('breach-legacy-global', null::text),
+    ('breach-phase4-global', 'phase4-v1:global'),
+    ('breach-legacy-standard', 'standard'),
+    ('breach-phase4-standard', 'phase4-v1:standard')
+), rows as (
+  select c.label, l.rank, l.score, l.created_at
+  from cases c
+  cross join lateral public.get_leaderboard(
+    'gridwatch-signal-breach',
+    c.category
+  ) l
+)
+select r.label,
+       r.rank,
+       r.score,
+       r.created_at,
+       count(*) over (partition by r.label, r.score) > 1 as tied_score,
+       r.rank = 1 + (
+         select count(*)
+         from rows higher
+         where higher.label = r.label
+           and higher.score > r.score
+       ) as signal_rank_valid
+from rows r
+order by r.label, r.score desc, r.created_at;
 ```
+
+Require every row count, score bound, `ordered_content`, and `content_snapshot`
+to match exactly.
+Also require `rank_snapshot` to match for Grid Drift and GridWatch Match. A
+Signal Breach `rank_snapshot` may differ only when the unchanged result set
+contains tied scores: compare the ordered `(score, created_at)` tuples directly
+and require each post-migration rank to equal one plus the number of returned
+rows with a strictly greater score. If a Signal Breach board has no ties, its
+`rank_snapshot` must also match exactly.
 
 ## 3. Apply only the additive migration
 
@@ -226,13 +301,23 @@ If ledger version `20260716012745` is already present, apply the exact contents
 of `20260716015402_harden_gridwatch_leaderboard_writes.sql` next. It makes the
 shared `record_score` keep-best write atomic. Its leaderboard tie-rank change is
 explicitly limited to `gridwatch-signal-breach`; Grid Drift and GridWatch Match
-retain their timestamp-tiebroken `row_number()` order so Grid Drift's separate
-`get_rank` RPC remains aligned with its visible board.
+retain their deterministic `row_number()` order so Grid Drift's separate
+`get_rank` RPC remains aligned with its visible board. Both non-Signal RPCs use
+the score row ID only as a final deterministic tiebreaker when score and
+timestamp are identical.
+
+After this follow-up, `get_leaderboard`, `get_rank`, and `record_score` must all
+have `search_path=""`. `get_rank` must retain `authenticated` and `service_role`
+execute while denying `anon`; the other two functions retain the privilege
+boundary recorded above.
 
 After the follow-up migration, repeat the cross-game snapshot query above and
-require every hash, row count, and score bound to match. Recheck the function
-privileges and empty search paths. Stop if any stored score/category changes or
-either non-Signal-Breach snapshot differs.
+apply its content/rank comparison rules. Recheck the function privileges and
+empty search paths. Stop if any stored score/category changes, any
+`all_score_rows_hash` or `content_snapshot` changes, or either non-Signal-Breach
+`rank_snapshot` differs. Also stop if a Signal Breach `rank_snapshot` changes on
+a board without ties, or if any tied-board rank differs from one plus the number
+of returned rows with a strictly greater score.
 
 ## 4. Deploy the backward-compatible Edge Function
 
@@ -341,13 +426,13 @@ Confirm:
   stored best;
 - Edge logs contain no validator, RPC, or hub-alignment errors.
 
-## 6. Client promotion and smoke test
+## 6. Follow-up promotion and smoke test
 
 Only after Step 5 passes:
 
-1. mark PR #42 ready;
+1. require PR #43's refreshed checks and review to pass;
 2. obtain required review/sign-off;
-3. merge to `main`;
+3. merge PR #43 to `main`;
 4. wait for the production Pages deployment;
 5. verify title, briefing, Build/full-refund, live/partial-refund, one sector
    playthrough, current Top 20 reads, sign-in/handle, and score submission;
@@ -369,7 +454,7 @@ or edit the production migration ledger.
 ### Edge failure before client merge
 
 Redeploy `submit-gridwatch-score` from rollback commit
-`8dd86a8d65c8a1be1022951309f87fc311138614` with `verify_jwt=false`. Leave the
+`ed0cdccd92386852a98091e64d1aec1c96e9a061` with `verify_jwt=false`. Leave the
 additive migration in place; it is backward-compatible with legacy clients.
 Repeat a legacy replay and legacy Top 20 read before ending the window.
 
@@ -411,8 +496,9 @@ Server-first window executed by Codex after explicit owner approval on
 - Edge logs show the expected 200/400/422 responses and no validator, RPC, or
   hub-alignment error. Security/performance advisors contain only the recorded
   intentional or pre-existing findings; the migration added no new finding.
-- Rollback was not required. Production Pages remains `main` deployment
-  `8dd86a8d65c8a1be1022951309f87fc311138614` pending client authorization.
-- Remaining gates: refreshed PR checks/review, explicit ready/merge approval,
-  production Pages smoke test, owner W1-W12 playtest, and real-device mobile-web
-  checks in Safari on iPhone/iPad and Chrome on Android.
+- Rollback was not required. PR #42 later merged as `ed0cdcc`; Cloudflare
+  production deployment `d98c8100-fbbb-49bd-af74-1dcd669b21ae` and the custom
+  domain passed desktop Chromium, mobile Chromium, and mobile WebKit smoke tests.
+- Remaining gates: PR #43 refreshed checks/review, the follow-up migration and
+  Edge verification, PR #43 merge/production smoke, owner W1-W12 playtest, and
+  real-device checks in mobile Safari and mobile Chrome web browsers.

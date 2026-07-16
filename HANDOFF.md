@@ -2,8 +2,9 @@
 
 ## Active Phase 4 Work — 2026-07-16
 
-- Codex is implementing the approved balance-and-agency foundation on
-  `codex/balance-agency-phase-4`, based directly on merged Phase 3 PR #41.
+- PR #42 merged the approved balance-and-agency foundation to `main`. Codex is
+  now working on the post-review hardening PR #43 on
+  `codex/pr42-review-fixes`.
 - The initial `phase4-v1` ruleset is now frozen locally: opening grants are
   30/42/56 BW for Sectors 1/2/3, Firewall costs 8 BW, and ICE costs 14 BW with
   Manhattan range 2 and 3 damage per tick. Build-phase sales fully refund while
@@ -46,9 +47,11 @@
   shared `record_score` keep-best path, so follow-up migration
   `20260716015402_harden_gridwatch_leaderboard_writes.sql` uses one atomic
   conflict-gated upsert. Signal Breach alone receives tied-score `rank()`
-  semantics; the other two games retain their existing timestamp-tiebroken
-  `row_number()` ordering so Grid Drift's separate `get_rank` RPC stays aligned.
-  The follow-up migration has not yet been promoted.
+  semantics; the other two games retain deterministic `row_number()` ordering.
+  The migration gives `get_leaderboard`, `record_score`, and Grid Drift's
+  authenticated `get_rank` RPC the same score/timestamp/row-ID ordering while
+  preserving all signatures and grants. The follow-up migration has not yet
+  been promoted.
 - The approved server-first promotion is complete through the replay gate.
   Edge version 7 is active with `verify_jwt=false` and bundle hash
   `0460a604158edc6ed0720f5240f37a8990cbe0b806c2ff554c0f6992318f69be`.
@@ -72,22 +75,22 @@
   568×320, and 1440×900 have no document overflow, console warning/error, or
   non-static request. Build and live ICE sales return 14 and 8 BW respectively;
   the constrained landscape dock keeps FULL/PARTIAL legible.
-- PR #42 is ready for review at
-  `https://github.com/remeadows/gridwatch-signal-breach/pull/42`. The frozen
-  implementation passed CI, CodeQL, and Cloudflare Pages. Owner authorization
-  to proceed was given; ten ready-state CodeRabbit findings are being addressed
-  before the server fix and Pages client can be promoted.
+- PR #42 merged at `ed0cdccd92386852a98091e64d1aec1c96e9a061`. Cloudflare
+  production deployment `d98c8100-fbbb-49bd-af74-1dcd669b21ae` serves that
+  commit. PR #43 contains the ten ready-state fixes plus the shared-database
+  compatibility hardening discovered during follow-up review.
 - The reported production URL issue was checked independently. The custom
   domain serves HTTP 200, both hashed assets serve HTTP 200 with correct MIME
   types, and the title/briefing flow works in Chromium and WebKit at desktop and
   mobile-web viewports without console or request failures. Cloudflare production
-  is still `main` at `8dd86a8`; unmerged Phase 4 client changes did not cause the
-  reported failure.
+  is now `main` at `ed0cdcc`; the live bundle contains `phase4-v1`, and its
+  public leaderboard returns `Russ` at 514.
 - A substantive CodeRabbit CLI review of the initial full branch found no
-  critical or warning issues. The ready-state GitHub review later found ten
-  additional issues, including the shared keep-best race. The local fixes pass
-  a focused CodeRabbit review with zero findings; refreshed GitHub review is
-  still required after push.
+  critical or warning issues. The ready-state PR #42 review later found ten
+  additional issues, including the shared keep-best race. PR #43's first GitHub
+  review found three further compatibility/documentation issues; all are fixed
+  locally and pass the PostgreSQL 16 rank/concurrency harness. A refreshed
+  GitHub review is still required after push.
 
 ## Completed Phase 3 — 2026-07-15
 
@@ -264,19 +267,17 @@ Note: the previous "zero network / no `import.meta.env`" invariant no longer hol
 
 ## Good Next Checks
 
-- Review the frozen Phase 4 PR without pointing its public preview at production
-  writes. The migration, dual validator, authenticated replay checks, category
-  isolation, keep-best behavior, ranks, logs, and advisors have passed.
-- After refreshed CI/review and separate owner authorization, mark PR #42 ready,
-  merge its tuned Pages client, wait for the production Pages deployment, and
-  run the client smoke checks in the promotion runbook.
-- On the PR #42 Phase 4 preview
-  (`https://bc9685a8.gridwatch-signal-breach.pages.dev`) or its matching
-  post-merge production deployment, run ten consecutive intended placements as
-  mobile web in Safari on iPhone/iPad and Chrome on Android, in portrait and
-  landscape. Confirm backgrounding and rotation pause without advancing an
-  unseen wave, reduced-motion behavior, and sustained frame pacing during the
-  busiest visible wave.
+- Push the PR #43 review fixes, require refreshed CI/CodeQL/CodeRabbit/Pages
+  checks, then apply only the reviewed follow-up migration. Require exact raw
+  row hashes and visible content hashes across all three games before and after.
+- Deploy the reviewed Edge follow-up only after the migration passes, verify
+  replay, public leaderboard, logs, and advisors, then merge PR #43 and smoke
+  the resulting production Pages deployment.
+- On the post-merge production site, run ten consecutive intended placements in
+  mobile Safari and mobile Chrome web browsers, in portrait and landscape.
+  Confirm backgrounding and rotation pause without advancing an unseen wave,
+  reduced-motion behavior, and sustained frame pacing during the busiest
+  visible wave. No native mobile app build is in scope.
 - Run owner and real-device playtests across W1-W12 and record completion rate,
   first-failure wave, unused bandwidth, and most-used tools. Any later tuning
   change must receive a new immutable ruleset and repeat the server-first path.
