@@ -34,6 +34,9 @@
   promotion order is then migration first, backward-compatible Edge Function
   second, controlled legacy/current submission checks third, and only then the
   client that emits `phase4-v1`.
+- Draft PR #42 is open at
+  `https://github.com/remeadows/gridwatch-signal-breach/pull/42`. Its first full
+  check run passed CI, CodeQL, and Cloudflare Pages.
 
 ## Completed Phase 3 — 2026-07-15
 
