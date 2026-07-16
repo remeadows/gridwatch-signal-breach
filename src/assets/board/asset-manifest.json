@@ -1,6 +1,6 @@
 {
   "version": "phase6-v1",
-  "maxRuntimeBytes": 524288,
+  "maxRuntimeBytes": 786432,
   "assets": [
     {
       "id": "relay",
@@ -208,6 +208,52 @@
       "ownerApproved": false,
       "sourceSha256": "a1851718965f6fadf04f9e1e5dfb7d48b63e0e7cbc48d6c53223ee88546e34eb",
       "runtimeSha256": "6db219f26a491df673b65c9e9863f97642e3fee32bdca9fdad1ee3645ffe3b69"
+    },
+    {
+      "id": "splitter",
+      "version": "phase6-v1",
+      "role": "intrusion",
+      "source": "art/source/phase6/gw-phase6-splitter-master-v1.png",
+      "runtime": "src/assets/board/phase6/gw-phase6-splitter-board-v1.png",
+      "prompt": "art/prompts/phase6/gw-phase6-splitter-prompt-v1.md",
+      "sourceDimensions": [1254, 1254],
+      "runtimeDimensions": [256, 256],
+      "maxSourceBytes": 2000000,
+      "maxBytes": 90000,
+      "hasAlpha": true,
+      "generator": "OpenAI ImageGen",
+      "generatedAt": "2026-07-16T17:28:06Z",
+      "referenceAssets": ["gw-phase6-probe-master-v1", "phase6-reactor-tech-style-frame"],
+      "promptSha256": "2ae31c24895a7aa7b96efff215bd561b46d7e083506ca7b1704d8e0164b397b4",
+      "camera": "orthographic-70deg",
+      "light": "upper-left",
+      "semanticAccent": "hostile-magenta",
+      "ownerApproved": false,
+      "sourceSha256": "a485f5c3ed8ac671dbc9438fb5eb145b498005cf5b43cdb20a570c9ef565275e",
+      "runtimeSha256": "07c96ce73ed62c0da1780322e30df1cdf57fefa38f100bcbb66971c35fc45245"
+    },
+    {
+      "id": "goliath",
+      "version": "phase6-v1",
+      "role": "boss-intrusion",
+      "source": "art/source/phase6/gw-phase6-goliath-master-v1.png",
+      "runtime": "src/assets/board/phase6/gw-phase6-goliath-board-v1.webp",
+      "prompt": "art/prompts/phase6/gw-phase6-goliath-prompt-v1.md",
+      "sourceDimensions": [1254, 1254],
+      "runtimeDimensions": [384, 384],
+      "maxSourceBytes": 4000000,
+      "maxBytes": 160000,
+      "hasAlpha": true,
+      "generator": "OpenAI ImageGen",
+      "generatedAt": "2026-07-16T17:28:06Z",
+      "referenceAssets": ["gw-phase6-probe-master-v1", "phase6-reactor-tech-style-frame"],
+      "promptSha256": "3c2641eb60f9a830254d8b74ff81ad0d2046b822913ede33b1292f814f1cee9d",
+      "camera": "orthographic-70deg",
+      "light": "upper-left",
+      "semanticAccent": "hostile-magenta",
+      "ownerApproved": false,
+      "sourceSha256": "c66493a72fd8a5d697b9eb89c0b34c5423856440390b4b89cc8b2774d2418be9",
+      "runtimeSha256": "198d4f6eeafd886aaee16f12a6e78e4769a363e7ba8a5a669cfccf1d740baa8b"
     }
   ]
 }

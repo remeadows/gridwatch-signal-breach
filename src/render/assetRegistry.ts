@@ -1,10 +1,12 @@
 import coreUrl from "../assets/board/phase6/gw-phase6-core-board-v1.webp";
 import crawlerUrl from "../assets/board/phase6/gw-phase6-crawler-board-v1.png";
 import firewallUrl from "../assets/board/phase6/gw-phase6-firewall-board-v1.png";
+import goliathUrl from "../assets/board/phase6/gw-phase6-goliath-board-v1.webp";
 import hunterUrl from "../assets/board/phase6/gw-phase6-hunter-board-v1.png";
 import probeUrl from "../assets/board/phase6/gw-phase6-probe-board-v1.png";
 import relayUrl from "../assets/board/phase6/gw-phase6-relay-board-v1.png";
 import sourceUrl from "../assets/board/phase6/gw-phase6-source-board-v1.png";
+import splitterUrl from "../assets/board/phase6/gw-phase6-splitter-board-v1.png";
 import spoofUrl from "../assets/board/phase6/gw-phase6-spoof-board-v1.png";
 import turretUrl from "../assets/board/phase6/gw-phase6-turret-board-v1.png";
 
@@ -18,7 +20,9 @@ export type Phase6BoardSpriteId =
   | "probe"
   | "crawler"
   | "spoof"
-  | "hunter";
+  | "hunter"
+  | "splitter"
+  | "goliath";
 
 type SpriteState = "idle" | "loading" | "ready" | "failed";
 
@@ -37,6 +41,8 @@ const PHASE6_SPRITES: Readonly<Record<Phase6BoardSpriteId, string>> = {
   crawler: crawlerUrl,
   spoof: spoofUrl,
   hunter: hunterUrl,
+  splitter: splitterUrl,
+  goliath: goliathUrl,
 };
 
 const records = new Map<Phase6BoardSpriteId, SpriteRecord>();

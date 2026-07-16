@@ -15,10 +15,11 @@
   replay, score, database, Edge Function, or deployment change. The Phase 6C
   Source/Core/Firewall foundation slice is complete in PR #45 on
   `codex/phase6c-foundation-assets`; the owner accepted its visual direction and
-  the review gate is green. Phase 6D-A is actively being built as a stacked,
-  render-only PR on `codex/phase6d-enemy-assets-a`: it is limited to Crawler,
-  Spoof, and Hunter and remains behind `?art=phase6` with glyph fallback.
-  Splitter and Goliath remain a separate final enemy PR. The thirty-level
+  the review gate is green. The clean promotion of Phase 6D-A Crawler, Spoof,
+  and Hunter reached `main` in PR #48 as `18a47bd`; CodeRabbit reported no
+  actionable comments and all checks passed. Phase 6D-B is now actively being
+  built on `codex/phase6d-final-enemy-assets`: it is limited to Splitter and
+  Goliath and remains behind `?art=phase6` with glyph fallback. The thirty-level
   expansion is still planning-only until its level semantics and a
   documentation-only scope-authority update are separately approved and merged.
 - The initial `phase4-v1` ruleset is now frozen locally: opening grants are

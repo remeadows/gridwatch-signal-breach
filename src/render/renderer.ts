@@ -1826,10 +1826,9 @@ function getPhase6EnemySpriteId(kind: EnemyKind): Phase6BoardSpriteId | null {
     case "crawler":
     case "spoof":
     case "hunter":
-      return kind;
     case "splitter":
     case "goliath":
-      return null;
+      return kind;
   }
 }
 
@@ -1853,6 +1852,10 @@ function getPhase6UnitDrawSize(id: Phase6BoardSpriteId): number {
       return 0.74;
     case "hunter":
       return 0.68;
+    case "splitter":
+      return 0.72;
+    case "goliath":
+      return 0.82;
   }
 }
 
