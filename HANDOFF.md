@@ -12,13 +12,15 @@
 - PR #44 merged the owner-accepted render-only Phase 6B Relay/ICE-turret/Probe
   vertical slice as `922b78d`. The owner reviewed it on Mac and iPhone. It
   preserves glyph fallback, remains behind `?art=phase6`, and makes no sim,
-  replay, score, database, Edge Function, or deployment change. The current
-  Phase 6C Source/Core/Firewall foundation slice is being built on
-  `codex/phase6c-foundation-assets` under the same constraints and requires its
-  own contextual desktop/mobile approval. Full-roster generation beyond the
-  approved Phase 6C scope remains blocked. The thirty-level expansion is still
-  planning-only until its level semantics and a documentation-only scope-authority
-  update are separately approved and merged.
+  replay, score, database, Edge Function, or deployment change. The Phase 6C
+  Source/Core/Firewall foundation slice is complete in PR #45 on
+  `codex/phase6c-foundation-assets`; the owner accepted its visual direction and
+  the review gate is green. Phase 6D-A is actively being built as a stacked,
+  render-only PR on `codex/phase6d-enemy-assets-a`: it is limited to Crawler,
+  Spoof, and Hunter and remains behind `?art=phase6` with glyph fallback.
+  Splitter and Goliath remain a separate final enemy PR. The thirty-level
+  expansion is still planning-only until its level semantics and a
+  documentation-only scope-authority update are separately approved and merged.
 - The initial `phase4-v1` ruleset is now frozen locally: opening grants are
   30/42/56 BW for Sectors 1/2/3, Firewall costs 8 BW, and ICE costs 14 BW with
   Manhattan range 2 and 3 damage per tick. Build-phase sales fully refund while

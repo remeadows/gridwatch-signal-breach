@@ -1383,6 +1383,9 @@ function drawIntrusions(
     const { x, y } = renderPosition;
     const radius = tileSize * (intrusion.kind === "goliath" ? 0.32 : 0.24);
     const iconName = getEnemyIconName(intrusion.kind);
+    const phase6SpriteId =
+      frame.artMode === "phase6" ? getPhase6EnemySpriteId(intrusion.kind) : null;
+    const phase6Sprite = phase6SpriteId ? getPhase6BoardSprite(phase6SpriteId) : null;
     const movementAngle =
       current.x === previous.x && current.y === previous.y
         ? 0
@@ -1443,27 +1446,44 @@ function drawIntrusions(
       const jitter = frame.reducedMotion
         ? 0
         : Math.sin(frame.timeMs * 0.02 + intrusion.id * 3) * 2;
-      drawIcon(context, iconName, x - 2 - jitter, y, tileSize * 0.42, {
-        alpha: 0.38,
-      });
-      drawIcon(context, iconName, x + 2 + jitter, y, tileSize * 0.42, {
-        alpha: 0.38,
-      });
+      if (phase6SpriteId && phase6Sprite) {
+        context.save();
+        context.globalAlpha = 0.28;
+        drawBoardSprite(
+          context,
+          phase6SpriteId,
+          x - 2 - jitter,
+          y,
+          tileSize * getPhase6UnitDrawSize(phase6SpriteId),
+        );
+        drawBoardSprite(
+          context,
+          phase6SpriteId,
+          x + 2 + jitter,
+          y,
+          tileSize * getPhase6UnitDrawSize(phase6SpriteId),
+        );
+        context.restore();
+      } else {
+        drawIcon(context, iconName, x - 2 - jitter, y, tileSize * 0.42, {
+          alpha: 0.38,
+        });
+        drawIcon(context, iconName, x + 2 + jitter, y, tileSize * 0.42, {
+          alpha: 0.38,
+        });
+      }
     }
 
-    const phase6Probe =
-      frame.artMode === "phase6" &&
-      intrusion.kind === "probe" &&
+    if (phase6SpriteId && phase6Sprite) {
       drawBoardSprite(
         context,
-        "probe",
+        phase6SpriteId,
         x,
         y + bob,
-        tileSize * 0.82 * breath,
-        movementAngle,
+        tileSize * getPhase6UnitDrawSize(phase6SpriteId) * breath,
+        intrusion.kind === "probe" ? movementAngle : 0,
       );
-
-    if (!phase6Probe) {
+    } else {
       drawIcon(
         context,
         iconName,
@@ -1800,6 +1820,19 @@ function getPhase6MarkerSpriteId(icon: IconName): Phase6BoardSpriteId | null {
   }
 }
 
+function getPhase6EnemySpriteId(kind: EnemyKind): Phase6BoardSpriteId | null {
+  switch (kind) {
+    case "probe":
+    case "crawler":
+    case "spoof":
+    case "hunter":
+      return kind;
+    case "splitter":
+    case "goliath":
+      return null;
+  }
+}
+
 function getPhase6UnitDrawSize(id: Phase6BoardSpriteId): number {
   switch (id) {
     case "source":
@@ -1814,6 +1847,12 @@ function getPhase6UnitDrawSize(id: Phase6BoardSpriteId): number {
       return 0.88;
     case "probe":
       return 0.82;
+    case "crawler":
+      return 0.7;
+    case "spoof":
+      return 0.74;
+    case "hunter":
+      return 0.68;
   }
 }
 
