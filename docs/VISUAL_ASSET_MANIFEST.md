@@ -104,3 +104,9 @@ and reduced-motion-safe feedback. Goliath uses a 384px alpha WebP runtime asset
 within its 160 KiB per-boss limit; the aggregate cap is raised to 768 KiB, still
 well inside the Phase 6 plan's 1.5 MiB full-roster ceiling. Both assets await
 contextual desktop/mobile approval. Glyph mode remains the default and fallback.
+
+## Phase 6C-B Final Hardware Slice
+
+Scrubber and Overclock complete the current thirteen-family base roster on the
+same opt-in path. Their cleansing and boost telegraphs remain procedural; both
+assets await contextual desktop/mobile approval. Glyph mode remains default.
