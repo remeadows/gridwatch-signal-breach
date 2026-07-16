@@ -1,8 +1,8 @@
 # Phase 4 Server-First Promotion Runbook
 
-Status: prepared, not executed. This runbook does not authorize production
-changes. Apply it only after the owner explicitly approves the maintenance
-window and the controlled leaderboard writes.
+Status: server-first steps executed 2026-07-16; Pages client promotion pending.
+The completed server record below does not authorize the remaining PR ready or
+merge actions. Perform those only after separate owner authorization.
 
 ## Scope and invariants
 
@@ -26,6 +26,7 @@ named migration below.
 |---|---|
 | Project | `GridWatchGamesDB` (`mggxfzzxrpjgpzhwiwqi`) |
 | Migration | `supabase/migrations/20260716000516_isolate_gridwatch_leaderboard_categories.sql` |
+| Applied migration ledger version | `20260716012745` |
 | Ruleset | `phase4-v1` |
 | Current validator SHA-256 | `48a3ecf68be9d05e57ccabb2c90e335669a1a1808fbda814ac7ea81a952dafa6` |
 | Legacy validator source | pinned commit `fa0a5df7a5bae70068772566913d13e99fe137f0` |
@@ -148,7 +149,8 @@ Immediately verify:
 ```sql
 select version, name
 from supabase_migrations.schema_migrations
-where version = '20260716000516';
+where version = '20260716012745'
+  and name = 'isolate_gridwatch_leaderboard_categories';
 
 select p.proname, p.proconfig,
        has_function_privilege('anon', p.oid, 'execute') as anon_execute,
@@ -250,8 +252,15 @@ anon key. Expected responses:
 | rank scope | legacy sectors only | Phase 4 sectors only |
 
 Then send an authenticated body with `ruleset: "phase4-v2"`. Expected: HTTP
-400 `Unsupported ruleset.` and no score row. Send an unfinished current replay
-with an empty command list. Expected: HTTP 422 and no score row.
+400 `Unsupported ruleset.` and no score row. For a replay-level 422 probe, append
+`{"t":200,"c":{"type":"skipPrep"}}` to the current fixture's command list.
+The run ends at tick 146, so the extra command must return HTTP 422
+`Rejected: Command log contains commands after the run ended.` before any write.
+
+Do not use an empty command list as the 422 probe. With the current deterministic
+simulation, an empty log continues ticking until the Core reaches a terminal
+loss; that completed loss is valid under the established win-or-loss submission
+policy.
 
 Verify exact categories and isolation with read-only SQL:
 
@@ -326,13 +335,36 @@ At no point does rollback delete or rewrite a leaderboard row.
 
 ## Sign-off record
 
-Record these values in `HANDOFF.md` after the window:
+Server-first window executed by Codex after explicit owner approval on
+2026-07-16:
 
-- approval and operator;
-- PR head, migration version, Edge version/hash, and Pages deployment;
-- legacy/current/rejection response summaries;
-- category counts before and after;
-- legacy/current global results and both returned ranks;
-- advisor/log review;
-- rollback decision and outcome;
-- remaining real-device or owner-playtest gates.
+- PR head at freeze: `a8842937a22bb0ba9462e1811aece3ec7879b467`.
+- Reviewed migration artifact:
+  `20260716000516_isolate_gridwatch_leaderboard_categories.sql`; Supabase ledger
+  version: `20260716012745`.
+- Edge Function: version 7, `verify_jwt=false`, bundle hash
+  `0460a604158edc6ed0720f5240f37a8990cbe0b806c2ff554c0f6992318f69be`.
+- CORS: public branch preview `null`; `http://127.0.0.1:5173` echoed; both 204.
+- Authenticated legacy fixture: HTTP 200, `legacy-v1`, score/best 500,
+  `improved: true`, global/sector rank 1.
+- Authenticated current fixture: HTTP 200, `phase4-v1`, score/best 514,
+  `improved: true`, global/sector rank 1. Repeat returned `improved: false` and
+  preserved best 514.
+- Unsupported `phase4-v2`: HTTP 400 `Unsupported ruleset.`; post-terminal
+  command: HTTP 422 with no write.
+- The originally planned empty-command 422 probe instead produced a valid
+  terminal 33-point loss and `improved: false`; it added no category and changed
+  no stored best. This runbook was corrected to reflect deterministic behavior.
+- Before: 3 GridWatch rows/categories (`sector:1` 472, `sector:2` 238,
+  `standard` 472). After: 11 rows, including distinct legacy and Phase 4 sector,
+  clear-marker, standard, daily, and weekly categories.
+- Legacy global: `Russ`, 500, rank 1. Phase 4 global: `Russ`, 514, rank 1.
+  Each selector excludes the other ruleset and aggregate/period/marker rows.
+- Edge logs show the expected 200/400/422 responses and no validator, RPC, or
+  hub-alignment error. Security/performance advisors contain only the recorded
+  intentional or pre-existing findings; the migration added no new finding.
+- Rollback was not required. Production Pages remains `main` deployment
+  `8dd86a8d65c8a1be1022951309f87fc311138614` pending client authorization.
+- Remaining gates: refreshed PR checks/review, explicit ready/merge approval,
+  production Pages smoke test, owner W1-W12 playtest, and real-device mobile-web
+  checks in Safari on iPhone/iPad and Chrome on Android.

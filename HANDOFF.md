@@ -1,6 +1,6 @@
 # GridWatch Handoff
 
-## Active Phase 4 Work — 2026-07-15
+## Active Phase 4 Work — 2026-07-16
 
 - Codex is implementing the approved balance-and-agency foundation on
   `codex/balance-agency-phase-4`, based directly on merged Phase 3 PR #41.
@@ -15,8 +15,8 @@
 - The optional Signal Pulse was not retained. The tuned routing, ICE, Firewall,
   Scrubber, and Overclock decisions clear the campaign without a universal
   attack that could eclipse placement.
-- `phase4-v1` is exported by the generated simulator bundle. The Edge Function
-  is prepared to keep omitted/`legacy-v1` submissions on the validator pinned
+- `phase4-v1` is exported by the generated simulator bundle. Production Edge
+  Function version 7 keeps omitted/`legacy-v1` submissions on the validator pinned
   to commit `fa0a5df`, while explicitly versioned submissions use the local
   Phase 4 bundle and prefixed score categories. The tuned client submits the
   explicit ruleset; pending OAuth runs preserve their original ruleset, and old
@@ -37,17 +37,23 @@
   only the three tuned sector categories, and isolates returned global ranks by
   ruleset. Other games using the shared RPC retain their existing behavior. It
   also replaces implicit PUBLIC execute with explicit grants and pins both
-  SECURITY DEFINER functions to an empty search path.
-- GridWatchGamesDB has not been changed and the Edge Function has not been
-  deployed. The ruleset is now immutable and ready for the controlled
-  server-first sequence: migration, backward-compatible Edge Function,
-  controlled legacy/current submission checks, then merge the Pages client.
-- A fresh read-only production baseline confirms the project is healthy, the
-  migration is absent, no `phase4-v1:*` rows exist, and the live validator is
-  still legacy-only Edge version 6. The public branch preview receives a `null`
-  CORS origin while localhost remains allowed for the controlled smoke test.
-  `docs/PHASE4_PROMOTION_RUNBOOK.md` records the exact fixture, checks, stop
-  conditions, and non-destructive rollback sequence; it has not been executed.
+  SECURITY DEFINER functions to an empty search path. The reviewed SQL was
+  applied to GridWatchGamesDB as migration-ledger version `20260716012745`.
+- The approved server-first promotion is complete through the replay gate.
+  Edge version 7 is active with `verify_jwt=false` and bundle hash
+  `0460a604158edc6ed0720f5240f37a8990cbe0b806c2ff554c0f6992318f69be`.
+  The preview CORS origin remains `null`; localhost remains allowed.
+- Authenticated production checks under the existing `Russ` handle passed:
+  legacy returned score 500/rank 1, `phase4-v1` returned score 514/rank 1,
+  unsupported `phase4-v2` returned HTTP 400, and a command after terminal state
+  returned HTTP 422. Repeating the Phase 4 fixture returned `improved: false`
+  with best score 514. Legacy and Phase 4 global boards each contain only their
+  own comparable sector row.
+- An empty command log was initially used as the planned 422 probe, but the
+  deterministic sim correctly runs it to a terminal 33-point loss, which is a
+  valid submission under the existing win-or-loss policy. It did not improve
+  any stored best. The runbook now uses a post-terminal command as the 422
+  no-write probe instead.
 - Local verification passes build/tool typecheck/replay/balance/audit, produces
   an idempotent validator bundle, and bundles the Edge Function with Deno/JSR
   imports externalized. The migration applies cleanly to an ephemeral PostgreSQL
@@ -58,9 +64,15 @@
   the constrained landscape dock keeps FULL/PARTIAL legible.
 - Draft PR #42 is open at
   `https://github.com/remeadows/gridwatch-signal-breach/pull/42`. The frozen
-  implementation at `ff527cc` passed CI, CodeQL, CodeRabbit, and Cloudflare
-  Pages. The PR remains draft pending the explicitly approved server-first
-  promotion and controlled replay checks.
+  implementation passed CI, CodeQL, CodeRabbit, and Cloudflare Pages. The PR
+  remains draft pending the promotion-record update, refreshed checks, review,
+  and separate owner authorization to mark ready or merge the Pages client.
+- The reported production URL issue was checked independently. The custom
+  domain serves HTTP 200, both hashed assets serve HTTP 200 with correct MIME
+  types, and the title/briefing flow works in Chromium and WebKit at desktop and
+  mobile-web viewports without console or request failures. Cloudflare production
+  is still `main` at `8dd86a8`; unmerged Phase 4 client changes did not cause the
+  reported failure.
 - A substantive CodeRabbit CLI review of the full branch found no critical or
   warning issues. Its four minor copy/documentation inconsistencies were fixed;
   the focused follow-up review returned zero findings.
@@ -129,7 +141,8 @@
   zero mobile document scroll. Pre-launch placement, clock freeze, invalid-tile
   feedback, affordability updates, Enter/click launch, next-wave Build re-entry,
   pause, four-tool and six-tool docks, and a request/error-free offline run were
-  checked. Real iOS and Android hardware remains the promotion gate.
+  checked. Real-device mobile-web testing in Safari on iPhone/iPad and Chrome
+  on Android remains the promotion gate; no native app work is in scope.
 - The historical Phase 2 branch preview remains at
   `https://codex-build-phase-clarity.gridwatch-signal-breach.pages.dev`.
 
@@ -154,8 +167,9 @@
 - Browser verification passed at 320×568 portrait, 390×844 portrait, 568×320
   landscape, and 1440×900 desktop. Both mobile orientations had zero document
   scroll; a 24 px drag left bandwidth unchanged; `pagehide` produced the paused
-  overlay; and the desktop Canvas remained 720×720. Real iOS and Android hardware
-  placement testing remains a preview gate.
+  overlay; and the desktop Canvas remained 720×720. Real-device mobile-web
+  placement testing in Safari on iPhone/iPad and Chrome on Android remains a
+  preview gate; no native app work is in scope.
 - Current wave distribution remains 5/4/3 across the three sectors. The approved
   interpretation preserves the existing twelve-wave campaign.
 - Attachment 1 is recommended as the cinematic direction for title, briefing,
@@ -219,15 +233,16 @@ Note: the previous "zero network / no `import.meta.env`" invariant no longer hol
 ## Good Next Checks
 
 - Review the frozen Phase 4 PR without pointing its public preview at production
-  writes. GridWatchGamesDB and the production Edge Function remain unchanged.
-- With explicit owner approval, apply the GridWatch-scoped migration, deploy the
-  backward-compatible Edge Function, then verify Auth, handle, one legacy run,
-  one `phase4-v1` run, exact categories, keep-best behavior, both ranks, and
-  rollback before marking PR #42 ready and merging its tuned Pages client.
+  writes. The migration, dual validator, authenticated replay checks, category
+  isolation, keep-best behavior, ranks, logs, and advisors have passed.
+- After refreshed CI/review and separate owner authorization, mark PR #42 ready,
+  merge its tuned Pages client, wait for the production Pages deployment, and
+  run the client smoke checks in the promotion runbook.
 - On the Phase 3 Cloudflare Pages preview, run ten consecutive intended placements
-  on real iOS and Android hardware in portrait and landscape. Confirm backgrounding
-  and rotation pause without advancing an unseen wave, reduced-motion behavior,
-  and sustained frame pacing during the busiest visible wave.
+  as mobile web in Safari on iPhone/iPad and Chrome on Android, in portrait and
+  landscape. Confirm backgrounding and rotation pause without advancing an unseen
+  wave, reduced-motion behavior, and sustained frame pacing during the busiest
+  visible wave.
 - Run owner and real-device playtests across W1-W12 and record completion rate,
   first-failure wave, unused bandwidth, and most-used tools. Any later tuning
   change must receive a new immutable ruleset and repeat the server-first path.
