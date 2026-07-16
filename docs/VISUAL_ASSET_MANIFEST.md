@@ -25,7 +25,7 @@ source license and crop-safe master have not yet been documented.
 | Unit and intrusion glyphs | Existing project-owned path definitions | Canvas2D/SVG | Tactical silhouettes | Existing bundle |
 | Combat effects | Project-authored deterministic Canvas2D primitives | Canvas2D | Spawn, hit, kill, corruption, boss, and damage feedback | Per-frame only |
 | Sector key-art fields | Project-authored CSS gradients and geometric motifs | CSS | Sector-select cards | 0 transferred bytes beyond CSS |
-| Phase 6 Relay, ICE turret, Probe | OpenAI ImageGen source masters; local chroma-key extraction; prompt/hash manifest | Local PNG + Canvas2D | Opt-in visual vertical slice (`?art=phase6`) | 180 KiB runtime cap |
+| Phase 6 Source, Core, Relay, Firewall, ICE turret, Probe | OpenAI ImageGen source masters; local chroma-key extraction; prompt/hash manifest | Local PNG/WebP + Canvas2D | Opt-in visual slices (`?art=phase6`) | 512 KiB runtime cap |
 
 ## Palette and Tactical Semantics
 
@@ -77,3 +77,11 @@ and SHA-256 records are in `src/assets/board/asset-manifest.json`. Run
 `npm run verify:assets` before any visual push. `npm run verify:assets --
 --release` additionally requires explicit owner approval for every shipped
 asset.
+
+## Phase 6C Foundation Slice
+
+Source, Core, and Firewall extend the same opt-in Canvas2D path. Source and
+Core retain their existing signal rings, integrity feedback, and tactical labels;
+Firewall retains its gameplay HP pips. The new pieces remain unapproved until
+their contextual desktop/mobile review is complete. Glyph mode remains the
+default and fallback for every piece.

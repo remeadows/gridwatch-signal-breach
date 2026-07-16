@@ -28,7 +28,11 @@ import {
 } from "./animator";
 import { getBoardBackgroundLayer } from "./background";
 import { type CanvasSize, getBoardMetrics } from "./canvas";
-import { type BoardArtMode, type Phase6BoardSpriteId } from "./assetRegistry";
+import {
+  getPhase6BoardSprite,
+  type BoardArtMode,
+  type Phase6BoardSpriteId,
+} from "./assetRegistry";
 import { drawBoardSprite } from "./drawBoardSprite";
 import { ICONS, type IconName } from "./iconPaths";
 import { drawIcon, getGlowSprite } from "./icons";
@@ -495,8 +499,6 @@ function drawMarkers(
   for (const marker of markers) {
     const centerX = originX + marker.position.x * tileSize + tileSize / 2;
     const centerY = originY + marker.position.y * tileSize + tileSize * 0.45;
-    const iconSize = tileSize * 0.5;
-    const sprite = getGlowSprite(marker.icon, iconSize);
     const tileLeft = originX + marker.position.x * tileSize + 4;
     const tileTop = originY + marker.position.y * tileSize + 4;
     const iconColor = ICONS[marker.icon].color;
@@ -513,11 +515,33 @@ function drawMarkers(
       drawCoreRing(context, centerX, centerY, tileSize, state, frame);
     }
 
-    context.drawImage(
-      sprite,
-      centerX - sprite.width / 2,
-      centerY - sprite.height / 2,
-    );
+    const phase6Sprite = getPhase6MarkerSpriteId(marker.icon);
+    let drewPhase6Sprite = false;
+
+    if (
+      frame.artMode === "phase6" &&
+      phase6Sprite &&
+      getPhase6BoardSprite(phase6Sprite)
+    ) {
+      drawUnitContactShadow(context, centerX, centerY, tileSize);
+      drewPhase6Sprite = drawBoardSprite(
+        context,
+        phase6Sprite,
+        centerX,
+        centerY,
+        tileSize * getPhase6UnitDrawSize(phase6Sprite),
+      );
+    }
+
+    if (!drewPhase6Sprite) {
+      const iconSize = tileSize * 0.5;
+      const sprite = getGlowSprite(marker.icon, iconSize);
+      context.drawImage(
+        sprite,
+        centerX - sprite.width / 2,
+        centerY - sprite.height / 2,
+      );
+    }
 
     context.fillStyle = "rgba(215, 255, 247, 0.9)";
     context.font = `700 ${Math.max(11, tileSize * 0.14)}px ui-monospace, "SF Mono", Consolas, monospace`;
@@ -1699,7 +1723,11 @@ function drawTileUnitIcon(
   context.strokeRect(tileLeft, tileTop, tileSize - 14, tileSize - 14);
 
   const phase6Sprite = getPhase6UnitSpriteId(kind);
-  if (frame.artMode === "phase6" && phase6Sprite) {
+  if (
+    frame.artMode === "phase6" &&
+    phase6Sprite &&
+    getPhase6BoardSprite(phase6Sprite)
+  ) {
     drawUnitContactShadow(context, centerX, centerY, tileSize);
     if (
       drawBoardSprite(
@@ -1751,6 +1779,7 @@ function getPhase6UnitSpriteId(kind: TileKind): Phase6BoardSpriteId | null {
     case "turret":
       return "turret";
     case "firewall":
+      return "firewall";
     case "scrubber":
     case "overclock":
     case "empty":
@@ -1760,10 +1789,27 @@ function getPhase6UnitSpriteId(kind: TileKind): Phase6BoardSpriteId | null {
   }
 }
 
+function getPhase6MarkerSpriteId(icon: IconName): Phase6BoardSpriteId | null {
+  switch (icon) {
+    case "source":
+      return "source";
+    case "core":
+      return "core";
+    default:
+      return null;
+  }
+}
+
 function getPhase6UnitDrawSize(id: Phase6BoardSpriteId): number {
   switch (id) {
+    case "source":
+      return 0.8;
+    case "core":
+      return 0.82;
     case "relay":
       return 0.84;
+    case "firewall":
+      return 0.94;
     case "turret":
       return 0.88;
     case "probe":
