@@ -9,11 +9,14 @@
 - The owner cleared all three sectors, found Sectors 1 and 2 challenging but
   fair, verified that ICE and Firewalls are useful, and accepted mobile-web
   playability. Keep Phase 5; the accepted balance is now frozen.
-- Codex is working on the discussion-only Phase 6 asset and thirty-level
-  expansion plan on `codex/phase5-asset-expansion-plan`. The working document
-  is `docs/PHASE5_ASSET_AND_30_LEVEL_EXPANSION_PLAN.md`. No gameplay code,
-  production asset, database, Edge Function, or deployment change is authorized
-  by that draft.
+- The owner approved only the render-only Phase 6B Relay/ICE-turret/Probe
+  vertical slice on `codex/phase5-asset-expansion-plan`, using the selected
+  Reactor-tech realism direction. This slice must preserve glyph fallback, stay
+  behind `?art=phase6`, and make no sim, replay, score, database, Edge Function,
+  or deployment change. Full-roster generation remains blocked on contextual
+  desktop/mobile review and owner acceptance of this slice. The thirty-level
+  expansion is still planning-only until its level semantics and a
+  documentation-only scope-authority update are separately approved and merged.
 - The initial `phase4-v1` ruleset is now frozen locally: opening grants are
   30/42/56 BW for Sectors 1/2/3, Firewall costs 8 BW, and ICE costs 14 BW with
   Manhattan range 2 and 3 damage per tick. Build-phase sales fully refund while

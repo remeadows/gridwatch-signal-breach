@@ -1,6 +1,6 @@
 # GridWatch Visual Foundation Manifest
 
-Last reviewed: 2026-07-15
+Last reviewed: 2026-07-16
 
 ## Shipping Policy
 
@@ -25,6 +25,7 @@ source license and crop-safe master have not yet been documented.
 | Unit and intrusion glyphs | Existing project-owned path definitions | Canvas2D/SVG | Tactical silhouettes | Existing bundle |
 | Combat effects | Project-authored deterministic Canvas2D primitives | Canvas2D | Spawn, hit, kill, corruption, boss, and damage feedback | Per-frame only |
 | Sector key-art fields | Project-authored CSS gradients and geometric motifs | CSS | Sector-select cards | 0 transferred bytes beyond CSS |
+| Phase 6 Relay, ICE turret, Probe | OpenAI ImageGen source masters; local chroma-key extraction; prompt/hash manifest | Local PNG + Canvas2D | Opt-in visual vertical slice (`?art=phase6`) | 160 KiB runtime cap |
 
 ## Palette and Tactical Semantics
 
@@ -61,3 +62,18 @@ Before importing a raster GridWatchZero asset, record its owner, approval or
 license, source dimensions, crop-safe area, optimized dimensions, compressed
 size, and exact screen role here. Keep title/briefing/sector/results art separate
 from the live board so cinematic detail never obscures tactical cells.
+
+## Phase 6B Vertical Slice
+
+The approved art direction is Reactor-tech tactical realism: dark machined
+metal, ceramic armor, carbon composite, restrained cyan/blue/magenta light, and
+an orthographic approximately 70-degree board camera. The first raster slice is
+limited to Relay, ICE turret, and Probe. It is opt-in with `?art=phase6`; the
+current glyph renderer remains the default and automatic fallback if an image
+does not decode.
+
+The machine-readable source, prompt provenance, dimension, alpha, byte-budget,
+and SHA-256 records are in `src/assets/board/asset-manifest.json`. Run
+`npm run verify:assets` before any visual push. `npm run verify:assets --
+--release` additionally requires explicit owner approval for every shipped
+asset.
