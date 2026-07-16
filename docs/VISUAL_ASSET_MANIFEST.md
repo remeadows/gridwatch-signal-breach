@@ -25,7 +25,7 @@ source license and crop-safe master have not yet been documented.
 | Unit and intrusion glyphs | Existing project-owned path definitions | Canvas2D/SVG | Tactical silhouettes | Existing bundle |
 | Combat effects | Project-authored deterministic Canvas2D primitives | Canvas2D | Spawn, hit, kill, corruption, boss, and damage feedback | Per-frame only |
 | Sector key-art fields | Project-authored CSS gradients and geometric motifs | CSS | Sector-select cards | 0 transferred bytes beyond CSS |
-| Phase 6 Relay, ICE turret, Probe | OpenAI ImageGen source masters; local chroma-key extraction; prompt/hash manifest | Local PNG + Canvas2D | Opt-in visual vertical slice (`?art=phase6`) | 160 KiB runtime cap |
+| Phase 6 Relay, ICE turret, Probe | OpenAI ImageGen source masters; local chroma-key extraction; prompt/hash manifest | Local PNG + Canvas2D | Opt-in visual vertical slice (`?art=phase6`) | 180 KiB runtime cap |
 
 ## Palette and Tactical Semantics
 

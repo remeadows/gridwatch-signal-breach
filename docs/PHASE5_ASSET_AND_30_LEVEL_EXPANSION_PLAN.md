@@ -1,7 +1,9 @@
 # GridWatch Phase 5, 3D Asset, and 30-Level Expansion Plan
 
-Status: discussion draft; no gameplay or production asset implementation is
-authorized by this document.
+Status: Phase 6B authorizes only the opt-in, render-only Relay/ICE-turret/Probe
+vertical slice in PR #44. Owner contextual visual acceptance is still required
+before merge; full-roster generation and the thirty-level expansion remain
+blocked pending their separate approvals.
 
 Date: 2026-07-16
 

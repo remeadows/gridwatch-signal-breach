@@ -1,6 +1,6 @@
 {
   "version": "phase6-v1",
-  "maxRuntimeBytes": 163840,
+  "maxRuntimeBytes": 184320,
   "assets": [
     {
       "id": "relay",
@@ -17,7 +17,7 @@
       "generator": "OpenAI ImageGen",
       "generatedAt": "2026-07-16T00:00:00Z",
       "referenceAssets": ["phase6-reactor-tech-style-frame"],
-      "promptSha256": "7c1927274e96e93292662eb8310cf9b5c6f799a1e3a1abc53f5de8f5ac172be4",
+      "promptSha256": "3664721bd1395cc5a7871bb67764ad04aa94557894487ecd752eaf1125cab343",
       "camera": "orthographic-70deg",
       "light": "upper-left",
       "semanticAccent": "signal-cyan",
@@ -40,7 +40,7 @@
       "generator": "OpenAI ImageGen",
       "generatedAt": "2026-07-16T00:00:00Z",
       "referenceAssets": ["phase6-reactor-tech-style-frame"],
-      "promptSha256": "b6c0345b26caf386f924a4adc34855088e172dd1952c99a072d777be2fe2c355",
+      "promptSha256": "38de0746d6a45066c3523ff978d61c1d42ac44b4c9164f937cc87737146205d0",
       "camera": "orthographic-70deg",
       "light": "upper-left",
       "semanticAccent": "ice-blue",
@@ -63,7 +63,7 @@
       "generator": "OpenAI ImageGen",
       "generatedAt": "2026-07-16T00:00:00Z",
       "referenceAssets": ["phase6-reactor-tech-style-frame"],
-      "promptSha256": "0a34d275c99490a1b755e6fe40d384025280cc89c3ec4cf912cc6e3d3bf0b5b2",
+      "promptSha256": "5eb7a4d6f69a1cf8af830bda3ff8efab69bd96944dc5670c452b3f69376ea01a",
       "camera": "orthographic-70deg",
       "light": "upper-left",
       "semanticAccent": "hostile-magenta",

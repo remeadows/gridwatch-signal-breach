@@ -9,12 +9,13 @@
 - The owner cleared all three sectors, found Sectors 1 and 2 challenging but
   fair, verified that ICE and Firewalls are useful, and accepted mobile-web
   playability. Keep Phase 5; the accepted balance is now frozen.
-- The owner approved only the render-only Phase 6B Relay/ICE-turret/Probe
-  vertical slice on `codex/phase5-asset-expansion-plan`, using the selected
-  Reactor-tech realism direction. This slice must preserve glyph fallback, stay
-  behind `?art=phase6`, and make no sim, replay, score, database, Edge Function,
-  or deployment change. Full-roster generation remains blocked on contextual
-  desktop/mobile review and owner acceptance of this slice. The thirty-level
+- The owner authorized the render-only Phase 6B Relay/ICE-turret/Probe vertical
+  slice on `codex/phase5-asset-expansion-plan`, using the selected Reactor-tech
+  realism direction. PR #44 is ready for review; the slice is not yet
+  owner-accepted. It must preserve glyph fallback, stay behind `?art=phase6`,
+  and make no sim, replay, score, database, Edge Function, or deployment change.
+  Merge requires contextual desktop/mobile review and explicit owner acceptance.
+  Full-roster generation remains blocked until that acceptance. The thirty-level
   expansion is still planning-only until its level semantics and a
   documentation-only scope-authority update are separately approved and merged.
 - The initial `phase4-v1` ruleset is now frozen locally: opening grants are
@@ -293,18 +294,16 @@ Note: the previous "zero network / no `import.meta.env`" invariant no longer hol
 
 ## Good Next Checks
 
-- Discuss and approve or revise the four decisions in
-  `docs/PHASE5_ASSET_AND_30_LEVEL_EXPANSION_PLAN.md`: thirty levels, each with
-  five waves; pre-rendered 3D Canvas2D pieces; exactly three contextual style
-  frames; and an isolated expansion campaign/ruleset/leaderboard namespace.
-- After approval, merge a documentation-only scope-authority update before any
-  expansion implementation. The original `phase4-v1` campaign remains capped at
-  three sectors and twelve waves.
-- Then generate exactly three screenshot-context style options using Relay,
-  ICE, and Probe. Do not generate the full roster or change rendering code until
-  the owner selects one direction.
-- Keep every GitHub push behind both Codex and CodeRabbit review. Asset PRs also
-  require contextual desktop/mobile visual evidence and explicit owner approval.
+- Review PR #44 with both `?art=phase6` and `?art=glyphs` at desktop and mobile
+  viewports. Confirm that Relay, ICE turret, and Probe remain identifiable,
+  tactical state stays readable, and glyph fallback works.
+- Record explicit owner acceptance before merging PR #44 or changing any
+  `ownerApproved` manifest flag. Keep the slice opt-in after merge.
+- Keep the full roster blocked until the accepted vertical slice has contextual,
+  mobile, and performance evidence. Keep the thirty-level expansion blocked
+  until its level semantics and documentation-only scope-authority update are
+  separately approved and merged.
+- Keep every GitHub push behind both Codex and CodeRabbit review.
 - After any future Cloudflare Pages deploy, confirm
   `https://GridWatch-SignalBreach.warsignallabs.net` loads, hashed root-relative
   assets resolve, offline mode stays playable, and current `phase4-v1` replay
