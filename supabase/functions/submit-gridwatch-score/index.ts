@@ -296,17 +296,19 @@ Deno.serve(async (req: Request) => {
       if (sectorError) console.error("hub-alignment: sector scores fetch error:", sectorError);
       if (clearedError) console.error("hub-alignment: cleared-marker fetch error:", clearedError);
 
-      const clearedSectors = new Set(
-        (clearedMarkerRows ?? []).map((r) =>
-          Number((r.category as string).split(":").at(-1))
-        ),
-      );
-      const sectorScoreRows = (sectorRows ?? []) as Array<{ category: string; score: number }>;
-      const clearedRows = sectorScoreRows.filter((r) =>
-        clearedSectors.has(Number(r.category.split(":").at(-1))),
-      );
-      campaignScore = clearedRows.reduce((sum, r) => sum + (r.score ?? 0), 0);
-      clearedSectorCount = clearedRows.length;
+      if (!sectorError && !clearedError) {
+        const clearedSectors = new Set(
+          (clearedMarkerRows ?? []).map((r) =>
+            Number((r.category as string).split(":").at(-1))
+          ),
+        );
+        const sectorScoreRows = (sectorRows ?? []) as Array<{ category: string; score: number }>;
+        const clearedRows = sectorScoreRows.filter((r) =>
+          clearedSectors.has(Number(r.category.split(":").at(-1))),
+        );
+        campaignScore = clearedRows.reduce((sum, r) => sum + (r.score ?? 0), 0);
+        clearedSectorCount = clearedRows.length;
+      }
     }
 
     const now = new Date();

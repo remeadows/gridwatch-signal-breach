@@ -1,3 +1,4 @@
+import { UNIT_TUNING } from "../data/units";
 import { getTileKind, samePosition } from "../sim/grid";
 import type { GameState, PlayerTool, SimCommand, UnitKind } from "../sim";
 
@@ -32,7 +33,7 @@ export const TOOL_INFO: Readonly<Record<PlayerTool, ToolInfo>> = {
   turret: {
     label: "ICE",
     purpose: "Attack nearby",
-    description: "Automatically attacks intrusions within two tiles.",
+    description: `Automatically attacks intrusions within ${UNIT_TUNING.turret.range} tiles.`,
   },
   scrubber: {
     label: "Scrubber",

@@ -1,8 +1,10 @@
 import { applyCommand } from "../src/sim/commands";
 import { calculateScore } from "../src/sim/scoring";
+import { SIM_RULESET_ID } from "../src/sim/ruleset";
 import { createGameState } from "../src/sim/state";
 import { tick } from "../src/sim/tick";
 import type { GameState, GridPosition, UnitKind } from "../src/sim/types";
+import { assertWithinTickBudget } from "./simulationLimits";
 
 // Analysis helper, not a CI gate. Usage:
 // npm run balance:search -- <sector> [seed] [beam-width] [max-builds-per-wave]
@@ -158,6 +160,7 @@ function getPlacements(state: GameState): readonly Placement[] {
 function runWave(state: GameState): GameState {
   let result = applyCommand(state, { type: "skipPrep" });
   const waveIndex = state.waveIndex;
+  let ticks = 0;
 
   while (
     result.phase !== "won" &&
@@ -165,6 +168,15 @@ function runWave(state: GameState): GameState {
     result.waveIndex === waveIndex
   ) {
     result = tick(result);
+    ticks += 1;
+    assertWithinTickBudget({
+      scope: "wave",
+      ticks,
+      state: result,
+      sector,
+      seed,
+      ruleset: SIM_RULESET_ID,
+    });
   }
 
   return result;

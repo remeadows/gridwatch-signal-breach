@@ -11,7 +11,9 @@
 - `npm run balance:report` replays readable guided plans across four fixed seeds
   per sector. The legacy baseline clears 1/4 Sector 1 runs and 0/4 in Sectors 2
   and 3. `phase4-v1` clears 4/4 in every sector; average Core integrity is 125.3,
-  127.8, and 150 respectively. The report fails CI if any Phase 4 fixture loses.
+  127.8, and 150 respectively. The report freezes every per-seed terminal wave,
+  integrity, uptime, bandwidth, kill, corruption, remaining-unit, and score
+  metric; CI fails on any drift or tick-budget overrun.
 - The optional Signal Pulse was not retained. The tuned routing, ICE, Firewall,
   Scrubber, and Overclock decisions clear the campaign without a universal
   attack that could eclipse placement.
@@ -39,6 +41,14 @@
   also replaces implicit PUBLIC execute with explicit grants and pins both
   SECURITY DEFINER functions to an empty search path. The reviewed SQL was
   applied to GridWatchGamesDB as migration-ledger version `20260716012745`.
+- GridWatchGamesDB is shared by `grid-drift`, `gridwatch-match`, and
+  `gridwatch-signal-breach`. Review of PR #42 found a concurrency race in the
+  shared `record_score` keep-best path, so follow-up migration
+  `20260716015402_harden_gridwatch_leaderboard_writes.sql` uses one atomic
+  conflict-gated upsert. Signal Breach alone receives tied-score `rank()`
+  semantics; the other two games retain their existing timestamp-tiebroken
+  `row_number()` ordering so Grid Drift's separate `get_rank` RPC stays aligned.
+  The follow-up migration has not yet been promoted.
 - The approved server-first promotion is complete through the replay gate.
   Edge version 7 is active with `verify_jwt=false` and bundle hash
   `0460a604158edc6ed0720f5240f37a8990cbe0b806c2ff554c0f6992318f69be`.
@@ -62,20 +72,22 @@
   568×320, and 1440×900 have no document overflow, console warning/error, or
   non-static request. Build and live ICE sales return 14 and 8 BW respectively;
   the constrained landscape dock keeps FULL/PARTIAL legible.
-- Draft PR #42 is open at
+- PR #42 is ready for review at
   `https://github.com/remeadows/gridwatch-signal-breach/pull/42`. The frozen
-  implementation passed CI, CodeQL, CodeRabbit, and Cloudflare Pages. The PR
-  remains draft pending the promotion-record update, refreshed checks, review,
-  and separate owner authorization to mark ready or merge the Pages client.
+  implementation passed CI, CodeQL, and Cloudflare Pages. Owner authorization
+  to proceed was given; ten ready-state CodeRabbit findings are being addressed
+  before the server fix and Pages client can be promoted.
 - The reported production URL issue was checked independently. The custom
   domain serves HTTP 200, both hashed assets serve HTTP 200 with correct MIME
   types, and the title/briefing flow works in Chromium and WebKit at desktop and
   mobile-web viewports without console or request failures. Cloudflare production
   is still `main` at `8dd86a8`; unmerged Phase 4 client changes did not cause the
   reported failure.
-- A substantive CodeRabbit CLI review of the full branch found no critical or
-  warning issues. Its four minor copy/documentation inconsistencies were fixed;
-  the focused follow-up review returned zero findings.
+- A substantive CodeRabbit CLI review of the initial full branch found no
+  critical or warning issues. The ready-state GitHub review later found ten
+  additional issues, including the shared keep-best race. The local fixes pass
+  a focused CodeRabbit review with zero findings; refreshed GitHub review is
+  still required after push.
 
 ## Completed Phase 3 — 2026-07-15
 
@@ -208,10 +220,30 @@ npm run typecheck:tools
 npm run verify:replays
 npm run balance:report
 npm audit --audit-level=high
-npm run dev -- --host 127.0.0.1 --port 5173 --strictPort
-npm run preview -- --host 127.0.0.1 --port 4173 --strictPort
 rg -n "TODO|FIXME|XXX|HACK" src
 rg -n ": any\b" src
+```
+
+Then verify each long-running server from a separate shell. Start dev in shell
+A, run the health check in shell B, and stop shell A with Ctrl-C:
+
+```sh
+npm run dev -- --host 127.0.0.1 --port 5173 --strictPort
+```
+
+```sh
+curl -fsS http://127.0.0.1:5173/ > /dev/null
+```
+
+Repeat for preview, again stopping the server with Ctrl-C after the health
+check:
+
+```sh
+npm run preview -- --host 127.0.0.1 --port 4173 --strictPort
+```
+
+```sh
+curl -fsS http://127.0.0.1:4173/ > /dev/null
 ```
 
 Expected: install/build/build:validator/tool typecheck/replay/balance/dev/preview
@@ -238,11 +270,13 @@ Note: the previous "zero network / no `import.meta.env`" invariant no longer hol
 - After refreshed CI/review and separate owner authorization, mark PR #42 ready,
   merge its tuned Pages client, wait for the production Pages deployment, and
   run the client smoke checks in the promotion runbook.
-- On the Phase 3 Cloudflare Pages preview, run ten consecutive intended placements
-  as mobile web in Safari on iPhone/iPad and Chrome on Android, in portrait and
-  landscape. Confirm backgrounding and rotation pause without advancing an unseen
-  wave, reduced-motion behavior, and sustained frame pacing during the busiest
-  visible wave.
+- On the PR #42 Phase 4 preview
+  (`https://bc9685a8.gridwatch-signal-breach.pages.dev`) or its matching
+  post-merge production deployment, run ten consecutive intended placements as
+  mobile web in Safari on iPhone/iPad and Chrome on Android, in portrait and
+  landscape. Confirm backgrounding and rotation pause without advancing an
+  unseen wave, reduced-motion behavior, and sustained frame pacing during the
+  busiest visible wave.
 - Run owner and real-device playtests across W1-W12 and record completion rate,
   first-failure wave, unused bandwidth, and most-used tools. Any later tuning
   change must receive a new immutable ruleset and repeat the server-first path.
