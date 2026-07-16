@@ -21,6 +21,11 @@
   Phase 4 bundle and prefixed score categories. The tuned client submits the
   explicit ruleset; pending OAuth runs preserve their original ruleset, and old
   unversioned pending runs resolve to `legacy-v1`.
+- Phase 4 aggregate/daily/weekly rows are prefixed too. The existing Command
+  Nexus hub therefore continues showing its legacy `standard`/period boards and
+  will not display tuned runs until it explicitly opts into the new ruleset.
+  This is intentional score isolation; do not dual-write tuned scores into
+  legacy categories to make the hub appear current.
 - Replay validation and canonicalization are now pure/testable. Golden fixtures
   cover a deterministic accepted win, accepted loss, repeated-run equality,
   out-of-order commands, commands after terminal state, inert-field stripping,
