@@ -25,7 +25,7 @@ source license and crop-safe master have not yet been documented.
 | Unit and intrusion glyphs | Existing project-owned path definitions | Canvas2D/SVG | Tactical silhouettes | Existing bundle |
 | Combat effects | Project-authored deterministic Canvas2D primitives | Canvas2D | Spawn, hit, kill, corruption, boss, and damage feedback | Per-frame only |
 | Sector key-art fields | Project-authored CSS gradients and geometric motifs | CSS | Sector-select cards | 0 transferred bytes beyond CSS |
-| Phase 6 Source, Core, Relay, Firewall, ICE turret, Probe, Crawler, Spoof, Hunter, Splitter, Goliath | OpenAI ImageGen source masters; local chroma-key extraction; prompt/hash manifest | Local PNG/WebP + Canvas2D | Opt-in visual slices (`?art=phase6`) | 768 KiB runtime cap |
+| Phase 6 Source, Core, Relay, Firewall, ICE turret, Scrubber, Overclock, Probe, Crawler, Spoof, Hunter, Splitter, Goliath | OpenAI ImageGen source masters; local chroma-key extraction; prompt/hash manifest | Local PNG/WebP + Canvas2D | Default board presentation (`?art=glyphs` rollback) | 768 KiB runtime cap |
 
 ## Palette and Tactical Semantics
 
@@ -68,9 +68,10 @@ from the live board so cinematic detail never obscures tactical cells.
 The approved art direction is Reactor-tech tactical realism: dark machined
 metal, ceramic armor, carbon composite, restrained cyan/blue/magenta light, and
 an orthographic approximately 70-degree board camera. The first raster slice is
-limited to Relay, ICE turret, and Probe. It is opt-in with `?art=phase6`; the
-current glyph renderer remains the default and automatic fallback if an image
-does not decode.
+limited to Relay, ICE turret, and Probe. It established the approved art
+direction for the complete roster. The raster presentation is now the default;
+`?art=glyphs` forces the prior glyph presentation, and glyphs remain the
+automatic fallback if an image does not decode.
 
 The machine-readable source, prompt provenance, dimension, alpha, byte-budget,
 and SHA-256 records are in `src/assets/board/asset-manifest.json`. Run
@@ -80,33 +81,35 @@ asset.
 
 ## Phase 6C Foundation Slice
 
-Source, Core, and Firewall extend the same opt-in Canvas2D path. Source and
+Source, Core, and Firewall extend the same Canvas2D path. Source and
 Core retain their existing signal rings, integrity feedback, and tactical labels;
 Firewall retains its gameplay HP pips. The owner accepted this foundation
-direction before Phase 6D began. Glyph mode remains the default and fallback
-for every piece.
+direction before Phase 6D began. Glyph mode remains the explicit rollback and
+automatic fallback for every piece.
 
 ## Phase 6D-A Enemy Slice
 
-Crawler, Spoof, and Hunter extend the same opt-in Canvas2D path while keeping
+Crawler, Spoof, and Hunter extend the same Canvas2D path while keeping
 their existing shadows, HP bars, corruption, and Spoof phase-offset feedback
 procedural. Their source masters, prompt records, alpha extraction, dimensions,
 and SHA-256 records are in the machine-readable manifest. These three new
-pieces await contextual desktop/mobile approval; Probe remains the approved
-hostile anchor. Glyph mode remains the default and fallback for every enemy.
+pieces are included in the owner-approved roster; Probe remains the hostile
+anchor. Glyph mode remains the explicit rollback and automatic fallback for
+every enemy.
 
 ## Phase 6D-B Final Enemy Slice
 
-Splitter and Goliath complete the current enemy roster on the same opt-in
+Splitter and Goliath complete the current enemy roster on the same
 Canvas2D path. Splitter retains the procedural death-spawn behavior from the
 simulation, and Goliath retains its procedural warning ring, boss health plate,
 and reduced-motion-safe feedback. Goliath uses a 384px alpha WebP runtime asset
 within its 160 KiB per-boss limit; the aggregate cap is raised to 768 KiB, still
-well inside the Phase 6 plan's 1.5 MiB full-roster ceiling. Both assets await
-contextual desktop/mobile approval. Glyph mode remains the default and fallback.
+well inside the Phase 6 plan's 1.5 MiB full-roster ceiling. Both assets are
+owner-approved. Glyph mode remains the explicit rollback and fallback.
 
 ## Phase 6C-B Final Hardware Slice
 
-Scrubber and Overclock complete the current thirteen-family base roster on the
-same opt-in path. Their cleansing and boost telegraphs remain procedural; both
-assets await contextual desktop/mobile approval. Glyph mode remains default.
+Scrubber and Overclock complete the current thirteen-family base roster. Their
+cleansing and boost telegraphs remain procedural. The owner approved promotion
+of the complete roster to the default board presentation; glyph mode remains an
+explicit rollback and automatic load-failure fallback.

@@ -55,7 +55,10 @@ const records = new Map<Phase6BoardSpriteId, SpriteRecord>();
 
 export function getBoardArtMode(): BoardArtMode {
   const requested = new URLSearchParams(window.location.search).get("art");
-  return requested === "phase6" ? "phase6" : "glyphs";
+  // Phase 6 is the reviewed production presentation. Keep the glyph path as a
+  // query-selectable diagnostic and rollback mode, while individual image load
+  // failures still fall back to the corresponding glyph at draw time.
+  return requested === "glyphs" ? "glyphs" : "phase6";
 }
 
 export function preloadPhase6BoardSprites(): void {
