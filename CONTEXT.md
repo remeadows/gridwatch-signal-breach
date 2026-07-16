@@ -1,6 +1,11 @@
 # GridWatch Context
 
-GridWatch: Signal Breach is a fully static browser game built with Vite, vanilla TypeScript, and Canvas2D. There is no backend, API, fetch/XHR, secrets, or environment configuration. The Vite base path is `/` so the app is served from the root of its host (Cloudflare Pages).
+GridWatch: Signal Breach is a static-first browser game built with Vite, vanilla
+TypeScript, and Canvas2D. The game remains fully playable offline. Its one
+sanctioned network feature is the optional Supabase leaderboard: Auth, reads,
+and replay-validated score submissions are enabled only when
+`VITE_SUPABASE_*` build variables are configured. The Vite base path is `/` so
+the app is served from the root of its host (Cloudflare Pages).
 
 ## Architecture
 
@@ -10,6 +15,8 @@ GridWatch: Signal Breach is a fully static browser game built with Vite, vanilla
 - `src/input/` translates pointer clicks into sim commands.
 - `src/ui/` renders HUD, unit picker, overlays, score screen, and small WebAudio event sounds.
 - `src/data/` holds sectors, units, enemies, waves, and taunts tuning.
+- `src/leaderboard/` contains the optional Supabase client boundary. The service
+  role remains only in the Edge Function runtime.
 
 ## Simulation Notes
 
@@ -27,3 +34,6 @@ GridWatch: Signal Breach is a fully static browser game built with Vite, vanilla
 - `vite.config.ts` disables Vite's modulepreload polyfill so the built bundle contains no generated `fetch()`.
 - Hosting is on Cloudflare Pages (`GridWatch-SignalBreach.warsignallabs.net`) via Cloudflare's Git integration: each push to `main` runs `npm run build` and publishes `dist/`. Node is pinned to `24` via `.nvmrc`.
 - `.github/workflows/ci.yml` builds and audits on PRs and pushes to `main` (emits the `build` status check required by `.github/rulesets/main-protection.json`); it does not deploy.
+- Supabase migrations and the score-validation Edge Function are promoted
+  separately from Pages. Any sim-affecting client release must follow the
+  compatible server-first order recorded in `HANDOFF.md`.

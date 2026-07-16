@@ -12,14 +12,26 @@
 // itself; the user's token is validated manually below.
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import {
-  replayRun,
-  ReplayError,
+  SIM_RULESET_ID,
+  replayRun as replayCurrentRun,
+  ReplayError as CurrentReplayError,
+} from "./sim.bundle.js";
+import {
+  replayRun as replayLegacyRun,
+  ReplayError as LegacyReplayError,
 } from "https://raw.githubusercontent.com/remeadows/gridwatch-signal-breach/fa0a5df7a5bae70068772566913d13e99fe137f0/supabase/functions/submit-gridwatch-score/sim.bundle.js";
+import {
+  ReplayValidationError,
+  canonicalizeCommands,
+  categoryForRuleset,
+  resolveRuleset,
+  type CanonicalCommand,
+  type ResolvedRuleset,
+} from "./replayValidation.ts";
 
 const GAME_SLUG = "gridwatch-signal-breach";
 const MAX_COMMANDS = 5000;
 const MAX_SCORE = 100000;
-const ALLOWED_COMMAND_TYPES = new Set(["placeUnit", "sellUnit", "skipPrep"]);
 const VALID_SECTORS = new Set([1, 2, 3]);
 
 const ALLOWED_ORIGINS = new Set([
@@ -44,56 +56,6 @@ function json(body: unknown, status: number, origin: string | null): Response {
     status,
     headers: { "Content-Type": "application/json", ...corsHeaders(origin) },
   });
-}
-
-function isValidCommandEnvelope(entry: unknown): boolean {
-  if (typeof entry !== "object" || entry === null) return false;
-  const { t, c } = entry as { t: unknown; c: unknown };
-  if (typeof t !== "number" || !Number.isInteger(t) || t < 0) return false;
-  if (typeof c !== "object" || c === null) return false;
-  const type = (c as { type: unknown }).type;
-  return typeof type === "string" && ALLOWED_COMMAND_TYPES.has(type);
-}
-
-function canonicalizePosition(raw: unknown): { x: number; y: number } | null {
-  if (typeof raw !== "object" || raw === null) return null;
-  const { x, y } = raw as { x: unknown; y: unknown };
-  if (
-    typeof x !== "number" || !Number.isInteger(x) ||
-    typeof y !== "number" || !Number.isInteger(y)
-  ) return null;
-  return { x, y };
-}
-
-// Rebuild the command log from only the fields the sim reads, in a fixed key
-// order, so inert padding can't vary the proof hash.
-function canonicalizeCommands(
-  commands: readonly unknown[],
-): Array<{ t: number; c: Record<string, unknown> }> {
-  const out: Array<{ t: number; c: Record<string, unknown> }> = [];
-  for (const entry of commands) {
-    const { t, c } = entry as { t: number; c: { type: string } & Record<string, unknown> };
-    switch (c.type) {
-      case "skipPrep":
-        out.push({ t, c: { type: "skipPrep" } });
-        break;
-      case "sellUnit": {
-        const position = canonicalizePosition(c.position);
-        if (!position) throw new ReplayError("Malformed command log.");
-        out.push({ t, c: { type: "sellUnit", position } });
-        break;
-      }
-      case "placeUnit": {
-        const position = canonicalizePosition(c.position);
-        if (!position || typeof c.unit !== "string") throw new ReplayError("Malformed command log.");
-        out.push({ t, c: { type: "placeUnit", position, unit: c.unit } });
-        break;
-      }
-      default:
-        throw new ReplayError("Malformed command log.");
-    }
-  }
-  return out;
 }
 
 async function sha256Hex(input: string): Promise<string> {
@@ -146,7 +108,12 @@ Deno.serve(async (req: Request) => {
     return json({ ok: false, error: "Your session has expired — sign in again." }, 401, origin);
   }
 
-  let payload: { seed?: unknown; sector?: unknown; commands?: unknown };
+  let payload: {
+    ruleset?: unknown;
+    seed?: unknown;
+    sector?: unknown;
+    commands?: unknown;
+  };
   try {
     payload = await req.json();
   } catch {
@@ -163,30 +130,25 @@ Deno.serve(async (req: Request) => {
   if (typeof sector !== "number" || !VALID_SECTORS.has(sector)) {
     return json({ ok: false, error: "Invalid sector." }, 400, origin);
   }
-  if (!Array.isArray(commands) || commands.length > MAX_COMMANDS) {
-    return json({ ok: false, error: "Invalid or oversized command log." }, 400, origin);
-  }
-
-  let previousTick = 0;
-  for (const entry of commands) {
-    if (!isValidCommandEnvelope(entry)) {
-      return json({ ok: false, error: "Malformed command log." }, 400, origin);
+  let ruleset: ResolvedRuleset;
+  let canonicalCommands: CanonicalCommand[];
+  try {
+    ruleset = resolveRuleset(payload.ruleset, SIM_RULESET_ID);
+    canonicalCommands = canonicalizeCommands(commands, MAX_COMMANDS);
+  } catch (err) {
+    if (err instanceof ReplayValidationError) {
+      return json({ ok: false, error: err.message }, 400, origin);
     }
-    const t = (entry as { t: number }).t;
-    if (t < previousTick) {
-      return json({ ok: false, error: "Command log is out of order." }, 400, origin);
-    }
-    previousTick = t;
+    return json({ ok: false, error: "Invalid replay payload." }, 400, origin);
   }
 
   let score: number;
   let rating: string;
   let phase: string;
   let metadata: Record<string, unknown>;
-  let canonicalCommands: Array<{ t: number; c: Record<string, unknown> }>;
   try {
-    canonicalCommands = canonicalizeCommands(commands);
-    const result = replayRun({ seed, sector, commands: canonicalCommands });
+    const replay = ruleset.legacy ? replayLegacyRun : replayCurrentRun;
+    const result = replay({ seed, sector, commands: canonicalCommands });
     const breakdown = result.score;
     const state = result.state;
     score = breakdown.total;
@@ -194,6 +156,7 @@ Deno.serve(async (req: Request) => {
     phase = state.phase;
     metadata = {
       sector,
+      ruleset: ruleset.id,
       phase,
       integrity: breakdown.integrity,
       neutralized: breakdown.neutralized,
@@ -201,7 +164,7 @@ Deno.serve(async (req: Request) => {
       efficiencyBonus: breakdown.efficiencyBonus,
     };
   } catch (err) {
-    if (err instanceof ReplayError) {
+    if (err instanceof LegacyReplayError || err instanceof CurrentReplayError) {
       return json({ ok: false, error: `Rejected: ${err.message}` }, 422, origin);
     }
     return json({ ok: false, error: "Replay failed." }, 422, origin);
@@ -214,8 +177,10 @@ Deno.serve(async (req: Request) => {
     return json({ ok: false, error: "Score out of bounds." }, 422, origin);
   }
 
-  const category = `sector:${sector}`;
-  const proof = { seed, sector, commands: canonicalCommands };
+  const category = categoryForRuleset(ruleset, `sector:${sector}`);
+  const proof = ruleset.legacy
+    ? { seed, sector, commands: canonicalCommands }
+    : { ruleset: ruleset.id, seed, sector, commands: canonicalCommands };
   const proofHash = await sha256Hex(JSON.stringify(proof));
 
   const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
@@ -256,7 +221,7 @@ Deno.serve(async (req: Request) => {
     sector_rank: number;
   };
 
-  // Command Nexus hub alignment: the hub reads the shared board via
+  // Command Nexus hub alignment: the hub reads the legacy shared board via
   // get_leaderboard(game, 'standard' | 'daily-*' | 'weekly-*'). #25 originally wrote
   // only sector:N rows, so the hub's Signal Breach board stayed empty. Feed it here:
   //   standard    = campaign total = sum of best scores for CLEARED sectors only
@@ -273,16 +238,9 @@ Deno.serve(async (req: Request) => {
   // un-clear or silently drop a real clear, so "cleared" must be a monotonic
   // fact independent of whichever attempt currently holds the best-score slot.
   //
-  // Known follow-up (not fixed here, flagged for a product decision): the
-  // in-game "global" leaderboard screen (src/leaderboard/api.ts) queries
-  // get_leaderboard with p_category: null, which pools ALL categories for this
-  // game — including standard/daily/weekly/sector-cleared:N. Once a player
-  // clears 2+ sectors, the campaign total (`standard`) will exceed any single
-  // sector score and start winning that null-pooled "best score" query,
-  // silently changing what the existing global board displays. Fixing this
-  // requires either an RPC change (get_leaderboard excluding aggregate
-  // categories when p_category is null) or a frontend change (the global path
-  // querying sectors explicitly) — out of scope for this alignment PR.
+  // The companion migration constrains a null-category leaderboard read to the
+  // three legacy sector categories. New rulesets prefix every category, so they
+  // remain additive and cannot overwrite or leak into historical rankings.
   //
   // BEST-EFFORT: every write here is wrapped so a failure never fails the
   // primary sector submission above; every Supabase {error} is logged
@@ -299,14 +257,14 @@ Deno.serve(async (req: Request) => {
   let campaignScore: number | null = null;
   try {
     if (phase === "won") {
-      const markerCategory = `sector-cleared:${sector}`;
+      const markerCategory = categoryForRuleset(ruleset, `sector-cleared:${sector}`);
       const { error: markerError } = await admin.rpc("record_score", {
         p_user_id: user.id,
         p_slug: GAME_SLUG,
         p_category: markerCategory,
         p_score: 1,
         p_rating: rating,
-        p_metadata: { kind: "cleared-marker", sector },
+        p_metadata: { kind: "cleared-marker", sector, ruleset: ruleset.id },
         p_proof: proof,
         p_proof_hash: proofHash,
       });
@@ -320,38 +278,61 @@ Deno.serve(async (req: Request) => {
 
     let clearedSectorCount = 0;
     if (gameId) {
+      const sectorCategories = [1, 2, 3].map((id) =>
+        categoryForRuleset(ruleset, `sector:${id}`)
+      );
+      const clearedCategories = [1, 2, 3].map((id) =>
+        categoryForRuleset(ruleset, `sector-cleared:${id}`)
+      );
       const [{ data: sectorRows, error: sectorError }, { data: clearedMarkerRows, error: clearedError }] =
         await Promise.all([
           admin.from("scores").select("category, score")
             .eq("game_id", gameId).eq("user_id", user.id)
-            .in("category", ["sector:1", "sector:2", "sector:3"]),
+            .in("category", sectorCategories),
           admin.from("scores").select("category")
             .eq("game_id", gameId).eq("user_id", user.id)
-            .in("category", ["sector-cleared:1", "sector-cleared:2", "sector-cleared:3"]),
+            .in("category", clearedCategories),
         ]);
       if (sectorError) console.error("hub-alignment: sector scores fetch error:", sectorError);
       if (clearedError) console.error("hub-alignment: cleared-marker fetch error:", clearedError);
 
       const clearedSectors = new Set(
-        (clearedMarkerRows ?? []).map((r) => Number((r.category as string).split(":")[1])),
+        (clearedMarkerRows ?? []).map((r) =>
+          Number((r.category as string).split(":").at(-1))
+        ),
       );
       const sectorScoreRows = (sectorRows ?? []) as Array<{ category: string; score: number }>;
       const clearedRows = sectorScoreRows.filter((r) =>
-        clearedSectors.has(Number(r.category.split(":")[1])),
+        clearedSectors.has(Number(r.category.split(":").at(-1))),
       );
       campaignScore = clearedRows.reduce((sum, r) => sum + (r.score ?? 0), 0);
       clearedSectorCount = clearedRows.length;
     }
 
     const now = new Date();
-    const aggProof = { kind: "aggregate", from: category };
+    const aggProof = { kind: "aggregate", ruleset: ruleset.id, from: category };
     const aggHash = await sha256Hex(JSON.stringify({ user: user.id, ...aggProof }));
     const alignedWrites: Array<{ cat: string; sc: number; meta: Record<string, unknown>; agg: boolean }> = [
       ...(campaignScore !== null
-        ? [{ cat: "standard", sc: campaignScore, meta: { kind: "campaign", sectors: clearedSectorCount }, agg: true }]
+        ? [{
+            cat: categoryForRuleset(ruleset, "standard"),
+            sc: campaignScore,
+            meta: { kind: "campaign", ruleset: ruleset.id, sectors: clearedSectorCount },
+            agg: true,
+          }]
         : []),
-      { cat: dailyCategory(now), sc: score, meta: metadata, agg: false },
-      { cat: weeklyCategory(now), sc: score, meta: metadata, agg: false },
+      {
+        cat: categoryForRuleset(ruleset, dailyCategory(now)),
+        sc: score,
+        meta: metadata,
+        agg: false,
+      },
+      {
+        cat: categoryForRuleset(ruleset, weeklyCategory(now)),
+        sc: score,
+        meta: metadata,
+        agg: false,
+      },
     ];
     await Promise.all(alignedWrites.map(async (w) => {
       const { error: writeError } = await admin.rpc("record_score", {
@@ -377,6 +358,7 @@ Deno.serve(async (req: Request) => {
       runScore: score,
       bestScore: row.stored_score,
       campaignScore,
+      ruleset: ruleset.id,
       rating,
       globalRank: row.global_rank,
       sectorRank: row.sector_rank,

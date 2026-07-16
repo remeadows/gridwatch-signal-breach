@@ -1192,6 +1192,9 @@ function getOperatorRating(total, phase) {
   return "Patch Runner";
 }
 
+// src/sim/ruleset.ts
+var SIM_RULESET_ID = "phase4-v1";
+
 // src/sim/combat.ts
 function applyTurretCombat(state) {
   if (state.config.turretDamagePerTick <= 0 || state.config.turretRange <= 0) {
@@ -2012,6 +2015,7 @@ function replayRun(input) {
 export {
   MAX_REPLAY_TICKS,
   ReplayError,
+  SIM_RULESET_ID,
   applyCommand,
   calculateScore,
   createGameState,

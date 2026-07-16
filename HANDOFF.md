@@ -1,11 +1,44 @@
 # GridWatch Handoff
 
-## Active Phase 3 Work — 2026-07-15
+## Active Phase 4 Work — 2026-07-15
 
-- Codex is implementing the approved visual-foundation slice on
-  `codex/visual-combat-feedback-phase-3`. Phase 2 promotion PR #40 is merged,
-  and the Phase 3 branch has been rebased onto that new `main` tip so its review
-  diff contains only Phase 3.
+- Codex is implementing the approved balance-and-agency foundation on
+  `codex/balance-agency-phase-4`, based directly on merged Phase 3 PR #41.
+- This first slice deliberately does not change production economy, combat,
+  waves, scoring, or the client replay payload. It establishes evidence and
+  compatibility before live tuning.
+- `npm run balance:report` now runs the same guided Sector 1 build plan across
+  four fixed seeds. The current tuning clears 1/4 runs and stops at wave 2.8 on
+  average. The first experiment—30 BW on W1, Firewall at 8 BW, and ICE at 16 BW
+  with range 2 / damage 3—clears 4/4 and averages 125.3 Core integrity. These
+  values remain report-only until the versioned validator path is promoted.
+- `phase4-v1` is exported by the generated simulator bundle. The Edge Function
+  is prepared to keep omitted/`legacy-v1` submissions on the validator pinned
+  to commit `fa0a5df`, while explicitly versioned submissions use the local
+  Phase 4 bundle and prefixed score categories. The production client still
+  omits the field, so merging this slice cannot move existing players or rows.
+- Replay validation and canonicalization are now pure/testable. Golden fixtures
+  cover a deterministic accepted win, accepted loss, repeated-run equality,
+  out-of-order commands, commands after terminal state, inert-field stripping,
+  unsupported rulesets, and invalid units.
+- The additive migration
+  `20260716000516_isolate_gridwatch_leaderboard_categories.sql` scopes only
+  GridWatch's null-category global read to historical `sector:1..3` rows. Other
+  games using the shared RPC retain their existing behavior. It also replaces
+  implicit PUBLIC execute with explicit `anon`, `authenticated`, and
+  `service_role` grants.
+- GridWatchGamesDB has not been changed and the Edge Function has not been
+  deployed. Do not deploy this compatibility-only bundle: a ruleset identifier
+  must never change simulation meaning after it becomes reachable. First land
+  and freeze the initial `phase4-v1` tuning in the generated bundle. Safe
+  promotion order is then migration first, backward-compatible Edge Function
+  second, controlled legacy/current submission checks third, and only then the
+  client that emits `phase4-v1`.
+
+## Completed Phase 3 — 2026-07-15
+
+- The approved visual-foundation slice was implemented on
+  `codex/visual-combat-feedback-phase-3` and merged to `main` through PR #41.
 - The title now uses a cinematic local CSS operator/rain treatment derived from
   the approved attachment direction. Sector cards, briefing panels, results,
   board chrome, and ambient page lighting share sector-aware visual tokens.
@@ -33,9 +66,8 @@
   had no errors. A 120-frame active Core Vault sample sustained the test
   machine's 120 Hz refresh with a 9.7 ms p95 frame time; real mid-range phone
   profiling remains the promotion gate.
-- Phase 2 promotion PR #40 is merged. Phase 3 PR #41 is ready for review at
-  `https://github.com/remeadows/gridwatch-signal-breach/pull/41`; its Cloudflare
-  preview is
+- Phase 2 promotion PR #40 and Phase 3 PR #41 are merged. The historical Phase
+  3 Cloudflare preview remains at
   `https://codex-visual-combat-feedback.gridwatch-signal-breach.pages.dev`.
 
 ## Completed Phase 2 — 2026-07-15
@@ -71,12 +103,12 @@
 - The historical Phase 2 branch preview remains at
   `https://codex-build-phase-clarity.gridwatch-signal-breach.pages.dev`.
 
-## Active Mobile Work — 2026-07-15
+## Completed Phase 1 Mobile Work — 2026-07-15
 
-- Codex is implementing the approved Phase 0/Phase 1 mobile-playability slice on
-  `codex/mobile-playability-phase-1`. The working tree now contains responsive
-  UI/input changes; the deterministic simulation, scoring, wave data,
-  leaderboard client, Supabase schema, and Edge Function remain untouched.
+- The approved Phase 0/Phase 1 mobile-playability slice was implemented on
+  `codex/mobile-playability-phase-1` and merged through PR #38. The deterministic
+  simulation, scoring, wave data, leaderboard client, Supabase schema, and Edge
+  Function remained untouched.
 - The required pre-read found no project-root `CLAUDE.md`, `MEMORY.md`, or prior
   `SKILLS.md`. `CONTEXT.md` was used as the available project memory, and a new
   `SKILLS.md` now records project-specific skill routing and verification lanes.
@@ -106,9 +138,7 @@
   any later sim/tuning change needs replay ruleset versioning, validator-bundle
   synchronization, additive score handling, and a compatible Edge Function-first
   release.
-- Draft PR #38 is open at
-  `https://github.com/remeadows/gridwatch-signal-breach/pull/38`. Its Cloudflare
-  branch preview is
+- The historical Phase 1 branch preview remains at
   `https://codex-mobile-playability-pha.gridwatch-signal-breach.pages.dev`.
 
 ## Current State
@@ -150,7 +180,14 @@ Note: the previous "zero network / no `import.meta.env`" invariant no longer hol
 
 ## Good Next Checks
 
-- Review and merge Phase 3 PR #41, which now targets `main` directly.
+- Review the Phase 4 compatibility/baseline PR without applying its migration or
+  deploying its Edge Function against GridWatchGamesDB from a public preview.
+- Implement and freeze the first evidence-backed `phase4-v1` tuning without
+  deploying this compatibility-only Edge bundle. Then, in a controlled
+  maintenance window, apply the GridWatch-scoped migration, deploy the
+  backward-compatible Edge Function with that tuned bundle, and verify one
+  legacy plus one `phase4-v1` replay submission before the tuned client is made
+  ready.
 - On the Phase 3 Cloudflare Pages preview, run ten consecutive intended placements
   on real iOS and Android hardware in portrait and landscape. Confirm backgrounding
   and rotation pause without advancing an unseen wave, reduced-motion behavior,

@@ -1,7 +1,8 @@
 # GridWatch Mobile, Gameplay, Visual, and Deployment Plan
 
-Status: planning only — no gameplay, UI, rendering, asset, simulation, database,
-or deployment code has been changed.
+Status: Phases 1–3 are merged. Phase 4 compatibility and fixed-seed balance
+evidence are in progress; production tuning remains gated on server-first replay
+versioning.
 
 Date: 2026-07-15
 
