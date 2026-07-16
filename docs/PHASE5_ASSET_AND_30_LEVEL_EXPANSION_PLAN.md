@@ -114,16 +114,20 @@ The owner approved the campaign definition and its isolation from the accepted
 campaign. The existing owner-approved Phase 6 roster establishes the current
 rendering direction. Expansion implementation remains gated as follows:
 
-1. **Level semantics — approved:** thirty levels means six chapters of five
-   levels, with five waves per level, for 150 new waves.
+1. **Level semantics — approved:** thirty standalone 8x8 levels means six
+   chapters of five levels, with five waves per level, for 150 new waves.
 2. **Rendering strategy — approved:** realistic pre-rendered 3D sprites on the
    existing top-down Canvas2D board, not a runtime 3D engine or tilted board.
 3. **Future expansion visual families — separately gated:** use the approved
    Phase 6 visual language and generate/approve each family through the asset
    intake process before it ships; do not bulk-generate an expansion roster.
-4. **Campaign isolation — approved:** keep the current campaign and leaderboard
-   frozen; place the thirty levels in a new campaign, ruleset, progress
-   namespace, and leaderboard namespace.
+   The asset, Supabase migration, and Edge Function compatibility/owner-approval
+   gates in Sections 9, 15, and 18 also apply.
+4. **Campaign isolation — approved:** identify each expansion run by campaign
+   and level, never by `sector`; use a new immutable ruleset, replay identity,
+   progress namespace, and isolated leaderboard categories. Preserve `phase4-v1`
+   byte-for-byte and leave `grid-drift`/`gridwatch-match` shared-database
+   behavior unchanged.
 
 ### 4.1 Scope-authority update
 
@@ -139,10 +143,11 @@ scope-authority change is reviewed and merged.
 After that merge, Phase 7 may establish architecture only: exactly 30 standalone
 8x8 expansion levels in six chapters of five, with five waves per level. It must
 identify every expansion run by campaign and level, never by a new `sector`
-value; use a new immutable ruleset, progress namespace, and isolated leaderboard
-categories. `phase4-v1` payloads/categories and the existing
-`grid-drift`/`gridwatch-match` shared-GridWatchGamesDB behavior must remain
-unchanged. Do not add expansion level content in Phase 7.
+value; use a new immutable ruleset, separate replay identity, progress namespace,
+and isolated leaderboard categories. `phase4-v1` behavior must remain
+byte-equivalent, including its replay payloads and score categories, and the
+existing `grid-drift`/`gridwatch-match` shared-GridWatchGamesDB behavior must
+remain unchanged. Do not add expansion-level content in Phase 7.
 
 ## 5. Phase numbering
 
