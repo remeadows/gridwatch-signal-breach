@@ -28,7 +28,11 @@ import {
 } from "./animator";
 import { getBoardBackgroundLayer } from "./background";
 import { type CanvasSize, getBoardMetrics } from "./canvas";
-import { type BoardArtMode, type Phase6BoardSpriteId } from "./assetRegistry";
+import {
+  getPhase6BoardSprite,
+  type BoardArtMode,
+  type Phase6BoardSpriteId,
+} from "./assetRegistry";
 import { drawBoardSprite } from "./drawBoardSprite";
 import { ICONS, type IconName } from "./iconPaths";
 import { drawIcon, getGlowSprite } from "./icons";
@@ -514,7 +518,11 @@ function drawMarkers(
     const phase6Sprite = getPhase6MarkerSpriteId(marker.icon);
     let drewPhase6Sprite = false;
 
-    if (frame.artMode === "phase6" && phase6Sprite) {
+    if (
+      frame.artMode === "phase6" &&
+      phase6Sprite &&
+      getPhase6BoardSprite(phase6Sprite)
+    ) {
       drawUnitContactShadow(context, centerX, centerY, tileSize);
       drewPhase6Sprite = drawBoardSprite(
         context,
@@ -1715,7 +1723,11 @@ function drawTileUnitIcon(
   context.strokeRect(tileLeft, tileTop, tileSize - 14, tileSize - 14);
 
   const phase6Sprite = getPhase6UnitSpriteId(kind);
-  if (frame.artMode === "phase6" && phase6Sprite) {
+  if (
+    frame.artMode === "phase6" &&
+    phase6Sprite &&
+    getPhase6BoardSprite(phase6Sprite)
+  ) {
     drawUnitContactShadow(context, centerX, centerY, tileSize);
     if (
       drawBoardSprite(
