@@ -29,6 +29,11 @@ const WIN_COMMANDS: readonly RecordedCommand[] = [
   skip(109),
 ];
 
+expectEqual(
+  promotionFixture.ruleset,
+  SIM_RULESET_ID,
+  "Promotion replay ruleset drifted.",
+);
 expectEqual(promotionFixture.seed, "phase4-c", "Promotion replay seed drifted.");
 expectEqual(promotionFixture.sector, 1, "Promotion replay sector drifted.");
 expectDeepEqual(

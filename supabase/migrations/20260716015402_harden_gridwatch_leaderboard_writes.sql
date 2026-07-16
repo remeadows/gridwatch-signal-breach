@@ -1,12 +1,8 @@
--- Keep GridWatch Signal Breach's legacy global board scoped to the three
--- historical sector categories, expose a phase4-v1 global selector that pools
--- only that ruleset's sector rows, and return ranks within the same comparable
--- ruleset. The shared RPCs also serve other games, so their behavior remains
--- deliberately unchanged.
---
--- Phase 4 categories are explicit and prefixed. These filters prevent tuned
--- rows, plus existing aggregate, daily/weekly, and clear-marker rows, from
--- leaking into old GridWatch clients that still request p_category = null.
+-- Follow-up for environments where 20260716000516 was already applied.
+-- Give Signal Breach tied scores the same displayed rank and make keep-best
+-- writes atomic. Other games retain deterministic row_number() ordering, and
+-- Grid Drift's separate get_rank RPC receives the identical total ordering so
+-- it continues to match the visible leaderboard exactly.
 create or replace function public.get_leaderboard(
   p_game text,
   p_category text default null
@@ -26,6 +22,7 @@ set search_path = ''
 as $$
   with scoped as (
     select distinct on (s.user_id)
+      s.id,
       s.user_id,
       s.score,
       s.rating,
@@ -64,13 +61,13 @@ as $$
           )
         )
       )
-    order by s.user_id, s.score desc, s.created_at asc
+    order by s.user_id, s.score desc, s.created_at asc, s.id asc
   )
   select
     case
       when p_game = 'gridwatch-signal-breach'
         then rank() over (order by sc.score desc)
-      else row_number() over (order by sc.score desc, sc.created_at asc)
+      else row_number() over (order by sc.score desc, sc.created_at asc, sc.id asc)
     end as rank,
     p.handle,
     sc.score,
@@ -79,23 +76,46 @@ as $$
     sc.created_at
   from scoped sc
   join public.profiles p on p.user_id = sc.user_id
-  order by sc.score desc, sc.created_at asc
+  order by sc.score desc, sc.created_at asc, sc.id asc
   limit 20;
 $$;
 
-revoke all on function public.get_leaderboard(text, text) from public;
+create or replace function public.get_rank(
+  p_game text,
+  p_category text default null
+)
+returns table(
+  rank bigint,
+  total bigint
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  with scoped as (
+    select distinct on (s.user_id)
+      s.id,
+      s.user_id,
+      s.score,
+      s.created_at
+    from public.scores s
+    join public.games g on g.id = s.game_id
+    where g.slug = p_game
+      and (p_category is null or s.category = p_category)
+    order by s.user_id, s.score desc, s.created_at asc, s.id asc
+  ), ranked as (
+    select
+      sc.user_id,
+      row_number() over (order by sc.score desc, sc.created_at asc, sc.id asc) as rank,
+      count(*) over () as total
+    from scoped sc
+  )
+  select r.rank, r.total
+  from ranked r
+  where r.user_id = auth.uid();
+$$;
 
--- Anonymous and authenticated execution is intentional: this is the public,
--- read-only Top 20 leaderboard API. SECURITY DEFINER is required because the
--- scores table has RLS enabled with no direct client policies; the function
--- exposes only its bounded result set and uses an empty search_path.
-grant execute on function public.get_leaderboard(text, text) to anon;
-grant execute on function public.get_leaderboard(text, text) to authenticated;
-grant execute on function public.get_leaderboard(text, text) to service_role;
-
--- Keep the existing shared keep-best behavior, but compute GridWatch's global
--- rank only among comparable sector rows from the same immutable ruleset.
--- Other games and non-sector categories retain the prior all-category rank.
 create or replace function public.record_score(
   p_user_id uuid,
   p_slug text,
@@ -171,11 +191,27 @@ begin
 
   stored_score := v_best;
 
-  select count(*) + 1 into sector_rank
-  from public.scores s
-  where s.game_id = v_game_id
-    and s.category = p_category
-    and s.score > v_best;
+  if p_slug = 'gridwatch-signal-breach' then
+    select count(*) + 1 into sector_rank
+    from public.scores s
+    where s.game_id = v_game_id
+      and s.category = p_category
+      and s.score > v_best;
+  else
+    with ranked as (
+      select
+        s.user_id,
+        row_number() over (
+          order by s.score desc, s.created_at asc, s.id asc
+        ) as position
+      from public.scores s
+      where s.game_id = v_game_id
+        and s.category = p_category
+    )
+    select r.position into sector_rank
+    from ranked r
+    where r.user_id = p_user_id;
+  end if;
 
   if p_slug = 'gridwatch-signal-breach' then
     if p_category in ('sector:1', 'sector:2', 'sector:3') then
@@ -210,7 +246,7 @@ begin
     select count(*) + 1 into global_rank
     from per_user, me
     where per_user.best > me.best;
-  else
+  elsif p_slug = 'gridwatch-signal-breach' then
     with per_user as (
       select s.user_id, max(s.score) as best
       from public.scores s
@@ -225,49 +261,29 @@ begin
     select count(*) + 1 into global_rank
     from per_user, me
     where per_user.best > me.best;
+  else
+    with scoped as (
+      select distinct on (s.user_id)
+        s.id,
+        s.user_id,
+        s.score,
+        s.created_at
+      from public.scores s
+      where s.game_id = v_game_id
+      order by s.user_id, s.score desc, s.created_at asc, s.id asc
+    ), ranked as (
+      select
+        sc.user_id,
+        row_number() over (
+          order by sc.score desc, sc.created_at asc, sc.id asc
+        ) as position
+      from scoped sc
+    )
+    select r.position into global_rank
+    from ranked r
+    where r.user_id = p_user_id;
   end if;
 
   return next;
 end;
 $$;
-
-revoke all on function public.record_score(
-  uuid,
-  text,
-  text,
-  integer,
-  text,
-  jsonb,
-  jsonb,
-  text
-) from public;
-revoke all on function public.record_score(
-  uuid,
-  text,
-  text,
-  integer,
-  text,
-  jsonb,
-  jsonb,
-  text
-) from anon;
-revoke all on function public.record_score(
-  uuid,
-  text,
-  text,
-  integer,
-  text,
-  jsonb,
-  jsonb,
-  text
-) from authenticated;
-grant execute on function public.record_score(
-  uuid,
-  text,
-  text,
-  integer,
-  text,
-  jsonb,
-  jsonb,
-  text
-) to service_role;

@@ -4,6 +4,7 @@ import { SIM_RULESET_ID } from "../src/sim/ruleset";
 import { createGameState } from "../src/sim/state";
 import { tick } from "../src/sim/tick";
 import type { GameState, GridPosition, UnitKind } from "../src/sim/types";
+import { assertWithinTickBudget } from "./simulationLimits";
 
 const FIXED_SEEDS = [
   "phase4-a",
@@ -93,6 +94,39 @@ type RunResult = Readonly<{
   remainingUnits: number;
 }>;
 
+const EXPECTED_PHASE4_RUNS: Readonly<Record<number, readonly RunResult[]>> = {
+  1: [
+    { cleared: true, stoppedAtWave: 5, integrity: 150, bandwidth: 48, neutralized: 24, uptimePercent: 100, score: 514, corruptedTiles: 1, remainingUnits: 10 },
+    { cleared: true, stoppedAtWave: 5, integrity: 113, bandwidth: 49, neutralized: 24, uptimePercent: 74, score: 451, corruptedTiles: 1, remainingUnits: 10 },
+    { cleared: true, stoppedAtWave: 5, integrity: 150, bandwidth: 48, neutralized: 24, uptimePercent: 100, score: 514, corruptedTiles: 1, remainingUnits: 10 },
+    { cleared: true, stoppedAtWave: 5, integrity: 88, bandwidth: 50, neutralized: 24, uptimePercent: 64, score: 417, corruptedTiles: 1, remainingUnits: 10 },
+  ],
+  2: [
+    { cleared: true, stoppedAtWave: 9, integrity: 62, bandwidth: 24, neutralized: 48, uptimePercent: 68, score: 622, corruptedTiles: 3, remainingUnits: 10 },
+    { cleared: true, stoppedAtWave: 9, integrity: 150, bandwidth: 20, neutralized: 46, uptimePercent: 89, score: 709, corruptedTiles: 0, remainingUnits: 13 },
+    { cleared: true, stoppedAtWave: 9, integrity: 150, bandwidth: 17, neutralized: 42, uptimePercent: 84, score: 662, corruptedTiles: 0, remainingUnits: 13 },
+    { cleared: true, stoppedAtWave: 9, integrity: 149, bandwidth: 25, neutralized: 46, uptimePercent: 85, score: 706, corruptedTiles: 0, remainingUnits: 13 },
+  ],
+  3: [
+    { cleared: true, stoppedAtWave: 12, integrity: 150, bandwidth: 46, neutralized: 44, uptimePercent: 100, score: 713, corruptedTiles: 2, remainingUnits: 9 },
+    { cleared: true, stoppedAtWave: 12, integrity: 150, bandwidth: 57, neutralized: 38, uptimePercent: 100, score: 658, corruptedTiles: 1, remainingUnits: 9 },
+    { cleared: true, stoppedAtWave: 12, integrity: 150, bandwidth: 50, neutralized: 46, uptimePercent: 100, score: 735, corruptedTiles: 1, remainingUnits: 9 },
+    { cleared: true, stoppedAtWave: 12, integrity: 150, bandwidth: 43, neutralized: 42, uptimePercent: 100, score: 691, corruptedTiles: 2, remainingUnits: 9 },
+  ],
+};
+
+const FROZEN_RUN_FIELDS: readonly (keyof RunResult)[] = [
+  "cleared",
+  "stoppedAtWave",
+  "integrity",
+  "bandwidth",
+  "neutralized",
+  "uptimePercent",
+  "score",
+  "corruptedTiles",
+  "remainingUnits",
+];
+
 const scenarios: readonly Scenario[] = [
   {
     name: "Legacy v1 baseline",
@@ -151,6 +185,7 @@ function runGuidedSector(
 ): RunResult {
   let state = scenario.configure(createGameState({ seed, sector }));
   let builtWave = -1;
+  let ticks = 0;
 
   while (state.phase !== "won" && state.phase !== "lost") {
     if (state.phase === "prep") {
@@ -175,6 +210,15 @@ function runGuidedSector(
     }
 
     state = tick(state);
+    ticks += 1;
+    assertWithinTickBudget({
+      scope: "campaign",
+      ticks,
+      state,
+      sector,
+      seed,
+      ruleset: scenario.name,
+    });
   }
 
   const score = calculateScore(state);
@@ -323,6 +367,31 @@ function assertPhase4Acceptance(
     throw new Error(
       `${SIM_RULESET_ID} failed the fixed-seed campaign gate: ${losses.length} loss(es).`,
     );
+  }
+
+  for (const entry of phase4) {
+    const expectedRuns = EXPECTED_PHASE4_RUNS[entry.sector];
+    if (!expectedRuns || expectedRuns.length !== entry.runs.length) {
+      throw new Error(
+        `${SIM_RULESET_ID} fixed metrics are missing for sector ${entry.sector}.`,
+      );
+    }
+
+    entry.runs.forEach((run, index) => {
+      const expected = expectedRuns[index];
+      const mismatches = FROZEN_RUN_FIELDS.flatMap((field) =>
+        run[field] === expected[field]
+          ? []
+          : [`${field}: expected ${String(expected[field])}, received ${String(run[field])}`]
+      );
+
+      if (mismatches.length > 0) {
+        throw new Error(
+          `${SIM_RULESET_ID} fixed-seed metrics drifted for sector ${entry.sector}, ` +
+            `seed ${FIXED_SEEDS[index]}: ${mismatches.join("; ")}.`,
+        );
+      }
+    });
   }
 }
 
