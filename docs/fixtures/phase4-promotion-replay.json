@@ -1,0 +1,19 @@
+{
+  "seed": "phase4-c",
+  "sector": 1,
+  "commands": [
+    { "t": 0, "c": { "type": "placeUnit", "unit": "turret", "position": { "x": 1, "y": 3 } } },
+    { "t": 0, "c": { "type": "skipPrep" } },
+    { "t": 5, "c": { "type": "placeUnit", "unit": "firewall", "position": { "x": 6, "y": 4 } } },
+    { "t": 5, "c": { "type": "placeUnit", "unit": "turret", "position": { "x": 5, "y": 4 } } },
+    { "t": 5, "c": { "type": "skipPrep" } },
+    { "t": 32, "c": { "type": "placeUnit", "unit": "turret", "position": { "x": 3, "y": 3 } } },
+    { "t": 32, "c": { "type": "skipPrep" } },
+    { "t": 65, "c": { "type": "placeUnit", "unit": "firewall", "position": { "x": 4, "y": 4 } } },
+    { "t": 65, "c": { "type": "placeUnit", "unit": "turret", "position": { "x": 4, "y": 5 } } },
+    { "t": 65, "c": { "type": "skipPrep" } },
+    { "t": 109, "c": { "type": "placeUnit", "unit": "firewall", "position": { "x": 2, "y": 4 } } },
+    { "t": 109, "c": { "type": "placeUnit", "unit": "turret", "position": { "x": 2, "y": 5 } } },
+    { "t": 109, "c": { "type": "skipPrep" } }
+  ]
+}

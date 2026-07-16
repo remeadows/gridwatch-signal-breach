@@ -4,6 +4,7 @@ import { ReplayError, replayRun } from "../src/sim/replay";
 import { SIM_RULESET_ID } from "../src/sim/ruleset";
 import { createGameState } from "../src/sim/state";
 import { savePendingRun, takePendingRun } from "../src/leaderboard/pendingRun";
+import promotionFixture from "../docs/fixtures/phase4-promotion-replay.json";
 import {
   LEGACY_RULESET_ID,
   ReplayValidationError,
@@ -27,6 +28,14 @@ const WIN_COMMANDS: readonly RecordedCommand[] = [
   place(109, "turret", 2, 5),
   skip(109),
 ];
+
+expectEqual(promotionFixture.seed, "phase4-c", "Promotion replay seed drifted.");
+expectEqual(promotionFixture.sector, 1, "Promotion replay sector drifted.");
+expectDeepEqual(
+  canonicalizeCommands(promotionFixture.commands, 5000),
+  WIN_COMMANDS,
+  "Promotion replay fixture is not canonical.",
+);
 
 const win = replayRun({
   seed: "phase4-c",

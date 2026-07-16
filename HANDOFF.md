@@ -42,6 +42,12 @@
   deployed. The ruleset is now immutable and ready for the controlled
   server-first sequence: migration, backward-compatible Edge Function,
   controlled legacy/current submission checks, then merge the Pages client.
+- A fresh read-only production baseline confirms the project is healthy, the
+  migration is absent, no `phase4-v1:*` rows exist, and the live validator is
+  still legacy-only Edge version 6. The public branch preview receives a `null`
+  CORS origin while localhost remains allowed for the controlled smoke test.
+  `docs/PHASE4_PROMOTION_RUNBOOK.md` records the exact fixture, checks, stop
+  conditions, and non-destructive rollback sequence; it has not been executed.
 - Local verification passes build/tool typecheck/replay/balance/audit, produces
   an idempotent validator bundle, and bundles the Edge Function with Deno/JSR
   imports externalized. The migration applies cleanly to an ephemeral PostgreSQL
