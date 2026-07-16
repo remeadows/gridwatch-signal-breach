@@ -89,7 +89,7 @@ From the clean PR branch:
 ```sh
 git fetch origin --prune
 test "$(git rev-parse HEAD)" = "$(gh pr view 43 --json headRefOid --jq .headRefOid)"
-git status --short
+test -z "$(git status --porcelain)"
 gh pr checks 43
 npm install
 npm run build
@@ -103,7 +103,7 @@ npx esbuild supabase/functions/submit-gridwatch-score/index.ts \
   --bundle --format=esm --platform=neutral --target=es2022 \
   '--external:jsr:*' '--external:https:*' \
   --outfile=/tmp/gridwatch-submit-score.mjs
-git diff --exit-code
+test -z "$(git status --porcelain)"
 ```
 
 Expected: all commands pass, the validator hash matches the frozen value, and
@@ -202,7 +202,7 @@ select label,
          coalesce(rank::text, '') || ':' ||
          coalesce(score::text, '') || ':' ||
          coalesce(created_at::text, ''),
-         '|' order by score desc, created_at
+         '|' order by score desc, created_at, rank
        ), '')) as rank_snapshot
 from rows
 group by label
@@ -246,12 +246,26 @@ and require each post-migration rank to equal one plus the number of returned
 rows with a strictly greater score. If a Signal Breach board has no ties, its
 `rank_snapshot` must also match exactly.
 
-## 3. Apply only the additive migration
+## 3. Apply only missing migrations, in order
 
-Apply the exact contents of
-`20260716000516_isolate_gridwatch_leaderboard_categories.sql` with the approved
-Supabase migration action. Do not paste a modified copy and do not push other
-local migration files.
+Check the production ledger before applying anything:
+
+```sql
+select version, name
+from supabase_migrations.schema_migrations
+where name in (
+  'isolate_gridwatch_leaderboard_categories',
+  'harden_gridwatch_leaderboard_writes'
+)
+order by version;
+```
+
+If `isolate_gridwatch_leaderboard_categories` is absent, apply the exact
+contents of `20260716000516_isolate_gridwatch_leaderboard_categories.sql` with
+the approved Supabase migration action. If ledger version `20260716012745` is
+already present, as it is on the recorded compatibility path, do not reapply
+the original migration; skip directly to the follow-up below. Do not paste a
+modified copy and do not push other local migration files.
 
 Immediately verify:
 
@@ -278,12 +292,13 @@ from public.get_leaderboard(
 );
 ```
 
-Expected before the controlled current submission:
+Expected after the original migration:
 
 - both functions have `search_path=""`;
 - `get_leaderboard`: `anon`, `authenticated`, and `service_role` execute;
 - `record_score`: only `service_role` execute;
-- the `phase4-v1:global` selector is empty, not an error;
+- the `phase4-v1:global` selector succeeds; it is empty before the first current
+  submission and must match the captured baseline on a follow-up window;
 - the pre-change category counts are unchanged.
 
 The Supabase advisor will continue warning that anonymous/authenticated callers
@@ -297,9 +312,11 @@ Stop before Edge deployment if any verification differs.
 
 ### Ready-state review follow-up
 
-If ledger version `20260716012745` is already present, apply the exact contents
-of `20260716015402_harden_gridwatch_leaderboard_writes.sql` next. It makes the
-shared `record_score` keep-best write atomic. Its leaderboard tie-rank change is
+If `harden_gridwatch_leaderboard_writes` is absent from the ledger, apply the
+exact contents of `20260716015402_harden_gridwatch_leaderboard_writes.sql` next.
+If it is already recorded, do not reapply it; verify the live definitions and
+continue with the post-change checks. This migration makes the shared
+`record_score` keep-best write atomic. Its leaderboard tie-rank change is
 explicitly limited to `gridwatch-signal-breach`; Grid Drift and GridWatch Match
 retain their deterministic `row_number()` order so Grid Drift's separate
 `get_rank` RPC remains aligned with its visible board. Both non-Signal RPCs use
