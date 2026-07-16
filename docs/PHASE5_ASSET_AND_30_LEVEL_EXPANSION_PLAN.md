@@ -3,9 +3,9 @@
 Status: Phase 6's full thirteen-family roster is owner-approved and is the
 default board presentation after PR #51; `?art=glyphs` remains the rollback and
 automatic load-failure fallback. The owner approved the `expansion-1` level
-definition below. The required documentation-only scope-authority PR is now in
-review; no expansion code, content, assets, database behavior, or deployment is
-authorized until it merges.
+definition below, and the documentation-only scope authority merged in PR #52.
+Phase 7A may now establish campaign/content abstractions only; it must not add
+expansion level content, assets, database behavior, or deployment.
 
 Date: 2026-07-16
 
