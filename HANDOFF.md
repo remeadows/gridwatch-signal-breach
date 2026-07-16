@@ -1,10 +1,23 @@
 # GridWatch Handoff
 
-## Active Phase 4 Work — 2026-07-16
+## Phase 5 Accepted / Phase 6+ Planning — 2026-07-16
 
-- PR #42 merged the approved balance-and-agency foundation to `main`. Codex is
-  now working on the post-review hardening PR #43 on
-  `codex/pr42-review-fixes`.
+- PR #43 merged the reviewed Phase 4 hardening and shared-database compatibility
+  work to `main` as `43fe0e4fb106d3027e03b90fab90e8a9894db87e`.
+  Cloudflare production deployment `ba311ad0-4f66-4d3a-a187-6c16a6cbe7db`
+  serves that merge.
+- The owner cleared all three sectors, found Sectors 1 and 2 challenging but
+  fair, verified that ICE and Firewalls are useful, and accepted mobile-web
+  playability. Keep Phase 5; the accepted balance is now frozen.
+- The owner authorized the render-only Phase 6B Relay/ICE-turret/Probe vertical
+  slice on `codex/phase5-asset-expansion-plan`, using the selected Reactor-tech
+  realism direction. PR #44 is ready for review; the slice is not yet
+  owner-accepted. It must preserve glyph fallback, stay behind `?art=phase6`,
+  and make no sim, replay, score, database, Edge Function, or deployment change.
+  Merge requires contextual desktop/mobile review and explicit owner acceptance.
+  Full-roster generation remains blocked until that acceptance. The thirty-level
+  expansion is still planning-only until its level semantics and a
+  documentation-only scope-authority update are separately approved and merged.
 - The initial `phase4-v1` ruleset is now frozen locally: opening grants are
   30/42/56 BW for Sectors 1/2/3, Firewall costs 8 BW, and ICE costs 14 BW with
   Manhattan range 2 and 3 damage per tick. Build-phase sales fully refund while
@@ -52,8 +65,8 @@
   authenticated `get_rank` RPC the same score/timestamp/row-ID ordering while
   preserving all signatures and grants. The reviewed SQL is now active as
   migration-ledger version `20260716024816`.
-- The approved server-first promotion and PR #43 backend hardening are complete;
-  the PR merge and final Pages smoke remain. Edge version 8 is active with
+- The approved server-first promotion, PR #43 backend hardening, merge, and
+  final Pages smoke are complete. Edge version 8 is active with
   `verify_jwt=false` and bundle hash
   `002797c7a1351c9eba789ab3827a61c395be51505f6683eb7d5d07477bca400a`.
   The preview CORS origin remains `null`; localhost remains allowed.
@@ -81,15 +94,14 @@
   568×320, and 1440×900 have no document overflow, console warning/error, or
   non-static request. Build and live ICE sales return 14 and 8 BW respectively;
   the constrained landscape dock keeps FULL/PARTIAL legible.
-- PR #42 merged at `ed0cdccd92386852a98091e64d1aec1c96e9a061`. Cloudflare
-  production deployment `d98c8100-fbbb-49bd-af74-1dcd669b21ae` serves that
-  commit. PR #43 contains the ten ready-state fixes plus the shared-database
-  compatibility hardening discovered during follow-up review.
+- PR #42 merged at `ed0cdccd92386852a98091e64d1aec1c96e9a061`; PR #43 then
+  merged its ten ready-state fixes plus the shared-database compatibility
+  hardening discovered during follow-up review.
 - The reported production URL issue was checked independently. The custom
   domain serves HTTP 200, both hashed assets serve HTTP 200 with correct MIME
   types, and the title/briefing flow works in Chromium and WebKit at desktop and
   mobile-web viewports without console or request failures. Cloudflare production
-  is now `main` at `ed0cdcc`; the live bundle contains `phase4-v1`, and its
+  is now `main` at `43fe0e4`; the live bundle contains `phase4-v1`, and its
   public leaderboard returns `Russ` at 514.
 - A substantive CodeRabbit CLI review of the initial full branch found no
   critical or warning issues. The ready-state PR #42 review later found ten
@@ -97,7 +109,8 @@
   review found three further compatibility/documentation issues; all are fixed
   and pass the PostgreSQL 16 rank/concurrency harness. PR #43's refreshed CI,
   CodeQL, CodeRabbit, and Pages checks are green with no unresolved review
-  threads.
+  threads. PR #43 is merged and the owner acceptance above closes the pending
+  Phase 5 playability gate.
 
 ## Completed Phase 3 — 2026-07-15
 
@@ -218,6 +231,9 @@
 - V2 Phase 2 is merged: firewall blocker/chew behavior and core contact damage.
 - V2 Phase 3 is merged: sector campaign navigation, void maps, sector unlocks, HUD briefing pause, and sector-specific tools.
 - V2 Phase 4 is on `main`: scrubber cleansing, overclock combat links, Hunter/Splitter/Goliath enemy behaviors, scripted spawns, final W6-W12 tuning, new icons/audio/briefing intel, and taunts.
+- Phase 5 is owner-accepted on desktop and mobile web. Its three-sector,
+  twelve-wave `phase4-v1` simulation, replay validator, and score categories are
+  the frozen production baseline.
 - The working game URL in preview is `http://127.0.0.1:4173/` when `npm run preview` is running.
 
 ## Verification To Re-run
@@ -270,22 +286,25 @@ Note: the previous "zero network / no `import.meta.env`" invariant no longer hol
 - The only sanctioned runtime dependency is `@supabase/supabase-js` for the optional leaderboard. Dev dependencies are Vite, TypeScript, and esbuild (esbuild only bundles the leaderboard validator via `npm run build:validator`).
 - Keep gameplay tuning in `src/data/` where practical. Score weights currently live in `src/sim/scoring.ts`.
 - The leaderboard is the one sanctioned network feature. `src/sim` must stay pure and deterministic (no `Math.random`/`Date.now`) — the server-side anti-cheat replays it verbatim. After any `src/sim` change, run `npm run build:validator` and commit the regenerated `supabase/functions/submit-gridwatch-score/sim.bundle.js`, then redeploy the Edge Function.
-- Do not add manual path drawing, sectors beyond the existing three, or waves beyond the existing twelve unless the product scope changes again.
+- Do not add manual path drawing, sectors beyond the existing three, or waves
+  beyond the existing twelve under the current repository scope. The proposed
+  thirty-level expansion remains planning-only until the owner approves its
+  level semantics and a documentation-only scope-authority update amends
+  `AGENTS.md`, `CONTEXT.md`, and this handoff.
 
 ## Good Next Checks
 
-- Merge PR #43 after the production-evidence update passes refreshed
-  CI/CodeQL/CodeRabbit/Pages checks, then smoke the resulting production Pages
-  deployment and recheck the three-game leaderboard hashes.
-- On the post-merge production site, run ten consecutive intended placements in
-  mobile Safari and mobile Chrome web browsers, in portrait and landscape.
-  Confirm backgrounding and rotation pause without advancing an unseen wave,
-  reduced-motion behavior, and sustained frame pacing during the busiest
-  visible wave. No native mobile app build is in scope.
-- Run owner and real-device playtests across W1-W12 and record completion rate,
-  first-failure wave, unused bandwidth, and most-used tools. Any later tuning
-  change must receive a new immutable ruleset and repeat the server-first path.
-- Do not start the old Phase 5 projection work before Phase 2 clarity is validated;
-  re-evaluate 2.5D depth only after the game is legible and controllable.
-- Playtest W1-W12 after any tuning change and confirm W1 is forgiving, sector 2 introduces hunter/splitter plus scrubber pressure cleanly, and sector 3's overclock tool has visible value against the scripted goliath.
-- After a Cloudflare Pages deploy, confirm `https://GridWatch-SignalBreach.warsignallabs.net` loads and does not show a blank canvas (root-relative `/assets/...` paths must resolve).
+- Review PR #44 with both `?art=phase6` and `?art=glyphs` at desktop and mobile
+  viewports. Confirm that Relay, ICE turret, and Probe remain identifiable,
+  tactical state stays readable, and glyph fallback works.
+- Record explicit owner acceptance before merging PR #44 or changing any
+  `ownerApproved` manifest flag. Keep the slice opt-in after merge.
+- Keep the full roster blocked until the accepted vertical slice has contextual,
+  mobile, and performance evidence. Keep the thirty-level expansion blocked
+  until its level semantics and documentation-only scope-authority update are
+  separately approved and merged.
+- Keep every GitHub push behind both Codex and CodeRabbit review.
+- After any future Cloudflare Pages deploy, confirm
+  `https://GridWatch-SignalBreach.warsignallabs.net` loads, hashed root-relative
+  assets resolve, offline mode stays playable, and current `phase4-v1` replay
+  and leaderboard behavior remain unchanged.

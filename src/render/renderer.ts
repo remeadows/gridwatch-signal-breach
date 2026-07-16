@@ -28,6 +28,8 @@ import {
 } from "./animator";
 import { getBoardBackgroundLayer } from "./background";
 import { type CanvasSize, getBoardMetrics } from "./canvas";
+import { type BoardArtMode, type Phase6BoardSpriteId } from "./assetRegistry";
+import { drawBoardSprite } from "./drawBoardSprite";
 import { ICONS, type IconName } from "./iconPaths";
 import { drawIcon, getGlowSprite } from "./icons";
 import type { EffectsQuality } from "./visualTheme";
@@ -43,6 +45,7 @@ export type RenderFrame = {
   buildMode: boolean;
   reducedMotion: boolean;
   effectsQuality: EffectsQuality;
+  artMode: BoardArtMode;
 };
 
 const DEFAULT_RENDER_FRAME: RenderFrame = {
@@ -56,6 +59,7 @@ const DEFAULT_RENDER_FRAME: RenderFrame = {
   buildMode: false,
   reducedMotion: false,
   effectsQuality: "high",
+  artMode: "glyphs",
 };
 
 export function drawGrid(
@@ -339,7 +343,7 @@ function drawTiles(
         );
       }
 
-      drawTileUnitIcon(context, originX, originY, tileSize, position, kind);
+      drawTileUnitIcon(context, originX, originY, tileSize, position, kind, frame);
       drawUnitHpPips(context, originX, originY, tileSize, state, position, kind, tile.hp);
     }
   }
@@ -1423,17 +1427,31 @@ function drawIntrusions(
       });
     }
 
-    drawIcon(
-      context,
-      iconName,
-      x,
-      y + bob,
-      tileSize * getEnemyIconScale(intrusion.kind) * breath,
-      {
-        glow: true,
-        rotation: intrusion.kind === "probe" ? movementAngle : 0,
-      },
-    );
+    const phase6Probe =
+      frame.artMode === "phase6" &&
+      intrusion.kind === "probe" &&
+      drawBoardSprite(
+        context,
+        "probe",
+        x,
+        y + bob,
+        tileSize * 0.82 * breath,
+        movementAngle,
+      );
+
+    if (!phase6Probe) {
+      drawIcon(
+        context,
+        iconName,
+        x,
+        y + bob,
+        tileSize * getEnemyIconScale(intrusion.kind) * breath,
+        {
+          glow: true,
+          rotation: intrusion.kind === "probe" ? movementAngle : 0,
+        },
+      );
+    }
 
     const hpRatio = intrusion.hp / intrusion.maxHp;
     drawHpBar(context, x, y + radius + 5, radius * 2, hpRatio);
@@ -1663,6 +1681,7 @@ function drawTileUnitIcon(
   tileSize: number,
   position: GridPosition,
   kind: TileKind,
+  frame: RenderFrame,
 ): void {
   const iconName = getTileIconName(kind);
 
@@ -1672,18 +1691,84 @@ function drawTileUnitIcon(
 
   const centerX = originX + position.x * tileSize + tileSize / 2;
   const centerY = originY + position.y * tileSize + tileSize / 2;
-  const sprite = getGlowSprite(iconName, tileSize * 0.55);
   const tileLeft = originX + position.x * tileSize + 7;
   const tileTop = originY + position.y * tileSize + 7;
 
   context.strokeStyle = ICONS[iconName].accent;
   context.lineWidth = 1;
   context.strokeRect(tileLeft, tileTop, tileSize - 14, tileSize - 14);
+
+  const phase6Sprite = getPhase6UnitSpriteId(kind);
+  if (frame.artMode === "phase6" && phase6Sprite) {
+    drawUnitContactShadow(context, centerX, centerY, tileSize);
+    if (
+      drawBoardSprite(
+        context,
+        phase6Sprite,
+        centerX,
+        centerY,
+        tileSize * getPhase6UnitDrawSize(phase6Sprite),
+      )
+    ) {
+      return;
+    }
+  }
+
+  const sprite = getGlowSprite(iconName, tileSize * 0.55);
   context.drawImage(
     sprite,
     centerX - sprite.width / 2,
     centerY - sprite.height / 2,
   );
+}
+
+function drawUnitContactShadow(
+  context: CanvasRenderingContext2D,
+  centerX: number,
+  centerY: number,
+  tileSize: number,
+): void {
+  context.save();
+  context.fillStyle = "rgba(0, 0, 0, 0.34)";
+  context.beginPath();
+  context.ellipse(
+    centerX + tileSize * 0.035,
+    centerY + tileSize * 0.24,
+    tileSize * 0.27,
+    tileSize * 0.1,
+    0,
+    0,
+    Math.PI * 2,
+  );
+  context.fill();
+  context.restore();
+}
+
+function getPhase6UnitSpriteId(kind: TileKind): Phase6BoardSpriteId | null {
+  switch (kind) {
+    case "relay":
+      return "relay";
+    case "turret":
+      return "turret";
+    case "firewall":
+    case "scrubber":
+    case "overclock":
+    case "empty":
+    case "void":
+    case "corrupted":
+      return null;
+  }
+}
+
+function getPhase6UnitDrawSize(id: Phase6BoardSpriteId): number {
+  switch (id) {
+    case "relay":
+      return 0.84;
+    case "turret":
+      return 0.88;
+    case "probe":
+      return 0.82;
+  }
 }
 
 function drawUnitHpPips(

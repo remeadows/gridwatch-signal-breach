@@ -2,6 +2,7 @@ import "./style.css";
 import { SECTORS } from "./data/levels";
 import { installPointerInput } from "./input/pointer";
 import { drawAmbientBackdrop, drawGrid } from "./render/renderer";
+import { getBoardArtMode, preloadPhase6BoardSprites } from "./render/assetRegistry";
 import { getEffectsQuality } from "./render/visualTheme";
 import { applyCommand, createGameState, SIM_RULESET_ID, tick } from "./sim";
 import { createAudioEngine } from "./ui/audio";
@@ -52,10 +53,15 @@ const screenContainer = screenRoot;
 const audio = createAudioEngine();
 const MAX_SECTOR_ID = SECTORS.length;
 const effectsQuality = getEffectsQuality();
+const boardArtMode = getBoardArtMode();
 const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 let reducedMotion = reducedMotionQuery.matches;
 
 document.documentElement.dataset.effectsQuality = effectsQuality;
+document.documentElement.dataset.artMode = boardArtMode;
+if (boardArtMode === "phase6") {
+  preloadPhase6BoardSprites();
+}
 reducedMotionQuery.addEventListener("change", (event) => {
   reducedMotion = event.matches;
 });
@@ -398,6 +404,7 @@ function drawFrame(now: number): void {
       buildMode: state.phase === "prep" && !runStarted,
       reducedMotion,
       effectsQuality,
+      artMode: boardArtMode,
     });
     hudContainer.hidden = false;
     unitPickerContainer.hidden = false;
@@ -463,6 +470,7 @@ function drawFrame(now: number): void {
         buildMode: false,
         reducedMotion,
         effectsQuality,
+        artMode: boardArtMode,
       });
     } else {
       drawAmbientBackdrop(
