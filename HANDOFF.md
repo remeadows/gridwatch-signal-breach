@@ -51,9 +51,10 @@
   non-static request. Build and live ICE sales return 14 and 8 BW respectively;
   the constrained landscape dock keeps FULL/PARTIAL legible.
 - Draft PR #42 is open at
-  `https://github.com/remeadows/gridwatch-signal-breach/pull/42`. Its earlier
-  compatibility commit passed CI, CodeQL, CodeRabbit, and Cloudflare Pages; the
-  frozen tuning commit must receive a fresh green run before promotion.
+  `https://github.com/remeadows/gridwatch-signal-breach/pull/42`. The frozen
+  implementation at `ff527cc` passed CI, CodeQL, CodeRabbit, and Cloudflare
+  Pages. The PR remains draft pending the explicitly approved server-first
+  promotion and controlled replay checks.
 
 ## Completed Phase 3 — 2026-07-15
 
