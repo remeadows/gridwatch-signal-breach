@@ -12,7 +12,32 @@ with no backend, no accounts, and no network traffic. Outside the leaderboard,
 keep it static: no other backends, API calls, secrets, runtime dependencies, or
 multiplayer. The core simulation stays pure and deterministic.
 
-The current V2 product scope is a three-sector campaign with twelve total waves. Do not add sectors beyond the existing three, and do not add waves beyond the existing twelve-wave campaign.
+The current V2 product scope is a three-sector campaign with twelve total waves.
+Keep that campaign immutable: do not add sectors or waves to it, and do not
+renumber or reinterpret its sectors, waves, progress, scores, or replay
+payloads.
+
+## Approved Expansion Scope
+
+The owner has additionally authorized exactly one separate `expansion-1`
+campaign. It contains 30 standalone 8x8 levels arranged as six chapters of five
+levels, with five authored waves per level (150 expansion waves total). Each
+level has fresh fixed starting conditions; units, bandwidth, damage, and stat
+upgrades do not persist between levels. The original V2 campaign remains three
+sectors and twelve waves.
+
+Expansion work must use a new immutable replay ruleset, campaign/level identity,
+progress namespace, and isolated leaderboard categories. It must never overload
+the existing `sector` identity, reuse `phase4-v1` score categories, rewrite or
+delete historical leaderboard rows, or change behavior for `grid-drift` or
+`gridwatch-match` in the shared GridWatchGamesDB.
+
+Implement the expansion in reviewed batches: architecture first, then one
+five-level chapter at a time. Do not put all 30 levels in one branch or pull
+request. This authorization does not approve expansion asset families, new
+mechanics, Supabase migrations, or Edge Function deployment by itself; each
+requires the compatibility and owner-approval gates in
+`docs/PHASE5_ASSET_AND_30_LEVEL_EXPANSION_PLAN.md`.
 
 Use vanilla TypeScript, Vite, and HTML5 Canvas2D only. Do not add React, Phaser, or another game framework.
 

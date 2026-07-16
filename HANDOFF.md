@@ -14,13 +14,22 @@
   Source/Core/Firewall foundation followed in PR #45; Crawler/Spoof/Hunter in
   PR #48 (`18a47bd`); Splitter/Goliath in PR #49 (`988fcf9`); and the final
   Scrubber/Overclock slice in PR #50 (`6a41353`). The owner then approved the
-  complete thirteen-family roster for the default board presentation. The
-  active rollout branch is `codex/phase6-default-art`: it promotes Phase 6 art
-  by default, preserves `?art=glyphs` and automatic per-sprite glyph fallback,
-  and makes no sim, replay, score, database, Edge Function, or deployment
-  change. The thirty-level expansion is still planning-only until its level
-  semantics and a documentation-only scope-authority update are separately
-  approved and merged.
+  complete thirteen-family roster for the default board presentation. PR #51
+  merged that default-art rollout as `8e1284b`: normal loads use Phase 6 art,
+  `?art=glyphs` and automatic per-sprite glyph fallback remain available, and
+  the production custom domain serves the merged resolver and sampled Source,
+  Scrubber, and Goliath assets with HTTP 200. This remained a render-only
+  change with no sim, replay, score, database, Edge Function, or deployment
+  configuration change.
+- The owner approved the separate `expansion-1` definition: 30 standalone 8x8
+  levels, six chapters of five levels, five waves per level (150 expansion
+  waves), fresh fixed starting conditions, and no persistent stat upgrades.
+  The active `codex/expansion-scope-authority` branch is documentation-only. It
+  authorizes isolated campaign/level, replay, progress, and leaderboard
+  identities while freezing the original three-sector/twelve-wave `phase4-v1`
+  campaign. It does not authorize expansion code, content, assets, Supabase
+  migrations, or Edge Function deployment until this scope authority is reviewed
+  and merged.
 - The initial `phase4-v1` ruleset is now frozen locally: opening grants are
   30/42/56 BW for Sectors 1/2/3, Firewall costs 8 BW, and ICE costs 14 BW with
   Manhattan range 2 and 3 damage per tick. Build-phase sales fully refund while
@@ -297,13 +306,12 @@ Note: the previous "zero network / no `import.meta.env`" invariant no longer hol
 
 ## Good Next Checks
 
-- Review the default Phase 6 presentation and forced `?art=glyphs` rollback at
-  desktop and mobile viewports. Confirm every current unit/enemy remains
-  identifiable, tactical state stays readable, and fallback works.
-- Keep glyph fallback through at least one production release after this
-  default-art rollout. Keep the thirty-level expansion blocked until its level
-  semantics and documentation-only scope-authority update are separately
-  approved and merged.
+- Keep glyph fallback through at least one production release after the default
+  Phase 6 rollout. Use `?art=glyphs` for a visual diagnostic or rollback.
+- Review and merge the documentation-only expansion scope authority before any
+  expansion implementation. Then begin Phase 7 campaign/level architecture
+  with existing content only; do not add a fourth current-campaign sector or an
+  expansion level in that first implementation batch.
 - Keep every GitHub push behind both Codex and CodeRabbit review.
 - After any future Cloudflare Pages deploy, confirm
   `https://GridWatch-SignalBreach.warsignallabs.net` loads, hashed root-relative
