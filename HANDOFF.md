@@ -19,7 +19,7 @@
   Scrubber, and Overclock decisions clear the campaign without a universal
   attack that could eclipse placement.
 - `phase4-v1` is exported by the generated simulator bundle. Production Edge
-  Function version 7 keeps omitted/`legacy-v1` submissions on the validator pinned
+  Function version 8 keeps omitted/`legacy-v1` submissions on the validator pinned
   to commit `fa0a5df`, while explicitly versioned submissions use the local
   Phase 4 bundle and prefixed score categories. The tuned client submits the
   explicit ruleset; pending OAuth runs preserve their original ruleset, and old
@@ -50,12 +50,18 @@
   semantics; the other two games retain deterministic `row_number()` ordering.
   The migration gives `get_leaderboard`, `record_score`, and Grid Drift's
   authenticated `get_rank` RPC the same score/timestamp/row-ID ordering while
-  preserving all signatures and grants. The follow-up migration has not yet
-  been promoted.
-- The approved server-first promotion is complete through the replay gate.
-  Edge version 7 is active with `verify_jwt=false` and bundle hash
-  `0460a604158edc6ed0720f5240f37a8990cbe0b806c2ff554c0f6992318f69be`.
+  preserving all signatures and grants. The reviewed SQL is now active as
+  migration-ledger version `20260716024816`.
+- The approved server-first promotion and PR #43 backend hardening are complete;
+  the PR merge and final Pages smoke remain. Edge version 8 is active with
+  `verify_jwt=false` and bundle hash
+  `002797c7a1351c9eba789ab3827a61c395be51505f6683eb7d5d07477bca400a`.
   The preview CORS origin remains `null`; localhost remains allowed.
+- Exact pre/post raw-row and visible-board hashes match for all three shared-DB
+  games. Grid Drift remains at six rows with best 11710, GridWatch Match remains
+  at zero rows, and Signal Breach remains at eleven rows with Phase 4 best 514.
+  No-op keep-best writes for Grid Drift and Signal Breach returned
+  `improved: false`; the shared function signatures and grants are unchanged.
 - Authenticated production checks under the existing `Russ` handle passed:
   legacy returned score 500/rank 1, `phase4-v1` returned score 514/rank 1,
   unsupported `phase4-v2` returned HTTP 400, and a command after terminal state
@@ -89,8 +95,9 @@
   critical or warning issues. The ready-state PR #42 review later found ten
   additional issues, including the shared keep-best race. PR #43's first GitHub
   review found three further compatibility/documentation issues; all are fixed
-  locally and pass the PostgreSQL 16 rank/concurrency harness. A refreshed
-  GitHub review is still required after push.
+  and pass the PostgreSQL 16 rank/concurrency harness. PR #43's refreshed CI,
+  CodeQL, CodeRabbit, and Pages checks are green with no unresolved review
+  threads.
 
 ## Completed Phase 3 — 2026-07-15
 
@@ -267,12 +274,9 @@ Note: the previous "zero network / no `import.meta.env`" invariant no longer hol
 
 ## Good Next Checks
 
-- Push the PR #43 review fixes, require refreshed CI/CodeQL/CodeRabbit/Pages
-  checks, then apply only the reviewed follow-up migration. Require exact raw
-  row hashes and visible content hashes across all three games before and after.
-- Deploy the reviewed Edge follow-up only after the migration passes, verify
-  replay, public leaderboard, logs, and advisors, then merge PR #43 and smoke
-  the resulting production Pages deployment.
+- Merge PR #43 after the production-evidence update passes refreshed
+  CI/CodeQL/CodeRabbit/Pages checks, then smoke the resulting production Pages
+  deployment and recheck the three-game leaderboard hashes.
 - On the post-merge production site, run ten consecutive intended placements in
   mobile Safari and mobile Chrome web browsers, in portrait and landscape.
   Confirm backgrounding and rotation pause without advancing an unseen wave,

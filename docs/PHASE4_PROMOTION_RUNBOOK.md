@@ -1,8 +1,8 @@
 # Phase 4 Server-First Promotion Runbook
 
 Status: the original server-first steps and PR #42 Pages promotion were executed
-2026-07-16. PR #43 is the reviewed shared-RPC/Edge hardening follow-up; its
-production migration and Edge deployment remain pending.
+2026-07-16. PR #43's reviewed shared-RPC migration and Edge hardening are also
+active in production; the PR merge and final Pages smoke remain.
 
 ## Scope and invariants
 
@@ -27,9 +27,11 @@ named migration below.
 | Project | `GridWatchGamesDB` (`mggxfzzxrpjgpzhwiwqi`) |
 | Original migration | `supabase/migrations/20260716000516_isolate_gridwatch_leaderboard_categories.sql` |
 | Follow-up migration | `supabase/migrations/20260716015402_harden_gridwatch_leaderboard_writes.sql` |
-| Applied migration ledger version | `20260716012745` |
+| Original applied migration ledger version | `20260716012745` |
+| Follow-up applied migration ledger version | `20260716024816` |
 | Ruleset | `phase4-v1` |
 | Current validator SHA-256 | `48a3ecf68be9d05e57ccabb2c90e335669a1a1808fbda814ac7ea81a952dafa6` |
+| Active Edge Function | version 8; `002797c7a1351c9eba789ab3827a61c395be51505f6683eb7d5d07477bca400a` |
 | Legacy validator source | pinned commit `fa0a5df7a5bae70068772566913d13e99fe137f0` |
 | Replay fixture | `docs/fixtures/phase4-promotion-replay.json` |
 | Follow-up Edge rollback source | `ed0cdccd92386852a98091e64d1aec1c96e9a061` |
@@ -516,6 +518,35 @@ Server-first window executed by Codex after explicit owner approval on
 - Rollback was not required. PR #42 later merged as `ed0cdcc`; Cloudflare
   production deployment `d98c8100-fbbb-49bd-af74-1dcd669b21ae` and the custom
   domain passed desktop Chromium, mobile Chromium, and mobile WebKit smoke tests.
-- Remaining gates: PR #43 refreshed checks/review, the follow-up migration and
-  Edge verification, PR #43 merge/production smoke, owner W1-W12 playtest, and
-  real-device checks in mobile Safari and mobile Chrome web browsers.
+- Remaining gates: refreshed checks on the production-evidence update, PR #43
+  merge/final production smoke, owner W1-W12 playtest, and real-device checks in
+  mobile Safari and mobile Chrome web browsers.
+
+PR #43 shared-database hardening executed by Codex after explicit owner approval
+on 2026-07-16:
+
+- Frozen PR head: `d8afd228b4bc229c85c0efa680d8a50bbb527f6e`.
+- Follow-up migration artifact:
+  `20260716015402_harden_gridwatch_leaderboard_writes.sql`; Supabase ledger
+  version: `20260716024816`.
+- Exact structured raw-row and ordered visible-board hashes matched before and
+  after for `grid-drift`, `gridwatch-match`, and `gridwatch-signal-breach`.
+  Counts/bests remained 6/11710, 0/none, and 11/514 respectively.
+- No-op keep-best RPC calls for Grid Drift standard 11710 and Signal Breach
+  Phase 4 sector 1 score 514 both returned `improved: false`. Function
+  signatures and grants were unchanged; all three shared functions now have an
+  empty `search_path`.
+- Security and performance advisors gained no new finding. Existing intentional
+  public-read/RLS notices and unrelated project notices remain owner decisions.
+- Edge Function version 8 is active with `verify_jwt=false`, validator SHA-256
+  `48a3ecf68be9d05e57ccabb2c90e335669a1a1808fbda814ac7ea81a952dafa6`,
+  and bundle hash
+  `002797c7a1351c9eba789ab3827a61c395be51505f6683eb7d5d07477bca400a`.
+  Production and localhost CORS probes returned 204 with the expected origins;
+  preview remained `null`. Unauthenticated POST returned 401 and GET returned
+  405; the corresponding v8 logs contain no 5xx.
+- Live desktop/mobile-web browser smokes passed for all three games. Signal
+  Breach returned Phase 4 best 514, Grid Drift returned 11710, and GridWatch
+  Match rendered at desktop and 390px WebKit widths with no console/request
+  failures or horizontal overflow; its unauthenticated score endpoint remained
+  401.
