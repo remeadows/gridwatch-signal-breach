@@ -1,15 +1,15 @@
 # Expansion Chapter 1: Latency Trap Specification
 
-Status: proposed for owner approval. This is a design contract only. It does
-not authorize a simulator change, an authored expansion level, a raster asset,
-a validator deployment, a Supabase migration, or an expansion-client release.
+Status: approved for an isolated deterministic prototype on 2026-07-17. It
+does not authorize an authored expansion level, a raster asset, a validator
+deployment, a Supabase migration, or an expansion-client release.
 
 Date: 2026-07-17
 
-## 1. Decision requested
+## 1. Approved prototype contract
 
-Approve the following first Chapter 1 mechanic for an isolated `expansion-v1`
-prototype:
+The owner approved the following first Chapter 1 mechanic for an isolated
+`expansion-v1` prototype:
 
 | Property | Proposed value |
 | --- | --- |
@@ -267,7 +267,7 @@ whole relevant state/event sequence, not only a final score.
 
 | ID | Test | Required result |
 | --- | --- | --- |
-| LT-01 | Locked, unaffordable, perimeter, special, void, corrupted, occupied, and intrusion-occupied placement | No state mutation or bandwidth loss. |
+| LT-01 | Locked, unaffordable, terminal, out-of-bounds, perimeter, Source, Core, void, corrupted, hardware-occupied, and intrusion-occupied placement | Every named category is rejected with a stable reason; a valid empty interior tile succeeds. |
 | LT-02 | Valid placement and build/live sale | Cost/refunds are exactly 10/10/4; standard sale behavior stays intact. |
 | LT-03 | Route and path comparison against an empty tile | The trap never changes the computed signal route or the shortest movement path. |
 | LT-04 | One entering intrusion | Exactly one charge is consumed, one event is emitted, and next movement is delayed by exactly 3 ticks. |
@@ -277,14 +277,40 @@ whole relevant state/event sequence, not only a final score.
 | LT-08 | Hunter targeting, chew path, and corruption contact | The trap is never targeted, chewed, or corrupted. |
 | LT-09 | ICE fires during the delay | An ICE turret continues normal per-tick damage while an intrusion waits. |
 | LT-10 | Fixed-seed replay twice | Identical terminal state, event sequence, score, tick count, and canonical replay result. |
-| LT-11 | Existing legacy and `phase4-v1` fixture suite | Byte-equivalent outputs, unchanged validator bundle, and no new `sector` interpretation. |
+| LT-11 | Representative frozen legacy/`phase4-v1` replay | The fixed golden loss keeps its terminal tick count and score. |
 
-The prototype must also include a deterministic counter comparison built from a
-small test harness: against the same fixed Rusher-like burst, a legal plan with
-one correctly placed trap must provide a measurable but bounded improvement
-over the same plan without it. The comparison must prove that the trap buys
-time for ICE rather than creating an impassable lane. Exact Chapter 1 waves and
-Rusher production tuning are separate content decisions.
+The prototype must also include this deterministic counter comparison:
+
+- At active tick 10, three Rusher-like intrusions with 6 HP and a one-tick move
+  cadence enter one charged trap tile.
+- One ICE turret deals the current 3 damage per active tick and covers only the
+  trap tile. Combat occurs after movement, as in the current tick order.
+- Without the trap, each intrusion takes one 3-damage shot at tick 10, leaves
+  before tick-11 combat, and all three remain alive at tick 11.
+- With the trap, all three receive exactly a three-tick delay, remain for
+  tick-11 combat, take a second shot, and all three are neutralized by tick 11.
+
+The required measured result is exactly `3/3` neutralized with the trap versus
+`0/3` without it at tick 11. The same test must prove the device is traversable
+and does not increase the shortest path length. Exact Chapter 1 waves and
+Rusher production tuning remain separate content decisions.
+
+### 7.1 Separate artifact and compatibility gates
+
+Do not conflate the pure prototype tests with artifact validation. Before a
+prototype PR ships, run these independently:
+
+```sh
+npm run verify:latency-trap
+npm run verify:replays
+npm run balance:report
+npm run build:validator
+git diff --exit-code -- supabase/functions/submit-gridwatch-score/sim.bundle.js
+```
+
+The final command must be clean. This prototype is intentionally unexported
+from the live simulator entry point, so it must not change the validator bundle
+or the frozen legacy/`phase4-v1` simulation surface.
 
 ## 8. Balance and UX approval gates
 
@@ -310,15 +336,14 @@ work begins.
 
 ## 9. Follow-on sequence
 
-1. Owner approves this mechanic contract or requests changes.
-2. Create one isolated prototype PR containing only the deterministic mechanic,
+1. Create one isolated prototype PR containing only the deterministic mechanic,
    its tests, and compatible expansion-only model plumbing.
-3. Run Codex and CodeRabbit reviews before the push; resolve all Critical and
+2. Run Codex and CodeRabbit reviews before the push; resolve all Critical and
    Warning findings.
-4. Review the counter-positive/counter-negative evidence and mobile/desktop
+3. Review the counter-positive/counter-negative evidence and mobile/desktop
    presentation with the owner.
-5. Separately specify and approve the Rusher, then perform its asset intake.
-6. Only after both mechanics/art gates pass, author Chapter 1's five maps and
+4. Separately specify and approve the Rusher, then perform its asset intake.
+5. Only after both mechanics/art gates pass, author Chapter 1's five maps and
    twenty-five waves in their own reviewed content batch.
 
 No step in this sequence authorizes Chapter 2 work or bulk asset generation.
