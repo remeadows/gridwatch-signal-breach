@@ -16,12 +16,13 @@
 ## Phase 8A - Latency Trap Prototype Complete - 2026-07-17
 
 - PR #57 merged the Chapter 1 Latency Trap specification as `45af349`, and the
-  owner separately approved its mechanic contract. The current task is an
-  isolated deterministic prototype on `codex/phase8-latency-trap-prototype`.
-  The approved contract is 10 BW, three charges, and a three-active-tick delay for
-  each of the first three intrusions entering its traversable tile. It cannot
-  carry signal, block/repath, absorb damage, be chewed/corrupted/targeted, or
-  alter the existing campaign.
+  owner separately approved its mechanic contract. PR #58 subsequently merged
+  the isolated deterministic prototype from
+  `codex/phase8-latency-trap-prototype` as `f8f3646`. The approved contract is
+  10 BW, three charges, and a three-active-tick delay for each of the first
+  three intrusions entering its traversable tile. It cannot carry signal,
+  block/repath, absorb damage, be chewed/corrupted/targeted, or alter the
+  existing campaign.
 - No authored level, wave, raster asset, deployed validator bundle, Edge
   Function, Supabase migration, leaderboard category, feature flag, deployment,
   or GridWatchGamesDB state change is in scope. The prototype must remain
