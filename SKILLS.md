@@ -1,6 +1,6 @@
 # GridWatch Skill Guide
 
-Last reviewed: 2026-07-15
+Last reviewed: 2026-07-16
 
 Use this file to select the right Codex skill and verification path for work in
 GridWatch: Signal Breach. `AGENTS.md` remains the highest-priority project guide.
@@ -68,6 +68,17 @@ In addition to the UI lane:
   sync.
 - Playtest all affected sectors through a win and a loss.
 - Treat leaderboard ruleset/version compatibility as a release blocker.
+
+### Progress or expansion-navigation shell changes
+
+- Run `npm run verify:progress` to cover V1-to-V2 migration, malformed-storage
+  recovery, storage unavailability, and campaign namespace isolation.
+- Run `npm run verify:content` to prove the expansion registry still has no
+  authored playable levels and only the permitted navigation placeholder.
+- Verify the normal title flow with no flag, then use `?expansion-nav=1` only
+  for preview QA. Check the campaign screen, six spoiler-safe chapter cards,
+  and one five-card level screen at 390px and desktop widths. Confirm no
+  horizontal document overflow, console errors, or expansion launch path.
 
 ### Leaderboard or deployment changes
 
