@@ -803,6 +803,12 @@ create meaningful combinations.
 
 ### 13.1 Proposed new weapons
 
+The Phase 8 kickoff records the proposed Latency Trap's exact deterministic
+contract and acceptance gates in
+[`EXPANSION_CHAPTER_01_LATENCY_TRAP_SPEC.md`](EXPANSION_CHAPTER_01_LATENCY_TRAP_SPEC.md).
+It remains a proposal until owner approval; it has not authorized a simulator,
+content, asset, leaderboard, or deployment change.
+
 Names are working names and require owner approval.
 
 | Working name | Function | Strategic role | Non-overlap rule |

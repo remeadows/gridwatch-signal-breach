@@ -1,5 +1,23 @@
 # GridWatch Handoff
 
+## Phase 8 Kickoff - Latency Trap Specification Pending Approval - 2026-07-17
+
+- The current task is a documentation-only Chapter 1 kickoff on
+  `codex/phase8-latency-trap-spec`. It adds a proposed deterministic contract
+  for the Latency Trap: 10 BW, three charges, and a three-active-tick delay for
+  each of the first three intrusions entering its traversable tile. It cannot
+  carry signal, block/repath, absorb damage, be chewed/corrupted/targeted, or
+  alter the existing campaign.
+- This is not owner approval for a new mechanic. No simulator, level, wave,
+  raster asset, validator bundle, Edge Function, Supabase migration, leaderboard
+  category, feature flag, deployment, or GridWatchGamesDB state changes are in
+  scope. The document defines the tests and compatibility gates required before
+  a separately reviewed expansion-only prototype may begin.
+- The authenticated live expansion-rejection smoke remains deferred. It must
+  not be performed by extracting a browser session credential. The deployed
+  no-write boundary, rejected fixtures, unauthenticated HTTP 401 probe, and
+  unchanged three-game database hashes remain the recorded server evidence.
+
 ## Phase 7C Complete — 2026-07-16
 
 - PR #54 merged Phase 7B's reviewed progress migration and disabled navigation
