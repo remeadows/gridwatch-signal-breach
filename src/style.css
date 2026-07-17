@@ -1055,6 +1055,171 @@ body {
   color: rgba(215, 255, 247, 0.42);
 }
 
+.screen-navigation-select {
+  align-items: center;
+  overflow-y: auto;
+}
+
+.navigation-select-panel {
+  width: min(980px, 94vw);
+  max-height: calc(100dvh - 56px);
+  display: grid;
+  gap: 20px;
+  padding: 26px;
+  overflow-y: auto;
+  border: 1px solid rgba(120, 255, 238, 0.38);
+  background:
+    linear-gradient(180deg, rgba(10, 28, 36, 0.94), rgba(5, 12, 18, 0.98)),
+    repeating-linear-gradient(
+      90deg,
+      rgba(120, 255, 238, 0.04),
+      rgba(120, 255, 238, 0.04) 1px,
+      transparent 1px,
+      transparent 16px
+    );
+  box-shadow:
+    0 28px 80px rgba(0, 0, 0, 0.52),
+    0 0 40px rgba(34, 224, 196, 0.1);
+  clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
+}
+
+.navigation-select-header {
+  display: grid;
+  gap: 8px;
+}
+
+.navigation-select-header h2 {
+  margin: 0;
+  color: #e9fffb;
+  font-family: var(--font-display);
+  font-size: 28px;
+  text-transform: uppercase;
+  text-shadow: 0 0 20px rgba(34, 224, 196, 0.3);
+}
+
+.navigation-select-header p {
+  max-width: 680px;
+  margin: 0;
+  color: rgba(215, 255, 247, 0.74);
+  line-height: 1.45;
+}
+
+.navigation-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.navigation-grid-campaigns {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.navigation-grid-chapters {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.navigation-grid-levels {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.navigation-card {
+  position: relative;
+  isolation: isolate;
+  min-height: 220px;
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  padding: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(120, 255, 238, 0.28);
+  background:
+    linear-gradient(180deg, rgba(12, 30, 40, 0.92), rgba(3, 9, 13, 0.86)),
+    rgba(7, 16, 23, 0.96);
+  color: #d7fff7;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 120ms ease;
+}
+
+.navigation-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.6;
+  background:
+    linear-gradient(120deg, transparent 0 48%, rgba(34, 224, 196, 0.12) 49% 50%, transparent 51%),
+    repeating-linear-gradient(0deg, transparent 0 18px, rgba(34, 224, 196, 0.06) 19px);
+}
+
+.navigation-card:hover:not(:disabled) {
+  border-color: rgba(34, 224, 196, 0.72);
+  box-shadow: 0 0 28px rgba(34, 224, 196, 0.12);
+}
+
+.navigation-card:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.navigation-card:disabled {
+  cursor: not-allowed;
+  filter: grayscale(0.78);
+  opacity: 0.56;
+}
+
+.navigation-card-index,
+.navigation-card-meta,
+.navigation-card-status {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.navigation-card-index {
+  color: rgba(215, 255, 247, 0.52);
+}
+
+.navigation-card-title {
+  color: #e9fffb;
+  font-family: var(--font-display);
+  font-size: 20px;
+  line-height: 1.05;
+  text-transform: uppercase;
+  text-shadow: 0 0 16px rgba(34, 224, 196, 0.22);
+}
+
+.navigation-card-name {
+  color: var(--neon-pink);
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.navigation-card-detail {
+  min-height: 4.4em;
+  margin: 0;
+  color: rgba(215, 255, 247, 0.72);
+  line-height: 1.45;
+}
+
+.navigation-card-meta {
+  margin-top: auto;
+  color: rgba(215, 255, 247, 0.64);
+}
+
+.navigation-card-status {
+  width: fit-content;
+  padding: 5px 8px;
+  border: 1px solid currentcolor;
+  color: var(--amber);
+}
+
 .screen-footer {
   margin: 0;
   color: rgba(215, 255, 247, 0.48);
@@ -1710,11 +1875,27 @@ html[data-effects-quality="low"] .screen-title::after {
     padding: 18px;
   }
 
+  .navigation-select-panel {
+    width: min(100%, 520px);
+    max-height: 100dvh;
+    padding: 18px;
+  }
+
   .sector-grid {
     grid-template-columns: 1fr;
   }
 
+  .navigation-grid-campaigns,
+  .navigation-grid-chapters,
+  .navigation-grid-levels {
+    grid-template-columns: 1fr;
+  }
+
   .sector-card {
+    min-height: 0;
+  }
+
+  .navigation-card {
     min-height: 0;
   }
 

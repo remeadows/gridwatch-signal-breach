@@ -1,13 +1,19 @@
 # GridWatch Handoff
 
-## Phase 7A In Progress — 2026-07-16
+## Phase 7B In Progress — 2026-07-16
 
-- PR #52 merged the reviewed documentation-only expansion scope authority as
-  `218d06b`. Work now proceeds on `codex/phase7a-campaign-abstraction` with
-  campaign definitions and adapters only. This batch must not change the live
-  state/replay path, add a fourth V2 sector or any expansion level, alter
-  `phase4-v1` metrics or the validator bundle, touch GridWatchGamesDB, or
-  deploy an Edge Function.
+- PR #53 merged Phase 7A's reviewed campaign/content abstraction as `4411fc0`.
+  It retains the original V2 sector data by reference and leaves `expansion-1`
+  with zero authored, playable levels.
+- Work now proceeds on `codex/phase7b-progress-navigation`. This batch adds a
+  versioned `gridwatch.progress.v2` root that migrates and preserves
+  `gridwatch.campaign.v1`, plus campaign/chapter/level navigation behind the
+  disabled-by-default `?expansion-nav=1` QA flag. The shell must display only
+  six chapter slots and one disabled non-playable placeholder; it cannot create
+  an expansion game state, replay, score, or leaderboard submission.
+- Phase 7B must not alter the live state/replay path, add a fourth V2 sector or
+  any authored expansion level, alter `phase4-v1` metrics or the validator
+  bundle, touch GridWatchGamesDB, or deploy an Edge Function.
 
 ## Phase 5 Accepted / Phase 6+ Planning — 2026-07-16
 

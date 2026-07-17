@@ -2,7 +2,10 @@ import {
   CAMPAIGNS,
   EXPANSION_CAMPAIGN,
   EXPANSION_LEVELS,
+  EXPANSION_NAVIGATION_CHAPTERS,
+  EXPANSION_NAVIGATION_PLACEHOLDER_LEVELS,
   getCampaignDefinition,
+  getExpansionNavigationPlaceholderLevel,
   SIGNAL_BREACH_CAMPAIGN,
   SIGNAL_BREACH_SECTOR_ADAPTERS,
 } from "../src/data/campaigns";
@@ -54,8 +57,49 @@ expectEqual(
   EXPANSION_CAMPAIGN,
   "Expansion campaign lookup drifted.",
 );
-expectEqual(EXPANSION_CAMPAIGN.chapters.length, 0, "Phase 7A must not add chapters.");
-expectEqual(EXPANSION_LEVELS.length, 0, "Phase 7A must not add expansion levels.");
+expectEqual(
+  EXPANSION_CAMPAIGN.chapters.length,
+  6,
+  "Expansion navigation must reserve exactly six chapters.",
+);
+expectDeepEqual(
+  EXPANSION_NAVIGATION_CHAPTERS.map((chapter) => chapter.id),
+  [1, 2, 3, 4, 5, 6],
+  "Expansion chapter identity drifted.",
+);
+for (const chapter of EXPANSION_NAVIGATION_CHAPTERS) {
+  expectEqual(
+    chapter.levelIds.length,
+    5,
+    `Chapter ${chapter.id} must expose exactly five navigation slots.`,
+  );
+}
+expectEqual(EXPANSION_LEVELS.length, 0, "Phase 7B must not add authored expansion levels.");
+expectEqual(
+  EXPANSION_NAVIGATION_PLACEHOLDER_LEVELS.length,
+  1,
+  "Phase 7B may add only one non-playable placeholder level.",
+);
+expectDeepEqual(
+  EXPANSION_NAVIGATION_PLACEHOLDER_LEVELS[0],
+  {
+    id: 1,
+    chapterId: 1,
+    codename: "UPLINK PENDING",
+    availability: "not-playable",
+  },
+  "Expansion navigation placeholder drifted.",
+);
+expectEqual(
+  getExpansionNavigationPlaceholderLevel(1)?.availability,
+  "not-playable",
+  "Expansion placeholder must remain non-playable.",
+);
+expectEqual(
+  getExpansionNavigationPlaceholderLevel(2),
+  undefined,
+  "Phase 7B must not add a second placeholder level.",
+);
 expectEqual(
   EXPANSION_CAMPAIGN.contentRevision,
   "unpublished",

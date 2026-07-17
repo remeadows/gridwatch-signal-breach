@@ -2,35 +2,53 @@ import {
   BRIEFING_PAGES,
   type BriefingPage,
 } from "../data/briefing";
+import {
+  CAMPAIGNS,
+  EXPANSION_CAMPAIGN,
+  getExpansionNavigationPlaceholderLevel,
+  type CampaignId,
+  type ChapterDefinition,
+} from "../data/campaigns";
 import { SECTORS } from "../data/levels";
 import { fetchLeaderboard, type LeaderboardEntry } from "../leaderboard/api";
 import { leaderboardConfig } from "../leaderboard/config";
 import type { IconName } from "../render/iconPaths";
 import { createAccountPanel } from "./account";
 import { svgIcon } from "./iconsSvg";
+import {
+  getSignalBreachProgress,
+  type GameProgress,
+  type SignalBreachProgress,
+} from "./progress";
 
 export type AppScreen =
   | "title"
   | "sectorSelect"
+  | "campaignSelect"
+  | "chapterSelect"
+  | "levelSelect"
   | "briefing"
   | "playing"
   | "leaderboard";
 
-export type CampaignProgress = Readonly<{
-  highestUnlockedSector: number;
-  clearedSectors: readonly number[];
-}>;
+export type CampaignProgress = SignalBreachProgress;
 
 export type ScreenOptions = Readonly<{
   root: HTMLElement;
   screen: AppScreen;
-  progress: CampaignProgress;
+  progress: GameProgress;
+  expansionNavigationEnabled: boolean;
+  selectedExpansionChapterId: number;
   briefingMaxSector: number;
   briefingFromPlay: boolean;
   onStart: () => void;
   onBriefingComplete: () => void;
   onShowBriefing: () => void;
   onSelectSector: (sectorId: number) => void;
+  onSelectCampaign: (campaignId: CampaignId) => void;
+  onSelectExpansionChapter: (chapterId: number) => void;
+  onBackToCampaignSelect: () => void;
+  onBackToChapterSelect: () => void;
   onBackToTitle: () => void;
   onShowLeaderboard: () => void;
   onCloseLeaderboard: () => void;
@@ -40,12 +58,6 @@ export type ScreenOptions = Readonly<{
 }>;
 
 const BRIEFING_STORAGE_KEY = "gridwatch.briefingSeen";
-const CAMPAIGN_STORAGE_KEY = "gridwatch.campaign.v1";
-const DEFAULT_PROGRESS: CampaignProgress = {
-  highestUnlockedSector: 1,
-  clearedSectors: [],
-};
-const MAX_SECTOR_ID = SECTORS.length;
 
 let activeScreen: AppScreen | null = null;
 let briefingPanelIndex = 0;
@@ -64,38 +76,6 @@ export function markBriefingSeen(): void {
   } catch {
     // Safari private mode can throw on localStorage writes. The game still runs.
   }
-}
-
-export function loadCampaignProgress(): CampaignProgress {
-  try {
-    const raw = window.localStorage.getItem(CAMPAIGN_STORAGE_KEY);
-
-    if (!raw) {
-      return DEFAULT_PROGRESS;
-    }
-
-    return sanitizeCampaignProgress(JSON.parse(raw) as unknown);
-  } catch {
-    return DEFAULT_PROGRESS;
-  }
-}
-
-export function markSectorCleared(
-  current: CampaignProgress,
-  sectorId: number,
-): CampaignProgress {
-  const sector = clampSectorId(sectorId);
-  const cleared = [...new Set([...current.clearedSectors, sector])].sort((a, b) => a - b);
-  const progress: CampaignProgress = {
-    highestUnlockedSector: Math.min(
-      MAX_SECTOR_ID,
-      Math.max(current.highestUnlockedSector, sector + 1),
-    ),
-    clearedSectors: cleared,
-  };
-
-  saveCampaignProgress(progress);
-  return progress;
 }
 
 export function renderScreens(options: ScreenOptions): void {
@@ -129,6 +109,26 @@ export function renderScreens(options: ScreenOptions): void {
 
   if (screen === "sectorSelect") {
     renderSectorSelectScreen(options);
+    return;
+  }
+
+  if (!options.expansionNavigationEnabled && isExpansionNavigationScreen(screen)) {
+    renderSectorSelectScreen(options);
+    return;
+  }
+
+  if (screen === "campaignSelect") {
+    renderCampaignSelectScreen(options);
+    return;
+  }
+
+  if (screen === "chapterSelect") {
+    renderChapterSelectScreen(options);
+    return;
+  }
+
+  if (screen === "levelSelect") {
+    renderLevelSelectScreen(options);
     return;
   }
 
@@ -197,7 +197,8 @@ function renderTitleScreen(options: ScreenOptions): void {
 }
 
 function renderSectorSelectScreen(options: ScreenOptions): void {
-  const { root, progress, onSelectSector, onBackToTitle } = options;
+  const { root, onSelectSector, onBackToTitle } = options;
+  const progress = getSignalBreachProgress(options.progress);
   const key = `sectorSelect-${progress.highestUnlockedSector}-${progress.clearedSectors.join(".")}`;
 
   if (root.dataset.screenKey === key) {
@@ -278,6 +279,249 @@ function createSectorCard(
 
   button.append(index, title, name, tagline, meta, status);
   return button;
+}
+
+function renderCampaignSelectScreen(options: ScreenOptions): void {
+  const { root, onBackToTitle, onSelectCampaign } = options;
+
+  if (root.dataset.screenKey === "campaignSelect") {
+    return;
+  }
+
+  const screen = document.createElement("section");
+  const panel = document.createElement("article");
+  const header = createNavigationHeader(
+    "CAMPAIGN ROUTER",
+    "Select campaign",
+    "Signal Breach remains the active campaign. Expansion routing is a navigation preview only; no expansion level can launch.",
+  );
+  const grid = document.createElement("div");
+  const backButton = createNavigationButton("BACK", "secondary", onBackToTitle);
+
+  root.innerHTML = "";
+  root.dataset.screenKey = "campaignSelect";
+  screen.className = "screen screen-navigation-select";
+  panel.className = "navigation-select-panel";
+  grid.className = "navigation-grid navigation-grid-campaigns";
+
+  for (const campaign of CAMPAIGNS) {
+    const isExpansion = campaign.id === "expansion-1";
+    const button = createNavigationCard({
+      index: isExpansion ? "EXPANSION 01" : "CURRENT CAMPAIGN",
+      title: isExpansion ? "EXPANSION UPLINK" : "SIGNAL BREACH",
+      name: isExpansion ? "NAVIGATION PREVIEW" : "THREE SECTORS // TWELVE WAVES",
+      detail: isExpansion
+        ? "Chapter and level routing is visible for QA. Expansion levels remain unavailable."
+        : "The frozen V2 campaign continues using its original sector progress and replay identity.",
+      meta: isExpansion ? "NO PLAYABLE LEVELS" : "SECTORS 01–03",
+      status: isExpansion ? "PREVIEW" : "ACTIVE",
+      disabled: false,
+      onSelect: () => onSelectCampaign(campaign.id),
+      testId: `campaign-${campaign.id}`,
+    });
+
+    grid.append(button);
+  }
+
+  screen.append(panel);
+  panel.append(header, grid, backButton);
+  root.append(screen);
+}
+
+function renderChapterSelectScreen(options: ScreenOptions): void {
+  const { root, onBackToCampaignSelect, onSelectExpansionChapter } = options;
+  const expansionProgress = options.progress.campaigns["expansion-1"];
+
+  if (root.dataset.screenKey === `chapterSelect-${expansionProgress.highestUnlockedLevel}`) {
+    return;
+  }
+
+  const screen = document.createElement("section");
+  const panel = document.createElement("article");
+  const header = createNavigationHeader(
+    "EXPANSION ROUTER",
+    "Select chapter",
+    "Six chapter slots are reserved. Only the first is unlocked for navigation QA, and it contains one disabled placeholder card.",
+  );
+  const grid = document.createElement("div");
+  const backButton = createNavigationButton("BACK", "secondary", onBackToCampaignSelect);
+
+  root.innerHTML = "";
+  root.dataset.screenKey = `chapterSelect-${expansionProgress.highestUnlockedLevel}`;
+  screen.className = "screen screen-navigation-select";
+  panel.className = "navigation-select-panel";
+  grid.className = "navigation-grid navigation-grid-chapters";
+
+  for (const chapter of EXPANSION_CAMPAIGN.chapters) {
+    const firstLevelId = chapter.levelIds[0] ?? 1;
+    const isUnlocked = firstLevelId <= expansionProgress.highestUnlockedLevel;
+    const button = createNavigationCard({
+      index: `CHAPTER ${String(chapter.id).padStart(2, "0")}`,
+      title: isUnlocked ? chapter.codename : "ENCRYPTED CHAPTER",
+      name: isUnlocked ? "NAVIGATION PREVIEW" : "SIGNAL LOCKED",
+      detail: isUnlocked
+        ? "Level routing is available for the pending uplink only."
+        : "This chapter stays spoiler-safe until an earlier chapter is cleared.",
+      meta: isUnlocked ? `LEVELS ${formatChapterLevels(chapter)}` : "LEVELS LOCKED",
+      status: isUnlocked ? "PREVIEW" : "LOCKED",
+      disabled: !isUnlocked,
+      onSelect: () => onSelectExpansionChapter(chapter.id),
+      testId: `chapter-${chapter.id}`,
+    });
+
+    grid.append(button);
+  }
+
+  screen.append(panel);
+  panel.append(header, grid, backButton);
+  root.append(screen);
+}
+
+function renderLevelSelectScreen(options: ScreenOptions): void {
+  const { root, selectedExpansionChapterId, onBackToChapterSelect } = options;
+  const chapter = getExpansionNavigationChapter(selectedExpansionChapterId);
+  const key = `levelSelect-${chapter.id}`;
+
+  if (root.dataset.screenKey === key) {
+    return;
+  }
+
+  const screen = document.createElement("section");
+  const panel = document.createElement("article");
+  const header = createNavigationHeader(
+    "EXPANSION ROUTER",
+    `${chapter.codename} // Levels`,
+    "This shell shows five level slots, never the full 30-level catalog. Level 1 is a disabled navigation placeholder, not playable content.",
+  );
+  const grid = document.createElement("div");
+  const backButton = createNavigationButton("BACK", "secondary", onBackToChapterSelect);
+
+  root.innerHTML = "";
+  root.dataset.screenKey = key;
+  screen.className = "screen screen-navigation-select";
+  panel.className = "navigation-select-panel";
+  grid.className = "navigation-grid navigation-grid-levels";
+
+  for (const levelId of chapter.levelIds) {
+    const placeholder = getExpansionNavigationPlaceholderLevel(levelId);
+    const button = createNavigationCard({
+      index: `LEVEL ${String(levelId).padStart(2, "0")}`,
+      title: placeholder?.codename ?? "ENCRYPTED LEVEL",
+      name: placeholder ? "NOT PLAYABLE" : "SIGNAL LOCKED",
+      detail: placeholder
+        ? "This record has no board, tools, waves, replay payload, score, or launch action."
+        : "No authored expansion level is available in this slot.",
+      meta: placeholder ? "CONTENT PENDING" : "CONTENT LOCKED",
+      status: placeholder ? "PENDING" : "LOCKED",
+      disabled: true,
+      onSelect: () => undefined,
+      testId: `level-${levelId}`,
+    });
+
+    grid.append(button);
+  }
+
+  screen.append(panel);
+  panel.append(header, grid, backButton);
+  root.append(screen);
+}
+
+function createNavigationHeader(
+  eyebrowText: string,
+  titleText: string,
+  copyText: string,
+): HTMLElement {
+  const header = document.createElement("div");
+  const eyebrow = document.createElement("span");
+  const title = document.createElement("h2");
+  const copy = document.createElement("p");
+
+  header.className = "navigation-select-header";
+  eyebrow.className = "screen-footer";
+  eyebrow.textContent = eyebrowText;
+  title.textContent = titleText;
+  copy.textContent = copyText;
+  header.append(eyebrow, title, copy);
+  return header;
+}
+
+function createNavigationCard(options: Readonly<{
+  index: string;
+  title: string;
+  name: string;
+  detail: string;
+  meta: string;
+  status: string;
+  disabled: boolean;
+  onSelect: () => void;
+  testId: string;
+}>): HTMLButtonElement {
+  const button = document.createElement("button");
+  const index = document.createElement("span");
+  const title = document.createElement("strong");
+  const name = document.createElement("span");
+  const detail = document.createElement("p");
+  const meta = document.createElement("span");
+  const status = document.createElement("span");
+
+  button.type = "button";
+  button.className = "navigation-card";
+  button.dataset.navigation = options.testId;
+  button.disabled = options.disabled;
+  button.addEventListener("click", options.onSelect);
+  index.className = "navigation-card-index";
+  index.textContent = options.index;
+  title.className = "navigation-card-title";
+  title.textContent = options.title;
+  name.className = "navigation-card-name";
+  name.textContent = options.name;
+  detail.className = "navigation-card-detail";
+  detail.textContent = options.detail;
+  meta.className = "navigation-card-meta";
+  meta.textContent = options.meta;
+  status.className = "navigation-card-status";
+  status.textContent = options.status;
+  button.append(index, title, name, detail, meta, status);
+  return button;
+}
+
+function createNavigationButton(
+  label: string,
+  variant: "primary" | "secondary",
+  onClick: () => void,
+): HTMLButtonElement {
+  const button = document.createElement("button");
+
+  button.type = "button";
+  button.className = `neon-button neon-button-${variant}`;
+  button.textContent = label;
+  button.addEventListener("click", onClick);
+  return button;
+}
+
+function getExpansionNavigationChapter(chapterId: number): ChapterDefinition {
+  return EXPANSION_CAMPAIGN.chapters.find((chapter) => chapter.id === chapterId)
+    ?? EXPANSION_CAMPAIGN.chapters[0]
+    ?? {
+      id: 1,
+      codename: "CHAPTER 01",
+      levelIds: [],
+      visualThemeId: "pending",
+    };
+}
+
+function formatChapterLevels(chapter: ChapterDefinition): string {
+  const firstLevel = chapter.levelIds[0] ?? 0;
+  const lastLevel = chapter.levelIds[chapter.levelIds.length - 1] ?? firstLevel;
+  return `${String(firstLevel).padStart(2, "0")}–${String(lastLevel).padStart(2, "0")}`;
+}
+
+function isExpansionNavigationScreen(screen: AppScreen): boolean {
+  return (
+    screen === "campaignSelect" ||
+    screen === "chapterSelect" ||
+    screen === "levelSelect"
+  );
 }
 
 const LEADERBOARD_FILTERS: readonly { label: string; value: number | null }[] = [
@@ -620,57 +864,4 @@ function createProgressDots(count: number): HTMLElement {
   }
 
   return dots;
-}
-
-function sanitizeCampaignProgress(value: unknown): CampaignProgress {
-  if (!isRecord(value)) {
-    return DEFAULT_PROGRESS;
-  }
-
-  const clearedSource = Array.isArray(value.clearedSectors)
-    ? value.clearedSectors
-    : [];
-  const cleared = [...new Set(
-    clearedSource
-      .filter(isValidStoredSectorId),
-  )].sort((a, b) => a - b);
-  const highestFromCleared = cleared.reduce(
-    (highest, sectorId) => Math.max(highest, Math.min(MAX_SECTOR_ID, sectorId + 1)),
-    DEFAULT_PROGRESS.highestUnlockedSector,
-  );
-
-  return {
-    highestUnlockedSector: Math.max(
-      highestFromCleared,
-      isValidStoredSectorId(value.highestUnlockedSector)
-        ? value.highestUnlockedSector
-        : DEFAULT_PROGRESS.highestUnlockedSector,
-    ),
-    clearedSectors: cleared,
-  };
-}
-
-function saveCampaignProgress(progress: CampaignProgress): void {
-  try {
-    window.localStorage.setItem(CAMPAIGN_STORAGE_KEY, JSON.stringify(progress));
-  } catch {
-    // Persistence is optional. The campaign still runs if storage is unavailable.
-  }
-}
-
-function clampSectorId(value: number): number {
-  return Math.min(MAX_SECTOR_ID, Math.max(1, Math.floor(value)));
-}
-
-function isValidStoredSectorId(value: unknown): value is number {
-  return (
-    typeof value === "number" &&
-    Number.isInteger(value) &&
-    value >= 1 &&
-    value <= MAX_SECTOR_ID
-  );
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
 }

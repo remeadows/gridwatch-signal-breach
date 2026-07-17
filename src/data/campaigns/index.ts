@@ -5,7 +5,11 @@ import type { CampaignDefinition, CampaignId } from "./types";
 export {
   EXPANSION_CAMPAIGN,
   EXPANSION_LEVELS,
+  EXPANSION_NAVIGATION_CHAPTERS,
+  EXPANSION_NAVIGATION_PLACEHOLDER_LEVELS,
   getExpansionLevelDefinition,
+  getExpansionNavigationPlaceholderLevel,
+  type ExpansionNavigationPlaceholderLevel,
 } from "./expansion";
 export {
   getSignalBreachSectorAdapter,

@@ -11,12 +11,17 @@ import { renderOverlay } from "./ui/overlays";
 import { renderPlayUi, type PlayNotice } from "./ui/playUi";
 import {
   hasSeenBriefing,
-  loadCampaignProgress,
-  markSectorCleared,
   renderScreens,
   type AppScreen,
-  type CampaignProgress,
 } from "./ui/screens";
+import {
+  getSignalBreachProgress,
+  loadGameProgress,
+  markSectorCleared,
+  type GameProgress,
+  type SignalBreachProgress,
+} from "./ui/progress";
+import { isExpansionNavigationEnabled } from "./ui/featureFlags";
 import { renderUnitPicker } from "./ui/unitPicker";
 import { getCommandFeedback } from "./ui/toolInfo";
 import { leaderboardConfig } from "./leaderboard/config";
@@ -52,6 +57,7 @@ const playUiContainer = playUiRoot;
 const screenContainer = screenRoot;
 const audio = createAudioEngine();
 const MAX_SECTOR_ID = SECTORS.length;
+const expansionNavigationEnabled = isExpansionNavigationEnabled();
 const effectsQuality = getEffectsQuality();
 const boardArtMode = getBoardArtMode();
 const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -88,8 +94,9 @@ function dispatch(command: SimCommand): void {
   state = applyCommand(state, command);
 }
 
-let progress: CampaignProgress = loadCampaignProgress();
-let currentSector = getInitialSector(progress);
+let progress: GameProgress = loadGameProgress();
+let currentSector = getInitialSector(getSignalBreachProgress(progress));
+let selectedExpansionChapterId = 1;
 document.documentElement.dataset.sector = String(currentSector);
 let currentSeed = "";
 let recordedCommands: RecordedCommand[] = [];
@@ -173,7 +180,10 @@ function enterPlaying(playStartAudio = true): void {
 }
 
 function startSector(sectorId: number): void {
-  currentSector = clampSector(sectorId, progress.highestUnlockedSector);
+  currentSector = clampSector(
+    sectorId,
+    getSignalBreachProgress(progress).highestUnlockedSector,
+  );
   document.documentElement.dataset.sector = String(currentSector);
   state = createRunState();
   selectedTool = getDefaultTool(state);
@@ -245,6 +255,46 @@ function resumeMatch(): void {
 
 function openSectorSelect(): void {
   screen = "sectorSelect";
+  hoverTile = null;
+  inspectedTile = null;
+  audio.playUi("select");
+}
+
+function openCampaignSelect(): void {
+  if (!expansionNavigationEnabled) {
+    openSectorSelect();
+    return;
+  }
+
+  screen = "campaignSelect";
+  hoverTile = null;
+  inspectedTile = null;
+  audio.playUi("select");
+}
+
+function selectCampaign(campaignId: "signal-breach" | "expansion-1"): void {
+  if (campaignId === "signal-breach") {
+    openSectorSelect();
+    return;
+  }
+
+  selectedExpansionChapterId = 1;
+  screen = "chapterSelect";
+  hoverTile = null;
+  inspectedTile = null;
+  audio.playUi("select");
+}
+
+function selectExpansionChapter(chapterId: number): void {
+  selectedExpansionChapterId = Math.min(6, Math.max(1, Math.floor(chapterId)));
+  screen = "levelSelect";
+  hoverTile = null;
+  inspectedTile = null;
+  audio.playUi("select");
+}
+
+function openChapterSelect(): void {
+  screen = "chapterSelect";
   hoverTile = null;
   inspectedTile = null;
   audio.playUi("select");
@@ -493,19 +543,27 @@ function drawFrame(now: number): void {
     root: screenContainer,
     screen,
     progress,
-    briefingMaxSector: progress.highestUnlockedSector,
+    expansionNavigationEnabled,
+    selectedExpansionChapterId,
+    briefingMaxSector: getSignalBreachProgress(progress).highestUnlockedSector,
     briefingFromPlay: screen === "briefing" && briefingReturn === "playing",
     onStart: () => {
       if (hasSeenBriefing()) {
-        openSectorSelect();
+        openCampaignSelect();
         return;
       }
 
-      showBriefing("sectorSelect");
+      showBriefing(expansionNavigationEnabled ? "campaignSelect" : "sectorSelect");
     },
     onBriefingComplete: completeBriefing,
-    onShowBriefing: () => showBriefing("sectorSelect"),
+    onShowBriefing: () => showBriefing(
+      expansionNavigationEnabled ? "campaignSelect" : "sectorSelect",
+    ),
     onSelectSector: startSector,
+    onSelectCampaign: selectCampaign,
+    onSelectExpansionChapter: selectExpansionChapter,
+    onBackToCampaignSelect: openCampaignSelect,
+    onBackToChapterSelect: openChapterSelect,
     onBackToTitle: returnToTitle,
     onShowLeaderboard: openLeaderboard,
     onCloseLeaderboard: closeLeaderboard,
@@ -526,7 +584,7 @@ void initAccount();
 
 requestAnimationFrame(drawFrame);
 
-function getInitialSector(currentProgress: CampaignProgress): number {
+function getInitialSector(currentProgress: SignalBreachProgress): number {
   const requested = Number.parseInt(
     new URLSearchParams(window.location.search).get("sector") ?? "",
     10,
@@ -581,7 +639,10 @@ function getNextSectorHandler(): (() => void) | null {
 
   const nextSector = currentSector + 1;
 
-  if (nextSector > MAX_SECTOR_ID || nextSector > progress.highestUnlockedSector) {
+  if (
+    nextSector > MAX_SECTOR_ID ||
+    nextSector > getSignalBreachProgress(progress).highestUnlockedSector
+  ) {
     return null;
   }
 
