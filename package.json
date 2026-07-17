@@ -12,6 +12,7 @@
     "balance:search": "node scripts/run-typescript.mjs scripts/search-balance.ts",
     "typecheck:tools": "tsc -p tsconfig.tools.json",
     "verify:content": "node scripts/run-typescript.mjs scripts/verify-content.ts",
+    "verify:latency-trap": "node scripts/run-typescript.mjs scripts/verify-latency-trap.ts",
     "verify:progress": "node scripts/run-typescript.mjs scripts/verify-progress.ts",
     "verify:replays": "node scripts/run-typescript.mjs scripts/verify-replays.ts",
     "verify:assets": "node scripts/verify-assets.mjs"
