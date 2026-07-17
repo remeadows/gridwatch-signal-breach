@@ -278,6 +278,7 @@ whole relevant state/event sequence, not only a final score.
 | LT-09 | ICE fires during the delay | An ICE turret continues normal per-tick damage while an intrusion waits. |
 | LT-10 | Fixed-seed replay twice | Identical terminal state, event sequence, score, tick count, and canonical replay result. |
 | LT-11 | Representative frozen legacy/`phase4-v1` replay | The fixed golden loss keeps its terminal tick count and score. |
+| LT-12 | Fixed three-Rusher counter at ticks 10–11 | Three 6-HP, one-tick intrusions are 3/3 neutralized with the trap and 0/3 without it at tick 11; the trap remains traversable and does not increase shortest path length. |
 
 The prototype must also include this deterministic counter comparison:
 

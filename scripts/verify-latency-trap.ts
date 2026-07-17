@@ -1,3 +1,4 @@
+import { UNIT_TUNING } from "../src/data/units";
 import { replayRun } from "../src/sim/replay";
 import {
   applyLatencyTrapEntries,
@@ -11,6 +12,9 @@ import {
 } from "../src/sim/expansion/latencyTrapPrototype";
 
 const POSITION = { x: 3, y: 3 };
+const COUNTER_ENTRY = { x: 2, y: 3 };
+const COUNTER_EXIT = { x: 4, y: 3 };
+const COUNTER_ICE_DAMAGE = UNIT_TUNING.turret.damagePerTick;
 const PLACEMENT = {
   gridSize: 8,
   phase: "prep" as const,
@@ -144,12 +148,24 @@ const counterWithTrap = runCounterScenario(true);
 const counterWithoutTrap = runCounterScenario(false);
 expectDeepEqual(
   counterWithTrap,
-  { delayedTicks: 3, neutralizedByTick11: 3, survivorsAtTick11: 0 },
+  {
+    delayedTicks: 3,
+    hpAfterTick10: [3, 3, 3],
+    positionsAtTick11: [POSITION, POSITION, POSITION],
+    neutralizedByTick11: 3,
+    survivorsAtTick11: 0,
+  },
   "LT-09/LT-12 trapped counter scenario drifted.",
 );
 expectDeepEqual(
   counterWithoutTrap,
-  { delayedTicks: 0, neutralizedByTick11: 0, survivorsAtTick11: 3 },
+  {
+    delayedTicks: 0,
+    hpAfterTick10: [3, 3, 3],
+    positionsAtTick11: [COUNTER_EXIT, COUNTER_EXIT, COUNTER_EXIT],
+    neutralizedByTick11: 0,
+    survivorsAtTick11: 3,
+  },
   "LT-09/LT-12 untrapped counter scenario drifted.",
 );
 
@@ -177,37 +193,91 @@ function enteredIntrusion(id: number): LatencyTrapIntrusion {
   return {
     id,
     position: POSITION,
-    previousPosition: { x: 2, y: 3 },
+    previousPosition: COUNTER_ENTRY,
     lastMoveTick: 10,
     moveEveryTicks: 2,
   };
 }
 
+type CounterIntrusion = LatencyTrapIntrusion & Readonly<{ hp: number }>;
+
 function runCounterScenario(useTrap: boolean): Readonly<{
   delayedTicks: number;
+  hpAfterTick10: readonly number[];
+  positionsAtTick11: readonly Readonly<{ x: number; y: number }>[];
   neutralizedByTick11: number;
   survivorsAtTick11: number;
 }> {
-  const intrusions = [enteredIntrusion(1), enteredIntrusion(2), enteredIntrusion(3)].map(
-    (intrusion) => ({ ...intrusion, moveEveryTicks: 1 }),
-  );
-  const result = useTrap
-    ? applyLatencyTrapEntries({
-        tickCount: 10,
-        traps: [{ position: POSITION, charges: 3 }],
-        intrusions,
-      })
-    : { intrusions, events: [] };
-  const afterTickTenHp = 3;
-  const neutralizedByTick11 = result.intrusions.filter(
-    (intrusion) => getNextEligibleMoveTick(intrusion) > 11 && afterTickTenHp - 3 <= 0,
-  ).length;
+  const started = [1, 2, 3].map((id): CounterIntrusion => ({
+    id,
+    position: COUNTER_ENTRY,
+    previousPosition: COUNTER_ENTRY,
+    lastMoveTick: 9,
+    moveEveryTicks: 1,
+    hp: 6,
+  }));
+  const movedAtTick10 = moveCounterIntrusions(started, 10);
+  const trappedAtTick10 = applyCounterTrap(movedAtTick10, 10, useTrap);
+  const afterTick10Combat = applyCounterIceDamage(trappedAtTick10);
+  const movedAtTick11 = moveCounterIntrusions(afterTick10Combat, 11);
+  const afterTick11Combat = applyCounterIceDamage(movedAtTick11);
 
   return {
-    delayedTicks: useTrap ? LATENCY_TRAP_PROTOTYPE.extraMoveDelayTicks : 0,
-    neutralizedByTick11,
-    survivorsAtTick11: intrusions.length - neutralizedByTick11,
+    delayedTicks:
+      getNextEligibleMoveTick(trappedAtTick10[0]!) - getNextEligibleMoveTick(movedAtTick10[0]!),
+    hpAfterTick10: afterTick10Combat.map((intrusion) => intrusion.hp),
+    positionsAtTick11: movedAtTick11.map((intrusion) => intrusion.position),
+    neutralizedByTick11: afterTick11Combat.filter((intrusion) => intrusion.hp === 0).length,
+    survivorsAtTick11: afterTick11Combat.filter((intrusion) => intrusion.hp > 0).length,
   };
+}
+
+function moveCounterIntrusions(
+  intrusions: readonly CounterIntrusion[],
+  tickCount: number,
+): readonly CounterIntrusion[] {
+  return intrusions.map((intrusion) => {
+    if (intrusion.hp === 0 || getNextEligibleMoveTick(intrusion) > tickCount) {
+      return { ...intrusion, previousPosition: intrusion.position };
+    }
+
+    return {
+      ...intrusion,
+      previousPosition: intrusion.position,
+      position: samePosition(intrusion.position, COUNTER_ENTRY) ? POSITION : COUNTER_EXIT,
+      lastMoveTick: tickCount,
+    };
+  });
+}
+
+function applyCounterTrap(
+  intrusions: readonly CounterIntrusion[],
+  tickCount: number,
+  useTrap: boolean,
+): readonly CounterIntrusion[] {
+  if (!useTrap) {
+    return intrusions;
+  }
+
+  const hpById = new Map(intrusions.map((intrusion) => [intrusion.id, intrusion.hp]));
+  const result = applyLatencyTrapEntries({
+    tickCount,
+    traps: [{ position: POSITION, charges: 3 }],
+    intrusions,
+  });
+
+  return result.intrusions.map((intrusion) => ({
+    ...intrusion,
+    hp: hpById.get(intrusion.id)!,
+  }));
+}
+
+function applyCounterIceDamage(intrusions: readonly CounterIntrusion[]): readonly CounterIntrusion[] {
+  return intrusions.map((intrusion) =>
+    samePosition(intrusion.position, POSITION)
+      ? { ...intrusion, hp: Math.max(0, intrusion.hp - COUNTER_ICE_DAMAGE) }
+      : intrusion,
+  );
 }
 
 function shortestPathLength(withTrap: boolean): number {
@@ -257,6 +327,13 @@ function shortestPathLength(withTrap: boolean): number {
 
 function key(position: Readonly<{ x: number; y: number }>): string {
   return `${position.x},${position.y}`;
+}
+
+function samePosition(
+  left: Readonly<{ x: number; y: number }>,
+  right: Readonly<{ x: number; y: number }>,
+): boolean {
+  return left.x === right.x && left.y === right.y;
 }
 
 function expectEqual<T>(actual: T, expected: T, message: string): void {
