@@ -1,0 +1,10 @@
+{
+  "schema": 2,
+  "ruleset": "expansion-v2",
+  "campaign": "expansion-1",
+  "level": 1,
+  "contentRevision": "expansion-1-r1",
+  "contentHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "seed": "expansion-fixture",
+  "commands": []
+}

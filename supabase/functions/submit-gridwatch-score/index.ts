@@ -21,13 +21,19 @@ import {
   ReplayError as LegacyReplayError,
 } from "https://raw.githubusercontent.com/remeadows/gridwatch-signal-breach/fa0a5df7a5bae70068772566913d13e99fe137f0/supabase/functions/submit-gridwatch-score/sim.bundle.js";
 import {
+  EXPANSION_RULESET_ID,
   ReplayValidationError,
+  assertNoExpansionReplayIdentity,
   canonicalizeCommands,
   categoryForRuleset,
   resolveRuleset,
   type CanonicalCommand,
   type ResolvedRuleset,
 } from "./replayValidation.ts";
+import {
+  assertExpansionContentPublished,
+  canonicalizeExpansionReplay,
+} from "./expansionReplayValidation.ts";
 
 const GAME_SLUG = "gridwatch-signal-breach";
 const MAX_COMMANDS = 5000;
@@ -108,16 +114,33 @@ Deno.serve(async (req: Request) => {
     return json({ ok: false, error: "Your session has expired — sign in again." }, 401, origin);
   }
 
-  let payload: {
-    ruleset?: unknown;
-    seed?: unknown;
-    sector?: unknown;
-    commands?: unknown;
-  };
+  let payload: Record<string, unknown>;
   try {
     payload = await req.json();
   } catch {
     return json({ ok: false, error: "Invalid JSON body." }, 400, origin);
+  }
+
+  if (typeof payload !== "object" || payload === null || Array.isArray(payload)) {
+    return json({ ok: false, error: "Invalid replay payload." }, 400, origin);
+  }
+
+  // Expansion is intentionally server-recognized before any browser client can
+  // submit it. It is schema-validated then rejected before replay/database work
+  // because Phase 7C has no published content registry or simulator bundle.
+  // All non-expansion payloads retain the legacy validation order below.
+  if (payload.ruleset === EXPANSION_RULESET_ID) {
+    try {
+      resolveRuleset(payload.ruleset, SIM_RULESET_ID, [EXPANSION_RULESET_ID]);
+      const expansionReplay = canonicalizeExpansionReplay(payload, MAX_COMMANDS);
+      assertExpansionContentPublished(expansionReplay);
+    } catch (err) {
+      if (err instanceof ReplayValidationError) {
+        const status = err.message === "Expansion content is not published." ? 422 : 400;
+        return json({ ok: false, error: err.message }, status, origin);
+      }
+      return json({ ok: false, error: "Invalid replay payload." }, 400, origin);
+    }
   }
 
   const seed = payload.seed;
@@ -134,6 +157,7 @@ Deno.serve(async (req: Request) => {
   let canonicalCommands: CanonicalCommand[];
   try {
     ruleset = resolveRuleset(payload.ruleset, SIM_RULESET_ID);
+    assertNoExpansionReplayIdentity(payload);
     canonicalCommands = canonicalizeCommands(commands, MAX_COMMANDS);
   } catch (err) {
     if (err instanceof ReplayValidationError) {
