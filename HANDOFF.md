@@ -1,5 +1,14 @@
 # GridWatch Handoff
 
+## Phase 7A In Progress — 2026-07-16
+
+- PR #52 merged the reviewed documentation-only expansion scope authority as
+  `218d06b`. Work now proceeds on `codex/phase7a-campaign-abstraction` with
+  campaign definitions and adapters only. This batch must not change the live
+  state/replay path, add a fourth V2 sector or any expansion level, alter
+  `phase4-v1` metrics or the validator bundle, touch GridWatchGamesDB, or
+  deploy an Edge Function.
+
 ## Phase 5 Accepted / Phase 6+ Planning — 2026-07-16
 
 - PR #43 merged the reviewed Phase 4 hardening and shared-database compatibility
@@ -24,12 +33,11 @@
 - The owner approved the separate `expansion-1` definition: 30 standalone 8x8
   levels, six chapters of five levels, five waves per level (150 expansion
   waves), fresh fixed starting conditions, and no persistent stat upgrades.
-  The active `codex/expansion-scope-authority` branch is documentation-only. It
-  authorizes isolated campaign/level, replay, progress, and leaderboard
-  identities while freezing the original three-sector/twelve-wave `phase4-v1`
-  campaign. It does not authorize expansion code, content, assets, Supabase
-  migrations, or Edge Function deployment until this scope authority is reviewed
-  and merged.
+  PR #52's documentation-only scope authority authorizes isolated
+  campaign/level, replay, progress, and leaderboard identities while freezing
+  the original three-sector/twelve-wave `phase4-v1` campaign. It does not
+  authorize expansion level content, assets, Supabase migrations, or Edge
+  Function deployment by itself.
 - The initial `phase4-v1` ruleset is now frozen locally: opening grants are
   30/42/56 BW for Sectors 1/2/3, Firewall costs 8 BW, and ICE costs 14 BW with
   Manhattan range 2 and 3 damage per tick. Build-phase sales fully refund while

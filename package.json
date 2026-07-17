@@ -11,6 +11,7 @@
     "balance:report": "node scripts/run-typescript.mjs scripts/balance-report.ts",
     "balance:search": "node scripts/run-typescript.mjs scripts/search-balance.ts",
     "typecheck:tools": "tsc -p tsconfig.tools.json",
+    "verify:content": "node scripts/run-typescript.mjs scripts/verify-content.ts",
     "verify:replays": "node scripts/run-typescript.mjs scripts/verify-replays.ts",
     "verify:assets": "node scripts/verify-assets.mjs"
   },
