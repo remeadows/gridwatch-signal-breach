@@ -5,13 +5,26 @@ import { SIM_RULESET_ID } from "../src/sim/ruleset";
 import { createGameState } from "../src/sim/state";
 import { savePendingRun, takePendingRun } from "../src/leaderboard/pendingRun";
 import promotionFixture from "../docs/fixtures/phase4-promotion-replay.json";
+import expansionFixture from "../docs/fixtures/expansion-v1-replay.json";
+import mixedExpansionFixture from "../docs/fixtures/expansion-v1-mixed-schema-replay.json";
+import invalidExpansionLevelFixture from "../docs/fixtures/expansion-v1-invalid-level-replay.json";
+import invalidExpansionCampaignFixture from "../docs/fixtures/expansion-v1-invalid-campaign-replay.json";
+import unsupportedExpansionRulesetFixture from "../docs/fixtures/expansion-v1-unsupported-ruleset-replay.json";
 import {
+  EXPANSION_RULESET_ID,
   LEGACY_RULESET_ID,
   ReplayValidationError,
+  assertNoExpansionReplayIdentity,
   canonicalizeCommands,
   categoryForRuleset,
   resolveRuleset,
 } from "../supabase/functions/submit-gridwatch-score/replayValidation";
+import {
+  EXPANSION_CAMPAIGN_ID,
+  EXPANSION_REPLAY_SCHEMA_VERSION,
+  assertExpansionContentPublished,
+  canonicalizeExpansionReplay,
+} from "../supabase/functions/submit-gridwatch-score/expansionReplayValidation";
 
 const WIN_COMMANDS: readonly RecordedCommand[] = [
   place(0, "turret", 1, 3),
@@ -112,9 +125,15 @@ expectThrows(
 
 const legacy = resolveRuleset(undefined, SIM_RULESET_ID);
 const current = resolveRuleset(SIM_RULESET_ID, SIM_RULESET_ID);
+const expansion = resolveRuleset(EXPANSION_RULESET_ID, SIM_RULESET_ID, [EXPANSION_RULESET_ID]);
 
 expectDeepEqual(legacy, { id: LEGACY_RULESET_ID, legacy: true }, "Legacy ruleset drifted.");
 expectDeepEqual(current, { id: SIM_RULESET_ID, legacy: false }, "Current ruleset drifted.");
+expectDeepEqual(
+  expansion,
+  { id: EXPANSION_RULESET_ID, legacy: false },
+  "Expansion ruleset routing drifted.",
+);
 expectEqual(categoryForRuleset(legacy, "sector:1"), "sector:1", "Legacy category changed.");
 expectEqual(
   categoryForRuleset(current, "sector:1"),
@@ -126,6 +145,62 @@ expectEqual(
   `${SIM_RULESET_ID}:global`,
   "Current global selector is not isolated.",
 );
+expectEqual(
+  categoryForRuleset(expansion, "level:1"),
+  `${EXPANSION_RULESET_ID}:level:1`,
+  "Expansion category is not isolated.",
+);
+
+expectDeepEqual(
+  canonicalizeExpansionReplay(expansionFixture, 5000),
+  {
+    schema: EXPANSION_REPLAY_SCHEMA_VERSION,
+    ruleset: EXPANSION_RULESET_ID,
+    campaign: EXPANSION_CAMPAIGN_ID,
+    level: 1,
+    contentRevision: "expansion-1-r1",
+    contentHash: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    seed: "expansion-fixture",
+    commands: [{ t: 0, c: { type: "skipPrep" } }],
+  },
+  "Expansion replay fixture is not canonical.",
+);
+expectThrows(
+  () => canonicalizeExpansionReplay(mixedExpansionFixture, 5000),
+  (error: unknown) => error instanceof ReplayValidationError && /Mixed replay schema/.test(error.message),
+);
+expectThrows(
+  () => canonicalizeExpansionReplay(invalidExpansionLevelFixture, 5000),
+  (error: unknown) => error instanceof ReplayValidationError && /Invalid expansion level/.test(error.message),
+);
+expectThrows(
+  () => canonicalizeExpansionReplay(invalidExpansionCampaignFixture, 5000),
+  (error: unknown) => error instanceof ReplayValidationError && /Invalid expansion campaign/.test(error.message),
+);
+expectThrows(
+  () => resolveRuleset(unsupportedExpansionRulesetFixture.ruleset, SIM_RULESET_ID, [EXPANSION_RULESET_ID]),
+  (error: unknown) => error instanceof ReplayValidationError && /Unsupported ruleset/.test(error.message),
+);
+expectThrows(
+  () => assertExpansionContentPublished(canonicalizeExpansionReplay(expansionFixture, 5000)),
+  (error: unknown) => error instanceof ReplayValidationError && /not published/.test(error.message),
+);
+expectThrows(
+  () =>
+    assertNoExpansionReplayIdentity({
+      ruleset: SIM_RULESET_ID,
+      seed: "mixed-phase4",
+      sector: 1,
+      schema: EXPANSION_REPLAY_SCHEMA_VERSION,
+  }),
+  (error: unknown) => error instanceof ReplayValidationError && /Mixed replay schema/.test(error.message),
+);
+assertNoExpansionReplayIdentity({
+  ruleset: SIM_RULESET_ID,
+  seed: "phase4-shape",
+  sector: 1,
+  commands: [],
+});
 
 const pendingStorage = new Map<string, string>();
 Object.defineProperty(globalThis, "window", {
@@ -162,7 +237,7 @@ expectEqual(
 expectEqual(takePendingRun(), null, "Pending runs must be consumed exactly once.");
 
 expectThrows(
-  () => resolveRuleset("unknown", SIM_RULESET_ID),
+  () => resolveRuleset("unknown", SIM_RULESET_ID, [EXPANSION_RULESET_ID]),
   (error: unknown) => error instanceof ReplayValidationError,
 );
 

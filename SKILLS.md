@@ -80,6 +80,17 @@ In addition to the UI lane:
   and one five-card level screen at 390px and desktop widths. Confirm no
   horizontal document overflow, console errors, or expansion launch path.
 
+### Expansion replay-boundary changes
+
+- Run `npm run verify:replays` to prove legacy, `phase4-v1`, and all rejected
+  `expansion-v1` fixtures keep their expected routes.
+- Run `npm run build:validator` and confirm `sim.bundle.js` is unchanged unless
+  a reviewed simulator ruleset release intentionally changes it.
+- Use `deno check supabase/functions/submit-gridwatch-score/index.ts` when
+  available. Do not deploy the Edge Function, enable an expansion client, or
+  write to GridWatchGamesDB until the separate server-compatibility gate is
+  approved.
+
 ### Leaderboard or deployment changes
 
 In addition to the applicable lanes:

@@ -1,19 +1,21 @@
 # GridWatch Handoff
 
-## Phase 7B In Progress — 2026-07-16
+## Phase 7C In Progress — 2026-07-16
 
-- PR #53 merged Phase 7A's reviewed campaign/content abstraction as `4411fc0`.
-  It retains the original V2 sector data by reference and leaves `expansion-1`
-  with zero authored, playable levels.
-- Work now proceeds on `codex/phase7b-progress-navigation`. This batch adds a
-  versioned `gridwatch.progress.v2` root that migrates and preserves
-  `gridwatch.campaign.v1`, plus campaign/chapter/level navigation behind the
-  disabled-by-default `?expansion-nav=1` QA flag. The shell must display only
-  six chapter slots and one disabled non-playable placeholder; it cannot create
-  an expansion game state, replay, score, or leaderboard submission.
-- Phase 7B must not alter the live state/replay path, add a fourth V2 sector or
-  any authored expansion level, alter `phase4-v1` metrics or the validator
-  bundle, touch GridWatchGamesDB, or deploy an Edge Function.
+- PR #54 merged Phase 7B's reviewed progress migration and disabled navigation
+  shell as `e66894d`. `gridwatch.progress.v2` preserves the V1 key, while the
+  `?expansion-nav=1` QA shell still exposes only six chapter slots and one
+  disabled placeholder; it cannot create an expansion game state or score.
+- Work now proceeds on `codex/phase7c-replay-boundary`. This batch adds the
+  structurally isolated `expansion-v1` replay schema, rejection fixtures, and
+  Edge validator routing. With no authored content registry or expansion
+  simulator bundle, every structurally valid expansion submission must stop
+  before replay or database access with `Expansion content is not published.`
+- Phase 7C must preserve legacy and `phase4-v1` payload/category behavior,
+  leave the browser feature disabled, add no authored level, migration, or
+  GridWatchGamesDB write, and **must not deploy** the Edge Function. A separate
+  owner-approved server deployment is required before any public expansion
+  client can be enabled.
 
 ## Phase 5 Accepted / Phase 6+ Planning — 2026-07-16
 
