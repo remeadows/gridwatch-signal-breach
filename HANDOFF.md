@@ -1,14 +1,28 @@
 # GridWatch Handoff
 
-## Phase 8A - Latency Trap Prototype In Progress - 2026-07-17
+## Phase 8B - Rusher Approval Specification In Progress - 2026-07-17
+
+- PR #58 merged the isolated Latency Trap deterministic prototype as `f8f3646`.
+  Its two-tick counter executes real movement, trap, and ICE-combat steps and
+  proves `3/3` Rusher-like intrusions neutralized with the trap versus `0/3`
+  without it at tick 11. The prototype remains unexported, and the generated
+  validator bundle remains unchanged.
+- The active task is a documentation-only Rusher approval specification on
+  `codex/phase8-rusher-spec`. It sets a proposed 6-HP, one-active-tick,
+  route-targeting expansion-only Rusher and an asset-intake/compatibility gate.
+  It does not authorize enemy implementation, raster generation, published
+  expansion content, deployment, or a database change.
+
+## Phase 8A - Latency Trap Prototype Complete - 2026-07-17
 
 - PR #57 merged the Chapter 1 Latency Trap specification as `45af349`, and the
-  owner separately approved its mechanic contract. The current task is an
-  isolated deterministic prototype on `codex/phase8-latency-trap-prototype`.
-  The approved contract is 10 BW, three charges, and a three-active-tick delay for
-  each of the first three intrusions entering its traversable tile. It cannot
-  carry signal, block/repath, absorb damage, be chewed/corrupted/targeted, or
-  alter the existing campaign.
+  owner separately approved its mechanic contract. PR #58 subsequently merged
+  the isolated deterministic prototype from
+  `codex/phase8-latency-trap-prototype` as `f8f3646`. The approved contract is
+  10 BW, three charges, and a three-active-tick delay for each of the first
+  three intrusions entering its traversable tile. It cannot carry signal,
+  block/repath, absorb damage, be chewed/corrupted/targeted, or alter the
+  existing campaign.
 - No authored level, wave, raster asset, deployed validator bundle, Edge
   Function, Supabase migration, leaderboard category, feature flag, deployment,
   or GridWatchGamesDB state change is in scope. The prototype must remain
