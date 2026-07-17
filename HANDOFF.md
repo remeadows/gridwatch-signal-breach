@@ -1,21 +1,36 @@
 # GridWatch Handoff
 
-## Phase 7C In Progress — 2026-07-16
+## Phase 7C Complete — 2026-07-16
 
 - PR #54 merged Phase 7B's reviewed progress migration and disabled navigation
   shell as `e66894d`. `gridwatch.progress.v2` preserves the V1 key, while the
   `?expansion-nav=1` QA shell still exposes only six chapter slots and one
   disabled placeholder; it cannot create an expansion game state or score.
-- Work now proceeds on `codex/phase7c-replay-boundary`. This batch adds the
+- PR #55 merged Phase 7C's reviewed replay boundary as `6e0506d`. It adds the
   structurally isolated `expansion-v1` replay schema, rejection fixtures, and
   Edge validator routing. With no authored content registry or expansion
   simulator bundle, every structurally valid expansion submission must stop
   before replay or database access with `Expansion content is not published.`
-- Phase 7C must preserve legacy and `phase4-v1` payload/category behavior,
-  leave the browser feature disabled, add no authored level, migration, or
-  GridWatchGamesDB write, and **must not deploy** the Edge Function. A separate
-  owner-approved server deployment is required before any public expansion
-  client can be enabled.
+- The owner approved the server-first deployment. On 2026-07-16, production
+  `submit-gridwatch-score` was promoted from Edge version 8 to version 9 with
+  `verify_jwt=false` preserved for its existing manual user-token validation.
+  The deployed package hash is
+  `9de1cc7cfc7961b8846c9fb3c5688e437e5bb6b7e1f3c1840ed43177f112589e`;
+  its local frozen simulator bundle remains
+  `48a3ecf68be9d05e57ccabb2c90e335669a1a1808fbda814ac7ea81a952dafa6`.
+- Production CORS still returns `null` for an untrusted preview origin and
+  echoes `http://127.0.0.1:5173`. The deployed source was retrieved and checked
+  for the `expansion-v1` parser plus the no-write published-content guard. The
+  public unauthenticated probe correctly returned HTTP 401; it did not parse or
+  write the supplied expansion body.
+- The before/after shared-database snapshots are identical: Grid Drift remains
+  6 rows (`838df4af9fffb7a6298ff6f47818a8bd`), GridWatch Match remains 0
+  (`d751713988987e9331980363e24189ce`), and Signal Breach remains 15
+  (`5ea868dd8926b9b0089d3a82403d36bd`). No migration or score write occurred.
+- An authenticated live expansion-rejection smoke still needs a deliberately
+  supplied owner session; none was available in this deployment environment.
+  The browser feature stays disabled, and no authored level or public expansion
+  client may be enabled before that smoke succeeds.
 
 ## Phase 5 Accepted / Phase 6+ Planning — 2026-07-16
 

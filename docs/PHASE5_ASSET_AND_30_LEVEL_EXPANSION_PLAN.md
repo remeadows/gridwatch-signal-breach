@@ -4,10 +4,11 @@ Status: Phase 6's full thirteen-family roster is owner-approved and is the
 default board presentation after PR #51; `?art=glyphs` remains the rollback and
 automatic load-failure fallback. The owner approved the `expansion-1` level
 definition below, and the documentation-only scope authority merged in PR #52.
-Phase 7A completed in PR #53 and Phase 7B completed in PR #54. Phase 7C may
-now add only the structurally isolated replay schema and a server-side
-no-write rejection route while no expansion content exists; it must not add
-playable expansion level content, assets, database behavior, or deployment.
+Phase 7A completed in PR #53, Phase 7B in PR #54, and Phase 7C's isolated
+replay boundary in PR #55. The reviewed no-write validator route is active in
+production before any expansion client exists. It must not add playable
+expansion level content, assets, database behavior, or deployment beyond the
+separately approved server promotion recorded in `HANDOFF.md`.
 
 Date: 2026-07-16
 
