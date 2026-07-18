@@ -1,4 +1,3 @@
-import "./style.css";
 import { SECTORS } from "./data/levels";
 import { installPointerInput } from "./input/pointer";
 import { drawAmbientBackdrop, drawGrid } from "./render/renderer";

@@ -4,13 +4,12 @@ import path from "node:path";
 
 const root = process.cwd();
 const manifestPath = path.join(root, "src/assets/board/asset-manifest.json");
-const runtimeDirectory = "src/assets/board/phase6";
 const releaseMode = process.argv.includes("--release");
 const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
 const allowedDirectories = {
-  source: "art/source/phase6",
-  runtime: runtimeDirectory,
-  prompt: "art/prompts/phase6",
+  source: ["art/source/phase6", "art/source/expansion1"],
+  runtime: ["src/assets/board/phase6", "src/assets/board/expansion1"],
+  prompt: ["art/prompts/phase6", "art/prompts/expansion1"],
 };
 
 if (!Array.isArray(manifest.assets) || manifest.assets.length === 0) {
@@ -68,29 +67,33 @@ if (!Number.isInteger(manifest.maxRuntimeBytes) || manifest.maxRuntimeBytes <= 0
 }
 
 if (totalRuntimeBytes > manifest.maxRuntimeBytes) {
-  throw new Error(`Phase 6 runtime asset budget exceeded: ${totalRuntimeBytes} bytes.`);
+  throw new Error(`Board runtime asset budget exceeded: ${totalRuntimeBytes} bytes.`);
 }
 
-const runtimeFiles = await listRuntimeFiles(path.join(root, runtimeDirectory));
-for (const file of runtimeFiles.filter((entry) => /\.(png|webp)$/i.test(entry))) {
-  const relative = normalizePath(path.join(runtimeDirectory, file));
-  if (!trackedRuntimeFiles.has(relative)) {
-    throw new Error(`Runtime asset missing manifest entry: ${relative}`);
+for (const runtimeDirectory of allowedDirectories.runtime) {
+  const runtimeFiles = await listRuntimeFiles(path.join(root, runtimeDirectory));
+  for (const file of runtimeFiles.filter((entry) => /\.(png|webp)$/i.test(entry))) {
+    const relative = normalizePath(path.join(runtimeDirectory, file));
+    if (!trackedRuntimeFiles.has(relative)) {
+      throw new Error(`Runtime asset missing manifest entry: ${relative}`);
+    }
   }
 }
 
 console.log(
-  `Verified ${manifest.assets.length} Phase 6 assets (${totalRuntimeBytes} runtime bytes${releaseMode ? ", release mode" : ""}).`,
+  `Verified ${manifest.assets.length} board assets (${totalRuntimeBytes} runtime bytes${releaseMode ? ", release mode" : ""}).`,
 );
 
-function resolveAllowedPath(relativePath, allowedDirectory) {
+function resolveAllowedPath(relativePath, allowedDirectoryList) {
   if (typeof relativePath !== "string") {
     throw new Error("Asset paths must be strings.");
   }
 
   const normalized = normalizePath(relativePath);
-  const allowed = `${normalizePath(allowedDirectory)}/`;
-  if (!normalized.startsWith(allowed)) {
+  const allowedDirectory = allowedDirectoryList.find((directory) =>
+    normalized.startsWith(`${normalizePath(directory)}/`),
+  );
+  if (!allowedDirectory) {
     throw new Error(`Path is outside its approved directory: ${relativePath}`);
   }
 

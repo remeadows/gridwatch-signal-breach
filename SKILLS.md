@@ -1,6 +1,6 @@
 # GridWatch Skill Guide
 
-Last reviewed: 2026-07-16
+Last reviewed: 2026-07-18
 
 Use this file to select the right Codex skill and verification path for work in
 GridWatch: Signal Breach. `AGENTS.md` remains the highest-priority project guide.
@@ -52,6 +52,16 @@ Its opening static-only description predates the optional leaderboard; use
   version-compatible way with the Edge Function.
 
 ## Verification Lanes
+
+### Local-first batch workflow
+
+For each reviewed implementation batch, finish and verify the complete batch on
+a fixed `http://127.0.0.1:[port]` first. Keep the development server available
+for owner testing on desktop and mobile web. Run deterministic checks, local
+Codex review, and local CodeRabbit review before publication. Do not push a
+partial batch for remote preview; make one final push only after the owner has
+accepted the finished localhost build. This workflow changes publication timing,
+not the existing requirement for GitHub/CodeRabbit/Codex review of every push.
 
 ### UI, input, rendering, copy, or local asset changes
 

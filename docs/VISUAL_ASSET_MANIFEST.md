@@ -1,6 +1,6 @@
 # GridWatch Visual Foundation Manifest
 
-Last reviewed: 2026-07-16
+Last reviewed: 2026-07-18
 
 ## Shipping Policy
 
@@ -26,6 +26,7 @@ source license and crop-safe master have not yet been documented.
 | Combat effects | Project-authored deterministic Canvas2D primitives | Canvas2D | Spawn, hit, kill, corruption, boss, and damage feedback | Per-frame only |
 | Sector key-art fields | Project-authored CSS gradients and geometric motifs | CSS | Sector-select cards | 0 transferred bytes beyond CSS |
 | Phase 6 Source, Core, Relay, Firewall, ICE turret, Scrubber, Overclock, Probe, Crawler, Spoof, Hunter, Splitter, Goliath | OpenAI ImageGen source masters; local chroma-key extraction; prompt/hash manifest | Local PNG/WebP + Canvas2D | Default board presentation (`?art=glyphs` rollback) | 768 KiB runtime cap |
+| Expansion 1 Rusher (owner approved) | OpenAI ImageGen source master; approved Probe/Hunter style references; local chroma-key extraction; prompt/hash manifest | Local PNG + Canvas2D QA preview | Query-gated `?rusher-preview=1` visual intake only; not live gameplay | 90 KiB asset cap; 25,829 bytes actual |
 
 ## Palette and Tactical Semantics
 
@@ -113,3 +114,27 @@ Scrubber and Overclock complete the current thirteen-family base roster. Their
 cleansing and boost telegraphs remain procedural. The owner approved promotion
 of the complete roster to the default board presentation; glyph mode remains an
 explicit rollback and automatic load-failure fallback.
+
+## Phase 8D Rusher Visual Intake
+
+The first Expansion 1 hostile raster is a narrow, low-profile delta interceptor
+generated with the built-in OpenAI ImageGen tool. It uses the approved Probe and
+Hunter only as material, lighting, and camera references; its directional
+silhouette is intentionally distinct from the broad Probe. The source master is
+stored at `art/source/expansion1/gw-expansion1-rusher-master-v1.png`, the exact
+prompt and processing record at
+`art/prompts/expansion1/gw-expansion1-rusher-prompt-v1.md`, and the transparent
+256×256 runtime asset at
+`src/assets/board/expansion1/gw-expansion1-rusher-board-v1.png`.
+
+The asset is visible only in the responsive `?rusher-preview=1` visual-QA lab.
+That page compares it with the existing Probe at an actual 8×8 board scale,
+checks 55/43/32 CSS-pixel legibility, exercises four rotations, and provides a
+reduced-motion toggle. It does not add the Rusher to the live sprite registry,
+simulator, expansion content, replay validator, or leaderboard. Normal game
+loads do not request the lazy preview chunk or Rusher raster.
+
+The owner accepted the localhost desktop/mobile preview on 2026-07-18, so the
+manifest records `ownerApproved: true` and the release asset gate passes. The
+aggregate manifest cap is 1.5 MiB, matching the previously approved full-roster
+ceiling; current runtime assets total 733,029 bytes.
