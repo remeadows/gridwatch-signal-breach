@@ -1,6 +1,6 @@
 {
-  "version": "phase6-v1",
-  "maxRuntimeBytes": 786432,
+  "version": "board-assets-v2",
+  "maxRuntimeBytes": 1572864,
   "assets": [
     {
       "id": "relay",
@@ -282,6 +282,33 @@
       "camera": "orthographic-70deg", "light": "upper-left", "semanticAccent": "power-gold", "ownerApproved": true,
       "sourceSha256": "6becc8459fc4f03b47239d21c7de3d0a6d43864928cb5accacdc83fb5a15a298",
       "runtimeSha256": "92e093986e4cbebea9d480804f5567415e5be38848baad6d2c5ab97dcf6c0ce7"
+    },
+    {
+      "id": "rusher",
+      "version": "expansion1-v1",
+      "role": "intrusion",
+      "source": "art/source/expansion1/gw-expansion1-rusher-master-v1.png",
+      "runtime": "src/assets/board/expansion1/gw-expansion1-rusher-board-v1.png",
+      "prompt": "art/prompts/expansion1/gw-expansion1-rusher-prompt-v1.md",
+      "sourceDimensions": [1254, 1254],
+      "runtimeDimensions": [256, 256],
+      "maxSourceBytes": 2000000,
+      "maxBytes": 90000,
+      "hasAlpha": true,
+      "generator": "OpenAI ImageGen",
+      "generatedAt": "2026-07-18T12:51:05Z",
+      "referenceAssets": [
+        "gw-phase6-probe-master-v1",
+        "gw-phase6-hunter-master-v1",
+        "phase6-reactor-tech-style-frame"
+      ],
+      "promptSha256": "5ee75b7808f279524fb135bcd9a615e8b8f26f00fdb0aa59a57b65721687bbd5",
+      "camera": "orthographic-70deg",
+      "light": "upper-left",
+      "semanticAccent": "hostile-magenta",
+      "ownerApproved": true,
+      "sourceSha256": "d5339124d3cda88799520b1bd366871f163612f6b6a581a02b8d107856a644c4",
+      "runtimeSha256": "46a7a473cbde9db0c1b7c7a135beaae8d1bea2934625033c46096b55ea7e9dc3"
     }
   ]
 }

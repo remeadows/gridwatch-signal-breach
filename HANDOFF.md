@@ -1,13 +1,34 @@
 # GridWatch Handoff
 
-## Phase 8C - Rusher Prototype In Progress - 2026-07-18
+## Phase 8D - Rusher Visual Intake Complete - 2026-07-18
+
+- PR #60 merged the isolated deterministic Rusher prototype to `main` as
+  `8d4f8ca`. Its 6-HP, every-active-tick movement contract remains unexported
+  from the live simulator and changes no current campaign, score, replay,
+  validator, or database behavior.
+- The active local branch is `codex/phase8-rusher-visual`. This batch is limited
+  to a local Rusher raster master/runtime asset, provenance and budget records,
+  a query-gated responsive visual-QA page at `?rusher-preview=1`, and supporting
+  verification. It does not authorize a playable expansion level, live enemy,
+  validator deployment, Supabase migration, leaderboard category, or
+  GridWatchGamesDB change.
+- The owner accepted the generated Rusher in the production-built localhost
+  preview on desktop/mobile layouts on 2026-07-18. It is recorded as
+  `ownerApproved: true` in the asset manifest. Normal loads do not request its
+  lazy preview chunk or raster; `?art=glyphs` remains the production rollback
+  for the current roster.
+- The owner changed the delivery workflow after PR #60: complete and test the
+  whole batch on a fixed `127.0.0.1` preview, run local Codex and CodeRabbit
+  review, and push once only after owner acceptance. Do not use incremental
+  GitHub pushes as the preview loop.
+
+## Phase 8C - Rusher Prototype Complete - 2026-07-18
 
 - PR #59 merged the Rusher approval specification as `0f4f351`, and the owner
-  authorized the next isolated prototype phase on 2026-07-18. The active task
-  is an expansion-only deterministic Rusher prototype on
-  `codex/phase8-rusher-prototype`: 6 HP, one-active-tick movement, normal route
-  targeting, one-damage Firewall chewing, and no special movement or death
-  behavior.
+  authorized the next isolated prototype phase on 2026-07-18. PR #60 then
+  merged the expansion-only deterministic Rusher prototype as `8d4f8ca`: 6 HP,
+  one-active-tick movement, normal route targeting, one-damage Firewall chewing,
+  and no special movement or death behavior.
 - This phase may integrate the already-prototyped Latency Trap timing and
   current 3-damage ICE value inside pure prototype tests. It must remain absent
   from `src/sim/index.ts`; no level, wave, public navigation, raster asset,
