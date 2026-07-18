@@ -1,17 +1,45 @@
 # GridWatch Handoff
 
+## Phase 8E - Latency Trap Visual Intake Complete - 2026-07-18
+
+- PR #61 merged the owner-approved Rusher visual intake to `main` as `2cc06a0`.
+  The reviewed batch is on `codex/phase8-latency-trap-visual` and is
+  limited to a Latency Trap raster master/runtime asset, exact prompt and hash
+  provenance, a query-gated responsive visual-QA page at
+  `?latency-trap-preview=1`, and supporting verification.
+- The generated device is a low-profile traversable timing pad with a recessed
+  central induction ring and exactly three permanent capacitor housings. Its
+  three remaining-charge pips and trigger pulse are procedural Canvas2D state,
+  not baked into the raster. The QA board deliberately separates the hostile
+  traversal lane, Source-to-Core signal route, ICE range, Firewall, and
+  corruption so the contract cannot be mistaken for blocking, signal carrying,
+  attacking, or corruption behavior.
+- The source master is
+  `art/source/expansion1/gw-expansion1-latency-trap-master-v1.png`; the exact
+  generation/processing record is
+  `art/prompts/expansion1/gw-expansion1-latency-trap-prompt-v1.md`; and the
+  transparent runtime asset is
+  `src/assets/board/expansion1/gw-expansion1-latency-trap-board-v1.png`.
+  The owner accepted the production-built localhost preview on 2026-07-18, so
+  the manifest records `ownerApproved: true` and the release asset gate passes.
+- This batch does not publish a playable expansion level, export the prototype
+  into the live simulator, or change the current campaign, replay rulesets,
+  score categories, generated validator, Edge Function, Supabase schema,
+  leaderboard, or any of the three games in GridWatchGamesDB. The local-first
+  batch passed Codex and CodeRabbit review before its single GitHub push.
+
 ## Phase 8D - Rusher Visual Intake Complete - 2026-07-18
 
 - PR #60 merged the isolated deterministic Rusher prototype to `main` as
   `8d4f8ca`. Its 6-HP, every-active-tick movement contract remains unexported
   from the live simulator and changes no current campaign, score, replay,
   validator, or database behavior.
-- The active local branch is `codex/phase8-rusher-visual`. This batch is limited
-  to a local Rusher raster master/runtime asset, provenance and budget records,
-  a query-gated responsive visual-QA page at `?rusher-preview=1`, and supporting
-  verification. It does not authorize a playable expansion level, live enemy,
-  validator deployment, Supabase migration, leaderboard category, or
-  GridWatchGamesDB change.
+- PR #61 merged the Rusher visual intake as `2cc06a0`. That completed batch is
+  limited to a local Rusher raster master/runtime asset, provenance and budget
+  records, a query-gated responsive visual-QA page at `?rusher-preview=1`, and
+  supporting verification. It does not authorize a playable expansion level,
+  live enemy, validator deployment, Supabase migration, leaderboard category,
+  or GridWatchGamesDB change.
 - The owner accepted the generated Rusher in the production-built localhost
   preview on desktop/mobile layouts on 2026-07-18. It is recorded as
   `ownerApproved: true` in the asset manifest. Normal loads do not request its

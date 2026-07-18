@@ -27,6 +27,7 @@ source license and crop-safe master have not yet been documented.
 | Sector key-art fields | Project-authored CSS gradients and geometric motifs | CSS | Sector-select cards | 0 transferred bytes beyond CSS |
 | Phase 6 Source, Core, Relay, Firewall, ICE turret, Scrubber, Overclock, Probe, Crawler, Spoof, Hunter, Splitter, Goliath | OpenAI ImageGen source masters; local chroma-key extraction; prompt/hash manifest | Local PNG/WebP + Canvas2D | Default board presentation (`?art=glyphs` rollback) | 768 KiB runtime cap |
 | Expansion 1 Rusher (owner approved) | OpenAI ImageGen source master; approved Probe/Hunter style references; local chroma-key extraction; prompt/hash manifest | Local PNG + Canvas2D QA preview | Query-gated `?rusher-preview=1` visual intake only; not live gameplay | 90 KiB asset cap; 25,829 bytes actual |
+| Expansion 1 Latency Trap (owner approved) | OpenAI ImageGen source master; approved Firewall/Overclock style references; local chroma-key extraction; prompt/hash manifest | Local PNG + Canvas2D QA preview | Query-gated `?latency-trap-preview=1` visual intake only; not live gameplay | 90 KiB asset cap; 77,820 bytes actual |
 
 ## Palette and Tactical Semantics
 
@@ -137,4 +138,33 @@ loads do not request the lazy preview chunk or Rusher raster.
 The owner accepted the localhost desktop/mobile preview on 2026-07-18, so the
 manifest records `ownerApproved: true` and the release asset gate passes. The
 aggregate manifest cap is 1.5 MiB, matching the previously approved full-roster
-ceiling; current runtime assets total 733,029 bytes.
+ceiling; the Rusher-inclusive runtime total was 733,029 bytes.
+
+## Phase 8E Latency Trap Visual Intake
+
+The first Expansion 1 defensive-mechanic raster is a low-profile octagonal
+timing pad generated with the built-in OpenAI ImageGen tool. The approved
+Firewall and Overclock are material, lighting, construction, and camera
+references only. Its recessed central segmented induction ring and three
+permanent capacitor housings distinguish it from a wall, turret, signal relay,
+or explosive. The source master is stored at
+`art/source/expansion1/gw-expansion1-latency-trap-master-v1.png`, the exact
+prompt and processing record at
+`art/prompts/expansion1/gw-expansion1-latency-trap-prompt-v1.md`, and the
+transparent 256×256 runtime asset at
+`src/assets/board/expansion1/gw-expansion1-latency-trap-board-v1.png`.
+
+The asset is visible only in the responsive `?latency-trap-preview=1` visual-QA
+lab. Its 8×8 board keeps the magenta hostile traversal lane separate from the
+cyan Source-to-Core signal route, and places the Firewall, ICE range, and
+corruption on distinct cells. Three, two, and one remaining-charge states are drawn
+procedurally at 55/43/32 CSS pixels, as is the trigger pulse. The preview also
+supports reduced motion and BFCache restoration. It does not add the Latency
+Trap to the live sprite registry or simulator, publish expansion content,
+change a replay validator, or touch the leaderboard/database. Normal game loads
+do not request the lazy preview chunk or Latency Trap raster.
+
+The owner accepted the production-built localhost desktop/mobile preview on
+2026-07-18, so the machine-readable manifest records `ownerApproved: true` and
+`npm run verify:assets -- --release` passes. The aggregate runtime total is now
+810,849 bytes, below the existing 1.5 MiB full-roster ceiling.
