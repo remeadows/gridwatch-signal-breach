@@ -58,15 +58,22 @@ export type LatencyTrapTriggeredEvent = Readonly<{
   extraMoveDelayTicks: typeof LATENCY_TRAP_PROTOTYPE.extraMoveDelayTicks;
 }>;
 
-export type LatencyTrapPrototypeState = Readonly<{
+export type LatencyTrapPrototypeState<
+  TIntrusion extends LatencyTrapIntrusion = LatencyTrapIntrusion,
+> = Readonly<{
   tickCount: number;
   traps: readonly LatencyTrapTile[];
-  intrusions: readonly LatencyTrapIntrusion[];
+  intrusions: readonly TIntrusion[];
 }>;
 
-export type LatencyTrapPrototypeResult = Readonly<{
+type WithLatencyTrapTiming<TIntrusion extends LatencyTrapIntrusion> =
+  Omit<TIntrusion, "lastMoveTick"> & Readonly<{ lastMoveTick: number }>;
+
+export type LatencyTrapPrototypeResult<
+  TIntrusion extends LatencyTrapIntrusion = LatencyTrapIntrusion,
+> = Readonly<{
   traps: readonly LatencyTrapTile[];
-  intrusions: readonly LatencyTrapIntrusion[];
+  intrusions: readonly WithLatencyTrapTiming<TIntrusion>[];
   events: readonly LatencyTrapTriggeredEvent[];
 }>;
 
@@ -140,9 +147,9 @@ export function getLatencyTrapSaleRefund(phase: "prep" | "active"): number {
  * caller owns movement/pathing; this helper keeps latency state and ordering
  * deterministic without introducing a browser timer or global enemy modifier.
  */
-export function applyLatencyTrapEntries(
-  state: LatencyTrapPrototypeState,
-): LatencyTrapPrototypeResult {
+export function applyLatencyTrapEntries<TIntrusion extends LatencyTrapIntrusion>(
+  state: LatencyTrapPrototypeState<TIntrusion>,
+): LatencyTrapPrototypeResult<TIntrusion> {
   const chargesByPosition = new Map<string, number>();
 
   for (const trap of state.traps) {
@@ -156,7 +163,7 @@ export function applyLatencyTrapEntries(
     chargesByPosition.set(key, trap.charges);
   }
 
-  const nextIntrusions = new Map<number, LatencyTrapIntrusion>();
+  const nextIntrusions = new Map<number, WithLatencyTrapTiming<TIntrusion>>();
   const events: LatencyTrapTriggeredEvent[] = [];
 
   for (const intrusion of [...state.intrusions].sort((a, b) => a.id - b.id)) {
