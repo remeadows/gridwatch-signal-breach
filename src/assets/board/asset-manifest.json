@@ -309,6 +309,32 @@
       "ownerApproved": true,
       "sourceSha256": "d5339124d3cda88799520b1bd366871f163612f6b6a581a02b8d107856a644c4",
       "runtimeSha256": "46a7a473cbde9db0c1b7c7a135beaae8d1bea2934625033c46096b55ea7e9dc3"
+    },
+    {
+      "id": "latency-trap",
+      "version": "expansion1-v1",
+      "role": "board-unit",
+      "source": "art/source/expansion1/gw-expansion1-latency-trap-master-v1.png",
+      "runtime": "src/assets/board/expansion1/gw-expansion1-latency-trap-board-v1.png",
+      "prompt": "art/prompts/expansion1/gw-expansion1-latency-trap-prompt-v1.md",
+      "sourceDimensions": [1254, 1254],
+      "runtimeDimensions": [256, 256],
+      "maxSourceBytes": 2000000,
+      "maxBytes": 90000,
+      "hasAlpha": true,
+      "generator": "OpenAI ImageGen",
+      "generatedAt": "2026-07-18T15:54:11Z",
+      "referenceAssets": [
+        "gw-phase6-firewall-master-v1",
+        "gw-phase6-overclock-master-v1"
+      ],
+      "promptSha256": "a224bdf8d3306ec77db9a866a5bcc999941a6ba07e58b87ce563621f97aeb6ff",
+      "camera": "orthographic-70deg",
+      "light": "upper-left",
+      "semanticAccent": "latency-violet",
+      "ownerApproved": true,
+      "sourceSha256": "bb7ccb9e8aaa9f406893534558fd5074f9ce0d9b7527b6fad8fe11dac241e01b",
+      "runtimeSha256": "5567f8dbcb8ec94e2ab9851fd17029e2f292a37ac8871e2a2f2fefa9d9705ca3"
     }
   ]
 }

@@ -1,0 +1,309 @@
+.latency-lab {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  overflow: auto;
+  overscroll-behavior: contain;
+  color: #d7fff7;
+  background:
+    linear-gradient(180deg, rgba(5, 12, 18, 0.92), rgba(3, 8, 13, 0.98)),
+    radial-gradient(circle at 72% 10%, rgba(143, 113, 255, 0.18), transparent 34%),
+    radial-gradient(circle at 12% 32%, rgba(77, 163, 255, 0.12), transparent 38%),
+    #050b10;
+  font-family: var(--font-display);
+}
+
+.latency-lab__shell {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 28px 0 48px;
+}
+
+.latency-lab__header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 20px;
+  align-items: end;
+  padding: 18px 20px;
+  border: 1px solid rgba(143, 113, 255, 0.42);
+  background: rgba(5, 17, 24, 0.9);
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.34);
+  clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+}
+
+.latency-lab__eyebrow,
+.latency-lab__status,
+.latency-lab__metric {
+  margin: 0;
+  color: rgba(215, 255, 247, 0.62);
+  font-size: 11px;
+  line-height: 1.5;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.latency-lab__eyebrow {
+  color: #bca7ff;
+}
+
+.latency-lab h1 {
+  margin: 5px 0 8px;
+  font-size: clamp(24px, 5vw, 44px);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+}
+
+.latency-lab__summary {
+  max-width: 740px;
+  margin: 0;
+  color: rgba(215, 255, 247, 0.78);
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.latency-lab__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.latency-lab__button {
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid rgba(143, 113, 255, 0.78);
+  color: #eef0ff;
+  background: linear-gradient(180deg, rgba(44, 34, 83, 0.9), rgba(15, 18, 37, 0.96));
+  font: 700 12px/1 var(--font-display);
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.latency-lab__button:hover,
+.latency-lab__button:focus-visible {
+  border-color: #d9ceff;
+  outline: 2px solid rgba(188, 167, 255, 0.24);
+  outline-offset: 2px;
+}
+
+.latency-lab__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.8fr);
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.latency-lab__panel {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid rgba(143, 113, 255, 0.28);
+  background:
+    linear-gradient(180deg, rgba(8, 23, 31, 0.92), rgba(4, 12, 18, 0.95)),
+    repeating-linear-gradient(0deg, rgba(143, 113, 255, 0.035) 0 1px, transparent 1px 10px);
+  box-shadow: 0 22px 64px rgba(0, 0, 0, 0.26);
+}
+
+.latency-lab__panel--board {
+  grid-row: span 2;
+}
+
+.latency-lab__panel-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.latency-lab__panel h2 {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.2;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.latency-lab__canvas-wrap {
+  aspect-ratio: 1;
+  overflow: hidden;
+  border: 1px solid rgba(143, 113, 255, 0.42);
+  background: #071017;
+  box-shadow: inset 0 0 48px rgba(0, 0, 0, 0.62);
+}
+
+.latency-lab__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.latency-lab__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-top: 12px;
+}
+
+.latency-lab__legend span {
+  color: rgba(215, 255, 247, 0.68);
+  font: 11px/1.4 var(--font-display);
+  text-transform: uppercase;
+}
+
+.latency-lab__legend b {
+  color: #fff;
+}
+
+.latency-lab__charges {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.latency-lab__charge-card {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 122px;
+  padding: 10px 6px;
+  border: 1px solid rgba(143, 113, 255, 0.22);
+  background:
+    radial-gradient(circle at center, rgba(143, 113, 255, 0.14), transparent 52%),
+    #071017;
+}
+
+.latency-lab__device {
+  position: relative;
+  width: var(--device-size);
+  height: var(--device-size);
+}
+
+.latency-lab__device img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 7px 4px rgba(0, 0, 0, 0.58)) drop-shadow(0 0 7px rgba(143, 113, 255, 0.28));
+}
+
+.latency-lab__pips {
+  position: absolute;
+  left: 50%;
+  bottom: -3px;
+  display: flex;
+  gap: 3px;
+  transform: translateX(-50%);
+}
+
+.latency-lab__pip {
+  width: 7px;
+  height: 7px;
+  transform: rotate(45deg);
+  border: 1px solid #bca7ff;
+  background: rgba(7, 16, 23, 0.92);
+}
+
+.latency-lab__pip--live {
+  background: #8f71ff;
+  box-shadow: 0 0 7px rgba(143, 113, 255, 0.8);
+}
+
+.latency-lab__charge-card > span {
+  color: rgba(215, 255, 247, 0.72);
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.latency-lab__rules {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.latency-lab__rules li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: start;
+  padding: 10px;
+  border: 1px solid rgba(120, 255, 238, 0.14);
+  background: rgba(3, 10, 15, 0.52);
+  color: rgba(215, 255, 247, 0.72);
+  font: 13px/1.4 Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.latency-lab__rules b {
+  min-width: 82px;
+  color: #d9ceff;
+  font: 700 11px/1.5 var(--font-display);
+  text-transform: uppercase;
+}
+
+.latency-lab[data-motion="off"] .latency-lab__status::after {
+  content: " · REDUCED";
+  color: #f2c94c;
+}
+
+@media (max-width: 760px) {
+  .latency-lab__shell {
+    width: min(100% - 20px, 620px);
+    padding: 10px 0 28px;
+  }
+
+  .latency-lab__header {
+    grid-template-columns: 1fr;
+    align-items: start;
+    padding: 16px;
+  }
+
+  .latency-lab__actions {
+    justify-content: flex-start;
+  }
+
+  .latency-lab__grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .latency-lab__panel {
+    padding: 10px;
+  }
+
+  .latency-lab__panel--board {
+    grid-row: auto;
+  }
+}
+
+@media (max-width: 380px) {
+  .latency-lab__summary {
+    font-size: 13px;
+  }
+
+  .latency-lab__panel-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .latency-lab__charge-card {
+    min-height: 108px;
+  }
+
+  .latency-lab__rules li {
+    grid-template-columns: 1fr;
+    gap: 3px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .latency-lab * {
+    scroll-behavior: auto !important;
+  }
+}
