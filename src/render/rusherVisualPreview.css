@@ -208,6 +208,7 @@
 
 .rusher-lab__direction img {
   --sprite-size: 52px;
+
   transform: rotate(var(--rotation));
 }
 

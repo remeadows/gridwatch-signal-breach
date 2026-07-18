@@ -184,20 +184,14 @@ function createBoardAnimator(
   }
 
   let frameId: number | null = null;
+  let motionEnabled = false;
   const draw = (timeMs: number) => {
     drawBoard(context, sprites, timeMs);
     frameId = requestAnimationFrame(draw);
   };
 
-  window.addEventListener(
-    "pagehide",
-    () => {
-      if (frameId !== null) cancelAnimationFrame(frameId);
-    },
-    { once: true },
-  );
-
-  return (enabled: boolean) => {
+  const setEnabled = (enabled: boolean) => {
+    motionEnabled = enabled;
     if (frameId !== null) {
       cancelAnimationFrame(frameId);
       frameId = null;
@@ -209,6 +203,18 @@ function createBoardAnimator(
       drawBoard(context, sprites, 0);
     }
   };
+
+  window.addEventListener("pagehide", () => {
+    if (frameId !== null) {
+      cancelAnimationFrame(frameId);
+      frameId = null;
+    }
+  });
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted) setEnabled(motionEnabled);
+  });
+
+  return setEnabled;
 }
 
 function drawBoard(
