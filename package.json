@@ -15,6 +15,7 @@
     "verify:latency-trap": "node scripts/run-typescript.mjs scripts/verify-latency-trap.ts",
     "verify:progress": "node scripts/run-typescript.mjs scripts/verify-progress.ts",
     "verify:replays": "node scripts/run-typescript.mjs scripts/verify-replays.ts",
+    "verify:rusher": "node scripts/run-typescript.mjs scripts/verify-rusher.ts",
     "verify:assets": "node scripts/verify-assets.mjs"
   },
   "devDependencies": {

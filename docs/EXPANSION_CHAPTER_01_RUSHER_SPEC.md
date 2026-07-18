@@ -1,9 +1,9 @@
 # Expansion Chapter 1: Rusher Specification
 
-Status: proposed approval specification on 2026-07-17. This document is not an
-authorization to add a Rusher to a playable level, generate/import its raster
-asset, change a validator bundle, deploy an Edge Function, migrate Supabase, or
-expose expansion gameplay.
+Status: approved for an isolated deterministic prototype on 2026-07-18. This
+does not authorize adding a Rusher to a playable level, generating/importing its
+raster asset, changing a validator bundle, deploying an Edge Function, migrating
+Supabase, or exposing expansion gameplay.
 
 ## 1. Purpose and scope
 
@@ -119,13 +119,19 @@ state and events, not only final scores.
 | RU-05 | Trap without ICE | The same delayed Rusher remains alive if no ICE covers the trap tile. |
 | RU-06 | Trap traversal | A Rusher can enter and leave the trap tile; shortest movement path and signal route are unchanged. |
 | RU-07 | Normal blockage | A Rusher follows existing route/boxed-in Firewall handling; it gains no bypass or enhanced chewing behavior. |
-| RU-08 | Fixed-seed replay twice | Same seed/content/commands yield identical terminal state, event sequence, score, and canonical replay result. |
+| RU-08 | Fixed prototype scenario twice | Same initial state and tick count yield an identical full state/event sequence. |
 | RU-09 | Frozen campaign fixtures | Existing legacy and `phase4-v1` fixtures remain byte-equivalent in their asserted results. |
 | RU-10 | No-content rejection | A structurally valid expansion replay remains rejected before simulation/database access until the reviewed registry is published. |
 
 The prototype counter in the Latency Trap specification remains the narrow
 reference case: at tick 11, three 6-HP one-tick Rushers are `3/3` neutralized
 with a charged trap under ICE coverage and `0/3` neutralized without it.
+
+RU-08 proves deterministic prototype behavior without pretending unpublished
+content has a canonical scored replay. The first reviewed Chapter 1 content
+batch must separately add a fixed-seed `expansion-v1` replay that proves
+identical terminal state, event sequence, score, tick count, and canonical
+replay result on repeated runs.
 
 ## 7. Visual and asset-intake contract
 
@@ -171,11 +177,11 @@ This specification does not authorize:
 ## 9. Approval and follow-on sequence
 
 1. Owner approves or adjusts the exact Rusher contract above.
-2. Complete a separate asset-intake request and contextual visual approval;
-   do not generate a bulk enemy roster.
-3. Approve an isolated expansion-only Rusher/Latency Trap simulator prototype
+2. Build an isolated expansion-only Rusher/Latency Trap simulator prototype
    with the RU tests and unchanged legacy validator artifact.
-4. Review desktop/mobile prototype evidence against the counterplay table.
+3. Complete a separate asset-intake request and contextual visual approval;
+   do not generate a bulk enemy roster before the mechanic evidence passes.
+4. Review desktop/mobile presentation evidence against the counterplay table.
 5. Only then author Chapter 1's five maps and twenty-five waves in a separate,
    reviewed content batch.
 

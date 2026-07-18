@@ -1,14 +1,28 @@
 # GridWatch Handoff
 
-## Phase 8B - Rusher Approval Specification In Progress - 2026-07-17
+## Phase 8C - Rusher Prototype In Progress - 2026-07-18
+
+- PR #59 merged the Rusher approval specification as `0f4f351`, and the owner
+  authorized the next isolated prototype phase on 2026-07-18. The active task
+  is an expansion-only deterministic Rusher prototype on
+  `codex/phase8-rusher-prototype`: 6 HP, one-active-tick movement, normal route
+  targeting, one-damage Firewall chewing, and no special movement or death
+  behavior.
+- This phase may integrate the already-prototyped Latency Trap timing and
+  current 3-damage ICE value inside pure prototype tests. It must remain absent
+  from `src/sim/index.ts`; no level, wave, public navigation, raster asset,
+  validator deployment, Supabase migration, leaderboard category, or database
+  change is authorized.
+
+## Phase 8B - Rusher Approval Specification Complete - 2026-07-17
 
 - PR #58 merged the isolated Latency Trap deterministic prototype as `f8f3646`.
   Its two-tick counter executes real movement, trap, and ICE-combat steps and
   proves `3/3` Rusher-like intrusions neutralized with the trap versus `0/3`
   without it at tick 11. The prototype remains unexported, and the generated
   validator bundle remains unchanged.
-- The active task is a documentation-only Rusher approval specification on
-  `codex/phase8-rusher-spec`. It sets a proposed 6-HP, one-active-tick,
+- PR #59 merged the documentation-only Rusher approval specification from
+  `codex/phase8-rusher-spec` as `0f4f351`. It sets a 6-HP, one-active-tick,
   route-targeting expansion-only Rusher and an asset-intake/compatibility gate.
   It does not authorize enemy implementation, raster generation, published
   expansion content, deployment, or a database change.
