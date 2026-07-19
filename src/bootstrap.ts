@@ -1,10 +1,14 @@
 import "./style.css";
+import { isExpansionPlayEnabled } from "./ui/featureFlags";
 
 const query = new URLSearchParams(window.location.search);
 const latencyTrapPreviewEnabled = query.get("latency-trap-preview") === "1";
 const rusherPreviewEnabled = query.get("rusher-preview") === "1";
+const expansionPlayEnabled = isExpansionPlayEnabled();
 
-if (latencyTrapPreviewEnabled) {
+if (expansionPlayEnabled) {
+  void import("./expansionMain");
+} else if (latencyTrapPreviewEnabled) {
   void import("./render/latencyTrapVisualPreview")
     .then(async ({ mountLatencyTrapVisualPreview }) => {
       await mountLatencyTrapVisualPreview(document.body);

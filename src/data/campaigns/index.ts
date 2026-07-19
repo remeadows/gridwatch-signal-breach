@@ -9,6 +9,8 @@ export {
   EXPANSION_NAVIGATION_PLACEHOLDER_LEVELS,
   getExpansionLevelDefinition,
   getExpansionNavigationPlaceholderLevel,
+  isExpansionChapterAvailable,
+  isExpansionChapterAuthored,
   type ExpansionNavigationPlaceholderLevel,
 } from "./expansion";
 export {
@@ -22,6 +24,7 @@ export type {
   CampaignId,
   ChapterDefinition,
   ExpansionCampaignDefinition,
+  ExpansionCampaignLevelDefinition,
   LevelDefinition,
   SignalBreachCampaignDefinition,
 } from "./types";

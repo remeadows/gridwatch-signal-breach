@@ -114,6 +114,31 @@ export function getSignalBreachProgress(progress: GameProgress): SignalBreachPro
   return progress.campaigns["signal-breach"];
 }
 
+export function markExpansionLevelCleared(
+  current: GameProgress,
+  levelId: number,
+  storage = getBrowserStorage(),
+): GameProgress {
+  if (!Number.isFinite(levelId)) return current;
+  const level = clampId(levelId, MAX_EXPANSION_LEVEL_ID);
+  const expansion = current.campaigns["expansion-1"];
+  const next: GameProgress = {
+    schema: PROGRESS_SCHEMA_VERSION,
+    campaigns: {
+      "signal-breach": current.campaigns["signal-breach"],
+      "expansion-1": {
+        highestUnlockedLevel: Math.min(
+          MAX_EXPANSION_LEVEL_ID,
+          Math.max(expansion.highestUnlockedLevel, level + 1),
+        ),
+        clearedLevels: sortUnique([...expansion.clearedLevels, level]),
+      },
+    },
+  };
+  if (storage) saveGameProgress(next, storage);
+  return next;
+}
+
 function parseGameProgress(raw: string | null): GameProgress | null {
   if (!raw) {
     return null;

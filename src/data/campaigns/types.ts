@@ -4,6 +4,7 @@ import type {
   PlayerTool,
   WaveDefinition,
 } from "../../sim/types";
+import type { ExpansionLevelDefinition } from "../../sim/expansion/types";
 
 /**
  * Campaign identity is intentionally separate from the legacy sector number.
@@ -28,8 +29,8 @@ export type ChapterDefinition = Readonly<{
 }>;
 
 /**
- * Expansion level shape. Phase 7A deliberately registers no instances: level
- * data arrives only in later, separately reviewed chapter batches.
+ * Frozen pre-expansion level contract. Keep this shape unchanged so the
+ * original V2 campaign cannot inherit expansion-only tools or replay fields.
  */
 export type LevelDefinition = Readonly<{
   id: number;
@@ -45,6 +46,9 @@ export type LevelDefinition = Readonly<{
   difficultyIndex: number;
   requiredMechanic: string | null;
 }>;
+
+/** Expansion-only contract, isolated from the frozen V2 level vocabulary. */
+export type ExpansionCampaignLevelDefinition = ExpansionLevelDefinition;
 
 /**
  * The original campaign retains its sector vocabulary and compatibility

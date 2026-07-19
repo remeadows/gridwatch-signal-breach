@@ -10,12 +10,15 @@
     "build:validator": "esbuild src/sim/index.ts --bundle --format=esm --platform=neutral --target=es2022 --legal-comments=none --outfile=supabase/functions/submit-gridwatch-score/sim.bundle.js",
     "balance:report": "node scripts/run-typescript.mjs scripts/balance-report.ts",
     "balance:search": "node scripts/run-typescript.mjs scripts/search-balance.ts",
+    "expansion:content-report": "node scripts/run-typescript.mjs scripts/expansion-content-report.ts",
+    "expansion:balance": "node scripts/run-typescript.mjs scripts/expansion-balance-report.ts",
     "typecheck:tools": "tsc -p tsconfig.tools.json",
     "verify:content": "node scripts/run-typescript.mjs scripts/verify-content.ts",
     "verify:latency-trap": "node scripts/run-typescript.mjs scripts/verify-latency-trap.ts",
     "verify:progress": "node scripts/run-typescript.mjs scripts/verify-progress.ts",
     "verify:replays": "node scripts/run-typescript.mjs scripts/verify-replays.ts",
     "verify:rusher": "node scripts/run-typescript.mjs scripts/verify-rusher.ts",
+    "verify:expansion-sim": "node scripts/run-typescript.mjs scripts/verify-expansion-sim.ts",
     "verify:assets": "node scripts/verify-assets.mjs"
   },
   "devDependencies": {

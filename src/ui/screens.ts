@@ -5,7 +5,9 @@ import {
 import {
   CAMPAIGNS,
   EXPANSION_CAMPAIGN,
+  getExpansionLevelDefinition,
   getExpansionNavigationPlaceholderLevel,
+  isExpansionChapterAvailable,
   type CampaignId,
   type ChapterDefinition,
 } from "../data/campaigns";
@@ -47,6 +49,7 @@ export type ScreenOptions = Readonly<{
   onSelectSector: (sectorId: number) => void;
   onSelectCampaign: (campaignId: CampaignId) => void;
   onSelectExpansionChapter: (chapterId: number) => void;
+  onSelectExpansionLevel: (levelId: number) => void;
   onBackToCampaignSelect: () => void;
   onBackToChapterSelect: () => void;
   onBackToTitle: () => void;
@@ -293,7 +296,7 @@ function renderCampaignSelectScreen(options: ScreenOptions): void {
   const header = createNavigationHeader(
     "CAMPAIGN ROUTER",
     "Select campaign",
-    "Signal Breach remains the active campaign. Expansion routing is a navigation preview only; no expansion level can launch.",
+    "Signal Breach remains production-active. Expansion 1 Chapter 1 is available here only for localhost acceptance testing.",
   );
   const grid = document.createElement("div");
   const backButton = createNavigationButton("BACK", "secondary", onBackToTitle);
@@ -309,12 +312,12 @@ function renderCampaignSelectScreen(options: ScreenOptions): void {
     const button = createNavigationCard({
       index: isExpansion ? "EXPANSION 01" : "CURRENT CAMPAIGN",
       title: isExpansion ? "EXPANSION UPLINK" : "SIGNAL BREACH",
-      name: isExpansion ? "NAVIGATION PREVIEW" : "THREE SECTORS // TWELVE WAVES",
+      name: isExpansion ? "CHAPTER 1 LOCAL PLAYTEST" : "THREE SECTORS // TWELVE WAVES",
       detail: isExpansion
-        ? "Chapter and level routing is visible for QA. Expansion levels remain unavailable."
+        ? "Five authored levels and 25 waves. Progress stays isolated; leaderboard submission remains disabled."
         : "The frozen V2 campaign continues using its original sector progress and replay identity.",
-      meta: isExpansion ? "NO PLAYABLE LEVELS" : "SECTORS 01–03",
-      status: isExpansion ? "PREVIEW" : "ACTIVE",
+      meta: isExpansion ? "LEVELS 01–05" : "SECTORS 01–03",
+      status: isExpansion ? "LOCAL ONLY" : "ACTIVE",
       disabled: false,
       onSelect: () => onSelectCampaign(campaign.id),
       testId: `campaign-${campaign.id}`,
@@ -341,7 +344,7 @@ function renderChapterSelectScreen(options: ScreenOptions): void {
   const header = createNavigationHeader(
     "EXPANSION ROUTER",
     "Select chapter",
-    "Six chapter slots are reserved. Only the first is unlocked for navigation QA, and it contains one disabled placeholder card.",
+    "Six chapter slots are reserved. Latency Front is the only authored batch; Chapters 2–6 remain locked and spoiler-safe.",
   );
   const grid = document.createElement("div");
   const backButton = createNavigationButton("BACK", "secondary", onBackToCampaignSelect);
@@ -353,17 +356,19 @@ function renderChapterSelectScreen(options: ScreenOptions): void {
   grid.className = "navigation-grid navigation-grid-chapters";
 
   for (const chapter of EXPANSION_CAMPAIGN.chapters) {
-    const firstLevelId = chapter.levelIds[0] ?? 1;
-    const isUnlocked = firstLevelId <= expansionProgress.highestUnlockedLevel;
+    const isUnlocked = isExpansionChapterAvailable(
+      chapter.id,
+      expansionProgress.highestUnlockedLevel,
+    );
     const button = createNavigationCard({
       index: `CHAPTER ${String(chapter.id).padStart(2, "0")}`,
       title: isUnlocked ? chapter.codename : "ENCRYPTED CHAPTER",
-      name: isUnlocked ? "NAVIGATION PREVIEW" : "SIGNAL LOCKED",
+      name: isUnlocked ? "FIVE LEVELS // 25 WAVES" : "SIGNAL LOCKED",
       detail: isUnlocked
-        ? "Level routing is available for the pending uplink only."
+        ? "Local acceptance build with Latency Trap, Rusher, and fresh starting conditions per level."
         : "This chapter stays spoiler-safe until an earlier chapter is cleared.",
       meta: isUnlocked ? `LEVELS ${formatChapterLevels(chapter)}` : "LEVELS LOCKED",
-      status: isUnlocked ? "PREVIEW" : "LOCKED",
+      status: isUnlocked ? "LOCAL PLAYTEST" : "LOCKED",
       disabled: !isUnlocked,
       onSelect: () => onSelectExpansionChapter(chapter.id),
       testId: `chapter-${chapter.id}`,
@@ -378,9 +383,10 @@ function renderChapterSelectScreen(options: ScreenOptions): void {
 }
 
 function renderLevelSelectScreen(options: ScreenOptions): void {
-  const { root, selectedExpansionChapterId, onBackToChapterSelect } = options;
+  const { root, selectedExpansionChapterId, onBackToChapterSelect, onSelectExpansionLevel } = options;
   const chapter = getExpansionNavigationChapter(selectedExpansionChapterId);
-  const key = `levelSelect-${chapter.id}`;
+  const expansionProgress = options.progress.campaigns["expansion-1"];
+  const key = `levelSelect-${chapter.id}-${expansionProgress.highestUnlockedLevel}-${expansionProgress.clearedLevels.join(".")}`;
 
   if (root.dataset.screenKey === key) {
     return;
@@ -391,7 +397,9 @@ function renderLevelSelectScreen(options: ScreenOptions): void {
   const header = createNavigationHeader(
     "EXPANSION ROUTER",
     `${chapter.codename} // Levels`,
-    "This shell shows five level slots, never the full 30-level catalog. Level 1 is a disabled navigation placeholder, not playable content.",
+    chapter.id === 1
+      ? "Five local-review levels. Each starts fresh and contains five waves; no score leaves this browser."
+      : "This chapter is reserved for a later reviewed content batch.",
   );
   const grid = document.createElement("div");
   const backButton = createNavigationButton("BACK", "secondary", onBackToChapterSelect);
@@ -404,17 +412,24 @@ function renderLevelSelectScreen(options: ScreenOptions): void {
 
   for (const levelId of chapter.levelIds) {
     const placeholder = getExpansionNavigationPlaceholderLevel(levelId);
+    const level = getExpansionLevelDefinition(levelId);
+    const isUnlocked = Boolean(level && levelId <= expansionProgress.highestUnlockedLevel);
+    const isCleared = expansionProgress.clearedLevels.includes(levelId);
     const button = createNavigationCard({
       index: `LEVEL ${String(levelId).padStart(2, "0")}`,
-      title: placeholder?.codename ?? "ENCRYPTED LEVEL",
-      name: placeholder ? "NOT PLAYABLE" : "SIGNAL LOCKED",
-      detail: placeholder
+      title: isUnlocked ? level?.codename ?? "ENCRYPTED LEVEL" : "ENCRYPTED LEVEL",
+      name: isUnlocked ? level?.tagline ?? "LOCAL REVIEW" : level ? "CLEAR PREVIOUS LEVEL" : placeholder ? "NOT PLAYABLE" : "SIGNAL LOCKED",
+      detail: isUnlocked
+        ? level?.briefing ?? "Local review content."
+        : level
+        ? "Authored and ready. Clear the previous level to unlock this route."
+        : placeholder
         ? "This record has no board, tools, waves, replay payload, score, or launch action."
         : "No authored expansion level is available in this slot.",
-      meta: placeholder ? "CONTENT PENDING" : "CONTENT LOCKED",
-      status: placeholder ? "PENDING" : "LOCKED",
-      disabled: true,
-      onSelect: () => undefined,
+      meta: isUnlocked ? "5 WAVES // FRESH LOADOUT" : placeholder ? "CONTENT PENDING" : "CONTENT LOCKED",
+      status: isCleared ? "CLEARED" : isUnlocked ? "LOCAL PLAYTEST" : placeholder ? "PENDING" : "LOCKED",
+      disabled: !isUnlocked,
+      onSelect: () => onSelectExpansionLevel(levelId),
       testId: `level-${levelId}`,
     });
 

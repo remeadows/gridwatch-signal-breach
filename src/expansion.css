@@ -1,0 +1,11 @@
+html[data-expansion-play="true"] .game-logo small::after { content: " // EXPANSION 1 LOCAL"; color: #b381ff; }
+html[data-expansion-play="true"] .game-layout { border-color: rgba(179,129,255,.55); }
+html[data-expansion-play="true"] #game-canvas:focus-visible { outline: 2px solid #f3f7ff; outline-offset: 3px; }
+.expansion-hud [data-metric="level"] strong { font-size: clamp(.82rem, 1.3vw, 1.05rem); }
+.expansion-picker .expansion-tool-glyph { grid-row: 1 / 3; display: grid; place-items: center; width: 30px; height: 30px; color: #b381ff; border: 1px solid currentcolor; border-radius: 4px; font: 700 .72rem monospace; box-shadow: 0 0 12px rgba(179,129,255,.32); }
+.expansion-picker button[data-tool="latencyTrap"].selected { border-color: #b381ff; box-shadow: inset 0 0 20px rgba(179,129,255,.2), 0 0 12px rgba(179,129,255,.22); }
+.expansion-picker button[data-tool="latencyTrap"] .tool-name { color: #d4b8ff; }
+@media (max-width: 700px) {
+  html[data-expansion-play="true"] .game-logo small::after { content: " // EXP 1"; }
+  .expansion-picker .expansion-tool-glyph { width: 24px; height: 24px; font-size: .58rem; }
+}

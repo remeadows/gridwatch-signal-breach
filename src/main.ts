@@ -292,6 +292,14 @@ function selectExpansionChapter(chapterId: number): void {
   audio.playUi("select");
 }
 
+function selectExpansionLevel(levelId: number): void {
+  const url = new URL(window.location.href);
+  url.search = "";
+  url.searchParams.set("expansion-play", "1");
+  url.searchParams.set("level", String(levelId));
+  window.location.assign(url.toString());
+}
+
 function openChapterSelect(): void {
   screen = "chapterSelect";
   hoverTile = null;
@@ -561,6 +569,7 @@ function drawFrame(now: number): void {
     onSelectSector: startSector,
     onSelectCampaign: selectCampaign,
     onSelectExpansionChapter: selectExpansionChapter,
+    onSelectExpansionLevel: selectExpansionLevel,
     onBackToCampaignSelect: openCampaignSelect,
     onBackToChapterSelect: openChapterSelect,
     onBackToTitle: returnToTitle,

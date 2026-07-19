@@ -1,8 +1,10 @@
 import type {
   ChapterDefinition,
   ExpansionCampaignDefinition,
-  LevelDefinition,
+  ExpansionCampaignLevelDefinition,
 } from "./types";
+import { EXPANSION_CAMPAIGN_ID, EXPANSION_CONTENT_REVISION, EXPANSION_RULESET_ID } from "../../sim/expansion/types";
+import { CHAPTER_01_LEVELS } from "./expansion/chapter01";
 
 const EXPANSION_CHAPTER_COUNT = 6;
 const LEVELS_PER_EXPANSION_CHAPTER = 5;
@@ -19,12 +21,12 @@ export const EXPANSION_NAVIGATION_CHAPTERS: readonly ChapterDefinition[] =
 
     return {
       id: chapterId,
-      codename: `CHAPTER ${String(chapterId).padStart(2, "0")}`,
+      codename: chapterId === 1 ? "LATENCY FRONT" : `CHAPTER ${String(chapterId).padStart(2, "0")}`,
       levelIds: Array.from(
         { length: LEVELS_PER_EXPANSION_CHAPTER },
         (_, levelIndex) => firstLevelId + levelIndex,
       ),
-      visualThemeId: "pending",
+      visualThemeId: chapterId === 1 ? "latency-front" : "pending",
     };
   });
 
@@ -35,38 +37,51 @@ export type ExpansionNavigationPlaceholderLevel = Readonly<{
   availability: "not-playable";
 }>;
 
-/**
- * The single Phase 7B placeholder is deliberately not a LevelDefinition. It
- * has no board, tools, waves, or tuning, so it cannot enter simulation, replay,
- * scoring, or leaderboard paths.
- */
-export const EXPANSION_NAVIGATION_PLACEHOLDER_LEVELS: readonly ExpansionNavigationPlaceholderLevel[] = [
-  {
-    id: 1,
-    chapterId: 1,
-    codename: "UPLINK PENDING",
-    availability: "not-playable",
-  },
-];
+/** Retained only as a compatibility surface for the retired Phase 7B shell. */
+export const EXPANSION_NAVIGATION_PLACEHOLDER_LEVELS: readonly ExpansionNavigationPlaceholderLevel[] = [];
 
 /**
- * This is a registry placeholder only. Phase 7A must not ship an authored or
- * playable expansion level; later chapter PRs append immutable level records.
+ * Chapter 1 contains the first five authored expansion levels. Later reviewed
+ * chapter batches append their own immutable expansion-only records.
  */
-export const EXPANSION_LEVELS: readonly LevelDefinition[] = [];
+export const EXPANSION_LEVELS: readonly ExpansionCampaignLevelDefinition[] = CHAPTER_01_LEVELS;
 
 export const EXPANSION_CAMPAIGN: ExpansionCampaignDefinition = {
-  id: "expansion-1",
+  id: EXPANSION_CAMPAIGN_ID,
   title: "GridWatch: Signal Breach Expansion",
-  ruleset: "expansion-v1",
-  contentRevision: "unpublished",
+  ruleset: EXPANSION_RULESET_ID,
+  contentRevision: EXPANSION_CONTENT_REVISION,
   chapters: EXPANSION_NAVIGATION_CHAPTERS,
 };
 
 export function getExpansionLevelDefinition(
   levelId: number,
-): LevelDefinition | undefined {
+): ExpansionCampaignLevelDefinition | undefined {
   return EXPANSION_LEVELS.find((candidate) => candidate.id === levelId);
+}
+
+export function isExpansionChapterAuthored(chapterId: number): boolean {
+  const chapter = EXPANSION_NAVIGATION_CHAPTERS.find(
+    (candidate) => candidate.id === chapterId,
+  );
+  return Boolean(
+    chapter && chapter.levelIds.every((levelId) => getExpansionLevelDefinition(levelId)),
+  );
+}
+
+export function isExpansionChapterAvailable(
+  chapterId: number,
+  highestUnlockedLevel: number,
+): boolean {
+  const chapter = EXPANSION_NAVIGATION_CHAPTERS.find(
+    (candidate) => candidate.id === chapterId,
+  );
+  const firstLevelId = chapter?.levelIds[0];
+  return Boolean(
+    firstLevelId !== undefined &&
+    isExpansionChapterAuthored(chapterId) &&
+    firstLevelId <= highestUnlockedLevel,
+  );
 }
 
 export function getExpansionNavigationPlaceholderLevel(

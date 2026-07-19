@@ -83,12 +83,29 @@ In addition to the UI lane:
 
 - Run `npm run verify:progress` to cover V1-to-V2 migration, malformed-storage
   recovery, storage unavailability, and campaign namespace isolation.
-- Run `npm run verify:content` to prove the expansion registry still has no
-  authored playable levels and only the permitted navigation placeholder.
+- Run `npm run verify:content` to prove Chapter 1 contains exactly Levels 1–5
+  and 25 waves while Chapters 2–6 remain unauthored. Run
+  `npm run expansion:content-report` to verify the literal immutable hashes.
 - Verify the normal title flow with no flag, then use `?expansion-nav=1` only
-  for preview QA. Check the campaign screen, six spoiler-safe chapter cards,
-  and one five-card level screen at 390px and desktop widths. Confirm no
-  horizontal document overflow, console errors, or expansion launch path.
+  on localhost for acceptance QA. Check the campaign screen, six spoiler-safe
+  chapter cards, the five-card Chapter 1 screen, level unlock progression, and
+  `?expansion-play=1&level=N` at mobile and desktop widths. Confirm public hosts
+  cannot activate either flag and expansion results expose no leaderboard path.
+- Keyboard-check the expansion Canvas: Tab to the grid, use arrows to move the
+  visible cell focus, press Space to place the selected tool, Delete/Backspace
+  to sell, and Enter to launch the prepared wave. Confirm the expected
+  bandwidth change and zero browser console errors.
+
+### Expansion Chapter 1 simulation or tuning changes
+
+- Run `npm run verify:expansion-sim`, `npm run expansion:balance`,
+  `npm run verify:content`, `npm run verify:progress`, and the current replay
+  checks. Balance must keep 20/20 fixed-seed guided clears, 5/5 empty-loadout
+  losses, and the reviewed deterministic report hash.
+- Run `npm run build:validator` and prove the committed `phase4-v1`
+  `sim.bundle.js` is unchanged. Chapter 1 client work remains localhost-only
+  until a separate server-first expansion validator/category release is
+  approved and reviewed.
 
 ### Expansion replay-boundary changes
 
