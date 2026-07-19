@@ -66,6 +66,7 @@ export function createExpansionGameState(
     activeTaunt: "",
     bandwidth: 0,
     waveSpawnedCount: 0,
+    waveScriptedSpawnIndex: 0,
     signal: { status: "severed", route: [], routeTick: 0 },
     intrusions: [],
     nextIntrusionId: 1,

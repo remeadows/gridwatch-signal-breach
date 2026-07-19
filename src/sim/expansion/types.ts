@@ -272,6 +272,7 @@ export type ExpansionGameState = Readonly<{
   activeTaunt: string;
   bandwidth: number;
   waveSpawnedCount: number;
+  waveScriptedSpawnIndex: number;
   signal: ExpansionSignalState;
   intrusions: readonly ExpansionIntrusionState[];
   nextIntrusionId: number;

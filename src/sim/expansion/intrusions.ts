@@ -43,7 +43,7 @@ export function spawnExpansionIntrusions(state: ExpansionGameState): ExpansionGa
   const wave = getCurrentExpansionWave(next);
 
   for (let index = 0; index < definition.spawnBatchSize; index += 1) {
-    if (next.intrusions.length >= wave.maxActiveIntrusions || next.waveSpawnedCount >= wave.maxSpawnedIntrusions) break;
+    if (next.intrusions.length >= wave.maxActiveIntrusions || next.waveSpawnedCount >= getCadenceSpawnLimit(next)) break;
     const positionPick = pickSpawnPosition(next);
     next = { ...next, rng: positionPick.rng };
     if (!positionPick.position) break;
@@ -99,9 +99,11 @@ export function moveExpansionIntrusions(state: ExpansionGameState): ExpansionGam
 }
 
 function spawnScripted(state: ExpansionGameState): ExpansionGameState {
-  const entries = getCurrentExpansionWave(state).scriptedSpawns?.filter((entry) => entry.waveTick === state.waveTick) ?? [];
+  const entries = getCurrentExpansionWave(state).scriptedSpawns ?? [];
   let next = state;
-  for (const entry of entries) {
+  while (next.waveScriptedSpawnIndex < entries.length) {
+    const entry = entries[next.waveScriptedSpawnIndex];
+    if (!entry || entry.waveTick > next.waveTick) break;
     const wave = getCurrentExpansionWave(next);
     if (
       next.waveSpawnedCount >= wave.maxSpawnedIntrusions ||
@@ -109,7 +111,11 @@ function spawnScripted(state: ExpansionGameState): ExpansionGameState {
     ) break;
     const pick = pickSpawnPosition(next);
     next = { ...next, rng: pick.rng };
-    if (pick.position) next = spawnAt(next, entry.kind, pick.position, true);
+    if (!pick.position) break;
+    next = {
+      ...spawnAt(next, entry.kind, pick.position, true),
+      waveScriptedSpawnIndex: next.waveScriptedSpawnIndex + 1,
+    };
   }
   return next;
 }
@@ -140,10 +146,19 @@ function spawnAt(state: ExpansionGameState, kind: ExpansionEnemyKind, position: 
 function shouldCadenceSpawn(state: ExpansionGameState): boolean {
   const wave = getCurrentExpansionWave(state);
   return state.waveTick >= wave.spawnFirstTick &&
-    state.waveSpawnedCount < wave.maxSpawnedIntrusions &&
+    state.waveSpawnedCount < getCadenceSpawnLimit(state) &&
     state.intrusions.length < wave.maxActiveIntrusions &&
     totalWeight(wave.enemyWeights) > 0 &&
     (state.waveTick - wave.spawnFirstTick) % wave.spawnEveryTicks === 0;
+}
+
+function getCadenceSpawnLimit(state: ExpansionGameState): number {
+  const wave = getCurrentExpansionWave(state);
+  const remainingScriptedSpawns = Math.max(
+    0,
+    (wave.scriptedSpawns?.length ?? 0) - state.waveScriptedSpawnIndex,
+  );
+  return Math.max(0, wave.maxSpawnedIntrusions - remainingScriptedSpawns);
 }
 
 function pickKind(state: ExpansionGameState) {

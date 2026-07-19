@@ -76,6 +76,23 @@ const cappedIntrusions = Array.from({ length: levelFive.config.waves[4].maxActiv
 }));
 const scriptedAtCap = spawnExpansionIntrusions({ ...levelFive, phase: "active", waveIndex: 4, waveTick: 8, intrusions: cappedIntrusions });
 expectEqual(scriptedAtCap.intrusions.length, cappedIntrusions.length, "Scripted spawn exceeded the active-intrusion cap.");
+expectEqual(scriptedAtCap.waveScriptedSpawnIndex, 0, "Blocked scripted spawn was marked complete instead of pending.");
+const retriedScripted = spawnExpansionIntrusions({
+  ...scriptedAtCap,
+  waveTick: 9,
+  intrusions: scriptedAtCap.intrusions.slice(1),
+});
+expectEqual(retriedScripted.waveScriptedSpawnIndex, 1, "Blocked scripted spawn was not retried.");
+expectEqual(retriedScripted.intrusions.some((intrusion) => intrusion.kind === "goliath"), true, "Retried scripted Goliath did not spawn before cadence enemies.");
+const finalWave = levelFive.config.waves[4];
+const quotaReserved = spawnExpansionIntrusions({
+  ...levelFive,
+  phase: "active",
+  waveIndex: 4,
+  waveTick: finalWave.spawnFirstTick,
+  waveSpawnedCount: finalWave.maxSpawnedIntrusions - 1,
+});
+expectEqual(quotaReserved.waveSpawnedCount, finalWave.maxSpawnedIntrusions - 1, "Cadence spawn consumed the scripted Goliath quota.");
 
 const splitPosition = { x: 3, y: 4 };
 const splitState = {
@@ -132,7 +149,7 @@ for (const commands of [
   );
 }
 
-console.log("Expansion simulator verification passed: placement, spawn guard, trap ordering, replay identity, and determinism.");
+console.log("Expansion simulator verification passed: placement, spawn guard, scripted retries, trap ordering, replay identity, and determinism.");
 
 function expectEqual<T>(actual: T, expected: T, message: string): void { if (actual !== expected) throw new Error(message); }
 function expectDeepEqual(actual: unknown, expected: unknown, message: string): void { if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error(message); }

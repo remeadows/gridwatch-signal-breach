@@ -14,7 +14,7 @@ export function startExpansionPrepPhase(
 ): ExpansionGameState {
   const wave = state.config.waves[waveIndex];
   if (!wave) {
-    return { ...state, phase: "won", waveTick: 0, prepTicksRemaining: 0, activeTaunt: "", waveSpawnedCount: 0, events: [] };
+    return { ...state, phase: "won", waveTick: 0, prepTicksRemaining: 0, activeTaunt: "", waveSpawnedCount: 0, waveScriptedSpawnIndex: 0, events: [] };
   }
   const pick = nextInt(state.rng, 0, ANTAGONIST_TAUNTS.length);
   return {
@@ -27,6 +27,7 @@ export function startExpansionPrepPhase(
     activeTaunt: ANTAGONIST_TAUNTS[pick.value],
     bandwidth: state.bandwidth + wave.bandwidthGrant,
     waveSpawnedCount: 0,
+    waveScriptedSpawnIndex: 0,
   };
 }
 
