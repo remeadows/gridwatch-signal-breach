@@ -5,6 +5,7 @@ import {
   EXPANSION_NAVIGATION_CHAPTERS,
   EXPANSION_NAVIGATION_PLACEHOLDER_LEVELS,
   getCampaignDefinition,
+  isExpansionChapterAuthored,
   SIGNAL_BREACH_CAMPAIGN,
   SIGNAL_BREACH_SECTOR_ADAPTERS,
 } from "../src/data/campaigns";
@@ -32,6 +33,8 @@ expectEqual(EXPANSION_CAMPAIGN.ruleset, EXPANSION_RULESET_ID, "Expansion ruleset
 expectEqual(EXPANSION_CAMPAIGN.contentRevision, EXPANSION_CONTENT_REVISION, "Expansion revision drifted.");
 expectDeepEqual(EXPANSION_NAVIGATION_CHAPTERS.map((chapter) => chapter.id), [1, 2, 3, 4, 5, 6], "Expansion chapters drifted.");
 for (const chapter of EXPANSION_NAVIGATION_CHAPTERS) expectEqual(chapter.levelIds.length, 5, `Chapter ${chapter.id} must reserve five levels.`);
+expectEqual(isExpansionChapterAuthored(1), true, "Authored Chapter 1 was reported as unavailable.");
+for (const chapterId of [2, 3, 4, 5, 6]) expectEqual(isExpansionChapterAuthored(chapterId), false, `Unauthored Chapter ${chapterId} was unlocked.`);
 expectEqual(EXPANSION_NAVIGATION_PLACEHOLDER_LEVELS.length, 0, "Authored Chapter 1 must not retain a fake placeholder.");
 expectDeepEqual(EXPANSION_LEVELS.map((level) => level.id), [1, 2, 3, 4, 5], "This batch must contain exactly Chapter 1.");
 expectEqual(EXPANSION_LEVELS.reduce((total, level) => total + level.waves.length, 0), 25, "Chapter 1 must contain 25 authored waves.");

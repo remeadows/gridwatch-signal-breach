@@ -60,6 +60,15 @@ export function getExpansionLevelDefinition(
   return EXPANSION_LEVELS.find((candidate) => candidate.id === levelId);
 }
 
+export function isExpansionChapterAuthored(chapterId: number): boolean {
+  const chapter = EXPANSION_NAVIGATION_CHAPTERS.find(
+    (candidate) => candidate.id === chapterId,
+  );
+  return Boolean(
+    chapter && chapter.levelIds.every((levelId) => getExpansionLevelDefinition(levelId)),
+  );
+}
+
 export function getExpansionNavigationPlaceholderLevel(
   levelId: number,
 ): ExpansionNavigationPlaceholderLevel | undefined {
