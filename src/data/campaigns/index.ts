@@ -22,6 +22,7 @@ export type {
   CampaignId,
   ChapterDefinition,
   ExpansionCampaignDefinition,
+  ExpansionCampaignLevelDefinition,
   LevelDefinition,
   SignalBreachCampaignDefinition,
 } from "./types";

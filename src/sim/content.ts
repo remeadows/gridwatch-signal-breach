@@ -2,7 +2,7 @@ import {
   getExpansionLevelDefinition,
   getSignalBreachSectorAdapter,
   type CampaignId,
-  type LevelDefinition,
+  type ExpansionCampaignLevelDefinition,
   type SignalBreachSectorAdapter,
 } from "../data/campaigns";
 
@@ -29,7 +29,7 @@ export type ResolvedCampaignContent =
     }>
   | Readonly<{
       campaignId: "expansion-1";
-      level: LevelDefinition;
+      level: ExpansionCampaignLevelDefinition;
     }>;
 
 export function resolveCampaignContent(

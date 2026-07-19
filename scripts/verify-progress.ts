@@ -2,6 +2,7 @@ import {
   DEFAULT_GAME_PROGRESS,
   getSignalBreachProgress,
   loadGameProgress,
+  markExpansionLevelCleared,
   markSectorCleared,
   PROGRESS_STORAGE_KEY,
 } from "../src/ui/progress";
@@ -118,6 +119,31 @@ expectDeepEqual(
   getSignalBreachProgress(progressed),
   { highestUnlockedSector: 2, clearedSectors: [1] },
   "Clearing a sector must only update the original campaign namespace.",
+);
+
+const expansionProgressed = markExpansionLevelCleared(DEFAULT_GAME_PROGRESS, 1, legacyStorage);
+expectDeepEqual(
+  expansionProgressed.campaigns["expansion-1"],
+  { highestUnlockedLevel: 2, clearedLevels: [1] },
+  "Clearing an expansion level must unlock only the next expansion level.",
+);
+expectDeepEqual(
+  expansionProgressed.campaigns["signal-breach"],
+  DEFAULT_GAME_PROGRESS.campaigns["signal-breach"],
+  "Expansion progress must not alter the original campaign namespace.",
+);
+const storedBeforeInvalidExpansionClear = legacyStorage.getItem(PROGRESS_STORAGE_KEY);
+for (const invalidLevelId of [Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY]) {
+  expectEqual(
+    markExpansionLevelCleared(DEFAULT_GAME_PROGRESS, invalidLevelId, legacyStorage),
+    DEFAULT_GAME_PROGRESS,
+    "Non-finite expansion level IDs must not alter or persist progress.",
+  );
+}
+expectEqual(
+  legacyStorage.getItem(PROGRESS_STORAGE_KEY),
+  storedBeforeInvalidExpansionClear,
+  "Non-finite expansion level IDs must not write progress storage.",
 );
 expectDeepEqual(
   progressed.campaigns["expansion-1"],

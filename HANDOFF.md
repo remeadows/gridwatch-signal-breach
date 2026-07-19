@@ -1,5 +1,46 @@
 # GridWatch Handoff
 
+## Phase 8F - Expansion 1 Chapter 1 Local Acceptance - Accepted - 2026-07-18
+
+- Work is active on `codex/phase8f-chapter1-content`, based on merged PR #62
+  (`462014e`). The owner accepted the complete production build at
+  `http://127.0.0.1:4175/?expansion-nav=1` on desktop/mobile on 2026-07-18.
+  Nothing from this batch has been pushed; local Codex/CodeRabbit review and
+  one final GitHub push follow acceptance under the owner-approved workflow.
+- The batch authors exactly Expansion 1 Chapter 1: Levels 1–5, five waves per
+  level (25 waves), immutable content revision `expansion-1-r1`, and literal
+  SHA-256 campaign/level hashes. Chapters 2–6 remain reserved and contain no
+  authored definitions. Every level is a fresh 8x8 start with no persistent
+  units, bandwidth, damage, or stat upgrades.
+- Chapter 1 uses an isolated `expansion-v1` simulator and replay contract. It
+  promotes the approved 10-BW/three-charge/+3-tick Latency Trap and approved
+  6-HP/every-tick Rusher without widening the frozen `phase4-v1` type vocabulary
+  or changing the current three-sector/twelve-wave campaign. The expansion
+  tuning is 180 Core, one damage per severed tick, two regeneration per live
+  tick, 4-damage ICE, and six-tick Scrubber recovery; Level 1 teaches
+  Trap/Rusher, while Levels 2–5 add the existing Scrubber recovery tool.
+- The playable client is strictly localhost-gated by
+  `?expansion-play=1&level=N`; public hosts cannot activate it. Expansion
+  progress writes only to the pre-existing `campaigns["expansion-1"]`
+  namespace. Local results explicitly do not submit scores. The Supabase
+  migration directory, Edge Function, generated `phase4-v1` validator bundle,
+  leaderboard categories, and all three games in GridWatchGamesDB remain out of
+  scope and must stay unchanged.
+- Current deterministic gates pass: frozen-content invariants (5 levels/25
+  waves), literal content hashes, progress namespace isolation, Latency Trap
+  placement/trigger ordering, Rusher tuning, expansion replay identity and
+  repeated-run determinism. The fixed balance harness clears 20/20 guided runs
+  across four seeds per level and loses all 5/5 empty-loadout controls; its
+  report hash is
+  `1cf49097f34151cfe0fdae7ba837056753c3d591eb29fc80faed2ca18194fe5b`.
+- Browser QA has exercised the full localhost campaign/chapter/level route,
+  Canvas pointer placement, launch/live transition, approved Trap and Rusher
+  assets, 1440-class desktop presentation, and 390x844 mobile presentation with
+  zero browser console errors. Keyboard-only Canvas QA also placed and sold a
+  Latency Trap with the expected 48→38→48 BW sequence. The owner accepted the
+  localhost build; final local Codex/CodeRabbit review and clean regression and
+  security checks are required before the one approved push.
+
 ## Phase 8E - Latency Trap Visual Intake Complete - 2026-07-18
 
 - PR #61 merged the owner-approved Rusher visual intake to `main` as `2cc06a0`.
@@ -426,19 +467,17 @@ Note: the previous "zero network / no `import.meta.env`" invariant no longer hol
 - Keep gameplay tuning in `src/data/` where practical. Score weights currently live in `src/sim/scoring.ts`.
 - The leaderboard is the one sanctioned network feature. `src/sim` must stay pure and deterministic (no `Math.random`/`Date.now`) — the server-side anti-cheat replays it verbatim. After any `src/sim` change, run `npm run build:validator` and commit the regenerated `supabase/functions/submit-gridwatch-score/sim.bundle.js`, then redeploy the Edge Function.
 - Do not add manual path drawing, sectors beyond the existing three, or waves
-  beyond the existing twelve under the current repository scope. The proposed
-  thirty-level expansion remains planning-only until the owner approves its
-  level semantics and a documentation-only scope-authority update amends
-  `AGENTS.md`, `CONTEXT.md`, and this handoff.
+  beyond the existing twelve to the frozen V2 campaign. Expansion 1 Chapter 1
+  is separately authored and owner-accepted through Level 5; Chapters 2–6
+  remain reserved and unauthored until their one-chapter-at-a-time batches.
 
 ## Good Next Checks
 
 - Keep glyph fallback through at least one production release after the default
   Phase 6 rollout. Use `?art=glyphs` for a visual diagnostic or rollback.
-- Review and merge the documentation-only expansion scope authority before any
-  expansion implementation. Then begin Phase 7 campaign/level architecture
-  with existing content only; do not add a fourth current-campaign sector or an
-  expansion level in that first implementation batch.
+- Keep Expansion 1 local-only until its separate server validator and isolated
+  leaderboard categories pass the owner-approval and compatibility gates. After
+  Chapter 1 publication, author Chapter 2 as its own five-level reviewed batch.
 - Keep every GitHub push behind both Codex and CodeRabbit review.
 - After any future Cloudflare Pages deploy, confirm
   `https://GridWatch-SignalBreach.warsignallabs.net` loads, hashed root-relative

@@ -3,8 +3,12 @@ import "./style.css";
 const query = new URLSearchParams(window.location.search);
 const latencyTrapPreviewEnabled = query.get("latency-trap-preview") === "1";
 const rusherPreviewEnabled = query.get("rusher-preview") === "1";
+const localHost = window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost";
+const expansionPlayEnabled = localHost && query.get("expansion-play") === "1";
 
-if (latencyTrapPreviewEnabled) {
+if (expansionPlayEnabled) {
+  void import("./expansionMain");
+} else if (latencyTrapPreviewEnabled) {
   void import("./render/latencyTrapVisualPreview")
     .then(async ({ mountLatencyTrapVisualPreview }) => {
       await mountLatencyTrapVisualPreview(document.body);

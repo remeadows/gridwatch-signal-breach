@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "campaign": "expansion-1",
+  "ruleset": "expansion-v1",
+  "contentRevision": "expansion-1-r1",
+  "chapter": 1,
+  "levelCount": 5,
+  "waveCount": 25,
+  "campaignHash": "bdf03c4361f59cae61c34466e3c2b90f93c1788c242b99ceb3d5b54f12129a33",
+  "levelHashes": {
+    "1": "f35da0796b40ab420ea3f341479f96b1afe3020623cfdb860669a0c0c4cc7aaa",
+    "2": "5c72a1ce4c8a930292d6038afab3e22c19fe6dd4664e4bcfe8181e24747725cd",
+    "3": "40141ce01f88b09273dd02e8bacf60319a986a77bbf26922cc68cf1fae24032e",
+    "4": "159d86b40eb5bb6bbc3f26b05880836279eea1cd7a2d9556472d95b36ad366db",
+    "5": "ca93798b40d8d69637d5c38349bcb2b227a610b385ad99c21b8fd41ee341a584"
+  },
+  "levels": [
+    { "id": 1, "codename": "FIRST CONTACT", "difficultyIndex": 110, "waveCounts": [2, 4, 5, 6, 8] },
+    { "id": 2, "codename": "SWITCHBACK", "difficultyIndex": 135, "waveCounts": [4, 6, 7, 9, 11] },
+    { "id": 3, "codename": "CROSSTALK", "difficultyIndex": 165, "waveCounts": [6, 7, 9, 11, 13] },
+    { "id": 4, "codename": "OVERCLOCK ALLEY", "difficultyIndex": 200, "waveCounts": [7, 9, 12, 14, 16] },
+    { "id": 5, "codename": "DEADLINE", "difficultyIndex": 245, "waveCounts": [9, 12, 15, 18, 20] }
+  ]
+}
