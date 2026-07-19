@@ -3,10 +3,11 @@
 ## Phase 8F - Expansion 1 Chapter 1 Local Acceptance - Accepted - 2026-07-18
 
 - Work is active on `codex/phase8f-chapter1-content`, based on merged PR #62
-  (`462014e`). The owner accepted the complete production build at
-  `http://127.0.0.1:4175/?expansion-nav=1` on desktop/mobile on 2026-07-18.
-  Nothing from this batch has been pushed; local Codex/CodeRabbit review and
-  one final GitHub push follow acceptance under the owner-approved workflow.
+  (`462014e`), and is under final review in PR #63. The owner accepted the
+  complete production build at `http://127.0.0.1:4175/?expansion-nav=1` on
+  desktop/mobile on 2026-07-18. The accepted batch and subsequent review
+  remediations have been pushed; do not merge until PR #63 has zero unresolved
+  conversations and every GitHub check is green.
 - The batch authors exactly Expansion 1 Chapter 1: Levels 1–5, five waves per
   level (25 waves), immutable content revision `expansion-1-r1`, and literal
   SHA-256 campaign/level hashes. Chapters 2–6 remain reserved and contain no
@@ -33,6 +34,11 @@
   across four seeds per level and loses all 5/5 empty-loadout controls; its
   report hash is
   `1cf49097f34151cfe0fdae7ba837056753c3d591eb29fc80faed2ca18194fe5b`.
+- PR review hardening preserves at least one ingress for every remaining wave,
+  retries blocked authored/scripted spawns before cadence enemies can consume
+  their quota, renders remaining HP on damaged expansion hardware, rejects
+  non-string replay seeds, and freezes a schema-2 human-readable report with
+  all 25 wave rows plus bounds/reference/economy/threat-budget validation.
 - Browser QA has exercised the full localhost campaign/chapter/level route,
   Canvas pointer placement, launch/live transition, approved Trap and Rusher
   assets, 1440-class desktop presentation, and 390x844 mobile presentation with

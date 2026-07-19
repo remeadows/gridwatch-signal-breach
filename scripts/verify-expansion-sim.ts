@@ -136,6 +136,13 @@ expectThrows(
   ExpansionReplayError,
   "Expansion replay accepted the wrong content hash.",
 );
+for (const seed of [null, 42, {}]) {
+  expectThrows(
+    () => replayExpansionRun({ ...replay, seed } as unknown as ExpansionReplayInput),
+    ExpansionReplayError,
+    "Expansion replay accepted a non-string seed.",
+  );
+}
 for (const commands of [
   [{ t: -1, c: { type: "skipPrep" } }],
   [{ t: 0.5, c: { type: "skipPrep" } }],

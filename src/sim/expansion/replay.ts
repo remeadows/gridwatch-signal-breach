@@ -15,6 +15,7 @@ export class ExpansionReplayError extends Error {
 
 export function replayExpansionRun(input: ExpansionReplayInput): ExpansionReplayResult {
   if (input.schema !== 2 || input.ruleset !== EXPANSION_RULESET_ID || input.campaign !== EXPANSION_CAMPAIGN_ID || input.contentRevision !== EXPANSION_CONTENT_REVISION) throw new ExpansionReplayError("Expansion replay identity mismatch.");
+  if (typeof input.seed !== "string") throw new ExpansionReplayError("Expansion replay seed must be a string.");
   let expectedContentHash: string;
   try {
     expectedContentHash = getExpansionLevelContentHash(input.level);

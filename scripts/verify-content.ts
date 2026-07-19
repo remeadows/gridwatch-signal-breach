@@ -1,3 +1,4 @@
+import contentReportFixture from "../docs/fixtures/expansion-1-r1-content-report.json";
 import {
   CAMPAIGNS,
   EXPANSION_CAMPAIGN,
@@ -14,9 +15,14 @@ import { SECTORS } from "../src/data/levels";
 import { getExpansionHardwareCapabilities } from "../src/sim/expansion/capabilities";
 import { createExpansionGameState } from "../src/sim/expansion/state";
 import { EXPANSION_CAMPAIGN_ID, EXPANSION_CONTENT_REVISION, EXPANSION_RULESET_ID } from "../src/sim/expansion/types";
-import { getExpansionLevelContentHash } from "../src/data/campaigns/expansion/contentManifest";
+import { EXPANSION_CHAPTER_01_CONTENT_MANIFEST, getExpansionLevelContentHash } from "../src/data/campaigns/expansion/contentManifest";
 import { SIM_RULESET_ID } from "../src/sim/ruleset";
 import { isKnownCampaignId, resolveCampaignContent } from "../src/sim/content";
+import {
+  buildExpansionContentReport,
+  stableStringify,
+  validateExpansionContent,
+} from "./expansion-content-report-lib";
 
 expectDeepEqual(CAMPAIGNS.map((campaign) => campaign.id), ["signal-breach", "expansion-1"], "Campaign registry identity drifted.");
 expectEqual(SIGNAL_BREACH_CAMPAIGN.ruleset, SIM_RULESET_ID, "Signal Breach ruleset drifted.");
@@ -41,6 +47,13 @@ expectEqual(isExpansionChapterAvailable(2, 30), false, "Reserved Chapter 2 becam
 expectEqual(EXPANSION_NAVIGATION_PLACEHOLDER_LEVELS.length, 0, "Authored Chapter 1 must not retain a fake placeholder.");
 expectDeepEqual(EXPANSION_LEVELS.map((level) => level.id), [1, 2, 3, 4, 5], "This batch must contain exactly Chapter 1.");
 expectEqual(EXPANSION_LEVELS.reduce((total, level) => total + level.waves.length, 0), 25, "Chapter 1 must contain 25 authored waves.");
+validateExpansionContent(EXPANSION_LEVELS);
+const contentReport = buildExpansionContentReport(
+  EXPANSION_LEVELS,
+  EXPANSION_CHAPTER_01_CONTENT_MANIFEST.campaignHash,
+  EXPANSION_CHAPTER_01_CONTENT_MANIFEST.levelHashes,
+);
+expectEqual(stableStringify(contentReport), stableStringify(contentReportFixture), "Expansion content report fixture drifted.");
 
 for (const level of EXPANSION_LEVELS) {
   expectEqual(level.chapterId, 1, `Level ${level.id} escaped Chapter 1.`);
@@ -70,6 +83,7 @@ expectEqual(isKnownCampaignId("signal-breach"), true, "Known campaign rejected."
 expectEqual(isKnownCampaignId("expansion-1"), true, "Known campaign rejected.");
 expectEqual(isKnownCampaignId("sector-4"), false, "Unknown campaign accepted.");
 
+console.log(JSON.stringify(contentReport, null, 2));
 console.log("Content verification passed: frozen V2 plus Expansion 1 Chapter 1 (5 levels / 25 waves).");
 
 function expectEqual<T>(actual: T, expected: T, message: string): void { if (actual !== expected) throw new Error(`${message} Expected ${String(expected)}, received ${String(actual)}.`); }
