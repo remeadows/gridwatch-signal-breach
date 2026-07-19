@@ -92,9 +92,9 @@ In addition to the UI lane:
   `?expansion-play=1&level=N` at mobile and desktop widths. Confirm public hosts
   cannot activate either flag and expansion results expose no leaderboard path.
 - Keyboard-check the expansion Canvas: Tab to the grid, use arrows to move the
-  visible cell focus, press Enter/Space to place the selected tool, and press
-  Delete/Backspace to sell. Confirm the expected bandwidth change and zero
-  browser console errors.
+  visible cell focus, press Space to place the selected tool, Delete/Backspace
+  to sell, and Enter to launch the prepared wave. Confirm the expected
+  bandwidth change and zero browser console errors.
 
 ### Expansion Chapter 1 simulation or tuning changes
 

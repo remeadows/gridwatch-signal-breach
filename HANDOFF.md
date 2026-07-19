@@ -37,7 +37,7 @@
   Canvas pointer placement, launch/live transition, approved Trap and Rusher
   assets, 1440-class desktop presentation, and 390x844 mobile presentation with
   zero browser console errors. Keyboard-only Canvas QA also placed and sold a
-  Latency Trap with the expected 48→38→48 BW sequence. The owner accepted the
+  Latency Trap with Space/Delete (48→38→48 BW) and launched with Enter. The owner accepted the
   localhost build; final local Codex/CodeRabbit review and clean regression and
   security checks are required before the one approved push.
 

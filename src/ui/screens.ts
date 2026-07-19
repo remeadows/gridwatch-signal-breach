@@ -7,7 +7,7 @@ import {
   EXPANSION_CAMPAIGN,
   getExpansionLevelDefinition,
   getExpansionNavigationPlaceholderLevel,
-  isExpansionChapterAuthored,
+  isExpansionChapterAvailable,
   type CampaignId,
   type ChapterDefinition,
 } from "../data/campaigns";
@@ -356,9 +356,10 @@ function renderChapterSelectScreen(options: ScreenOptions): void {
   grid.className = "navigation-grid navigation-grid-chapters";
 
   for (const chapter of EXPANSION_CAMPAIGN.chapters) {
-    const firstLevelId = chapter.levelIds[0] ?? 1;
-    const isUnlocked = isExpansionChapterAuthored(chapter.id) &&
-      firstLevelId <= expansionProgress.highestUnlockedLevel;
+    const isUnlocked = isExpansionChapterAvailable(
+      chapter.id,
+      expansionProgress.highestUnlockedLevel,
+    );
     const button = createNavigationCard({
       index: `CHAPTER ${String(chapter.id).padStart(2, "0")}`,
       title: isUnlocked ? chapter.codename : "ENCRYPTED CHAPTER",

@@ -24,7 +24,7 @@ export function installExpansionKeyboardInput(options: Readonly<{
   options.canvas.tabIndex = 0;
   options.canvas.setAttribute(
     "aria-label",
-    "Expansion grid. Use arrow keys to move, Enter or Space to use the selected tool, and Delete to sell.",
+    "Expansion grid. Use arrow keys to move, Space to use the selected tool, Enter to launch a prepared wave, and Delete to sell.",
   );
 
   options.canvas.addEventListener("focus", () => options.onFocus(focused));
@@ -44,7 +44,7 @@ export function installExpansionKeyboardInput(options: Readonly<{
     }
 
     if (!options.isEnabled()) return;
-    if (event.key === "Enter" || event.key === " ") {
+    if (event.key === " ") {
       event.preventDefault();
       event.stopPropagation();
       dispatchSelectedTool(options, focused);

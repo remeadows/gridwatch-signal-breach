@@ -69,6 +69,21 @@ export function isExpansionChapterAuthored(chapterId: number): boolean {
   );
 }
 
+export function isExpansionChapterAvailable(
+  chapterId: number,
+  highestUnlockedLevel: number,
+): boolean {
+  const chapter = EXPANSION_NAVIGATION_CHAPTERS.find(
+    (candidate) => candidate.id === chapterId,
+  );
+  const firstLevelId = chapter?.levelIds[0];
+  return Boolean(
+    firstLevelId !== undefined &&
+    isExpansionChapterAuthored(chapterId) &&
+    firstLevelId <= highestUnlockedLevel,
+  );
+}
+
 export function getExpansionNavigationPlaceholderLevel(
   levelId: number,
 ): ExpansionNavigationPlaceholderLevel | undefined {

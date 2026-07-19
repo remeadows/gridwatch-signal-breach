@@ -9,6 +9,7 @@ export {
   EXPANSION_NAVIGATION_PLACEHOLDER_LEVELS,
   getExpansionLevelDefinition,
   getExpansionNavigationPlaceholderLevel,
+  isExpansionChapterAvailable,
   isExpansionChapterAuthored,
   type ExpansionNavigationPlaceholderLevel,
 } from "./expansion";
