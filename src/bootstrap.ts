@@ -1,10 +1,10 @@
 import "./style.css";
+import { isExpansionPlayEnabled } from "./ui/featureFlags";
 
 const query = new URLSearchParams(window.location.search);
 const latencyTrapPreviewEnabled = query.get("latency-trap-preview") === "1";
 const rusherPreviewEnabled = query.get("rusher-preview") === "1";
-const localHost = window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost";
-const expansionPlayEnabled = localHost && query.get("expansion-play") === "1";
+const expansionPlayEnabled = isExpansionPlayEnabled();
 
 if (expansionPlayEnabled) {
   void import("./expansionMain");

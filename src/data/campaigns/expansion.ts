@@ -3,7 +3,7 @@ import type {
   ExpansionCampaignDefinition,
   ExpansionCampaignLevelDefinition,
 } from "./types";
-import { EXPANSION_CONTENT_REVISION, EXPANSION_RULESET_ID } from "../../sim/expansion/types";
+import { EXPANSION_CAMPAIGN_ID, EXPANSION_CONTENT_REVISION, EXPANSION_RULESET_ID } from "../../sim/expansion/types";
 import { CHAPTER_01_LEVELS } from "./expansion/chapter01";
 
 const EXPANSION_CHAPTER_COUNT = 6;
@@ -47,7 +47,7 @@ export const EXPANSION_NAVIGATION_PLACEHOLDER_LEVELS: readonly ExpansionNavigati
 export const EXPANSION_LEVELS: readonly ExpansionCampaignLevelDefinition[] = CHAPTER_01_LEVELS;
 
 export const EXPANSION_CAMPAIGN: ExpansionCampaignDefinition = {
-  id: "expansion-1",
+  id: EXPANSION_CAMPAIGN_ID,
   title: "GridWatch: Signal Breach Expansion",
   ruleset: EXPANSION_RULESET_ID,
   contentRevision: EXPANSION_CONTENT_REVISION,

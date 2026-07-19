@@ -6,7 +6,7 @@ import { installExpansionPointerInput } from "./input/expansionPointer";
 import { preloadPhase6BoardSprites } from "./render/assetRegistry";
 import { preloadExpansionSprites } from "./render/expansionAssetRegistry";
 import { drawExpansionGrid } from "./render/expansionRenderer";
-import { applyExpansionCommand, calculateExpansionScore, createExpansionGameState, tickExpansion, type ExpansionPlayerTool, type ExpansionRecordedCommand, type ExpansionSimCommand } from "./sim/expansion";
+import { applyExpansionCommand, calculateExpansionScore, createExpansionGameState, tickExpansion, type ExpansionPlayerTool, type ExpansionSimCommand } from "./sim/expansion";
 import { getCurrentExpansionWave } from "./sim/expansion/waves";
 import type { GridPosition } from "./sim/types";
 import { loadGameProgress, markExpansionLevelCleared } from "./ui/progress";
@@ -25,7 +25,6 @@ const levelId = getRequestedLevelId();
 const level = getRequiredLevel(levelId);
 const contentHash = getExpansionLevelContentHash(levelId);
 let seed = createSeed();
-let commands: ExpansionRecordedCommand[] = [];
 let state = createExpansionGameState({ levelId, contentHash, seed });
 let selectedTool: ExpansionPlayerTool = "latencyTrap";
 let hover: GridPosition | null = null;
@@ -99,9 +98,7 @@ function frame(now: number): void {
 }
 
 function dispatch(command: ExpansionSimCommand): void {
-  const before = state;
   state = applyExpansionCommand(state, command);
-  if (state !== before) commands = [...commands, { t: before.tickCount, c: command }];
 }
 
 function launchWave(): void {
@@ -114,7 +111,6 @@ function launchWave(): void {
 
 function restart(): void {
   seed = createSeed();
-  commands = [];
   state = createExpansionGameState({ levelId, contentHash, seed });
   selectedTool = "latencyTrap";
   hover = null;
