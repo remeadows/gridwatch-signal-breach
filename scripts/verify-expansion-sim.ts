@@ -2,17 +2,36 @@ import { getExpansionLevelContentHash } from "../src/data/campaigns/expansion/co
 import { applyExpansionCommand } from "../src/sim/expansion/commands";
 import { applyExpansionTurretCombat } from "../src/sim/expansion/combat";
 import { getExpansionTile, sameExpansionPosition, setExpansionTile } from "../src/sim/expansion/grid";
-import { spawnExpansionIntrusions } from "../src/sim/expansion/intrusions";
+import { getOpenExpansionSpawnPositions, spawnExpansionIntrusions } from "../src/sim/expansion/intrusions";
 import { applyExpansionLatencyTraps } from "../src/sim/expansion/latency";
 import { ExpansionReplayError, replayExpansionRun } from "../src/sim/expansion/replay";
 import { createExpansionGameState } from "../src/sim/expansion/state";
-import { EXPANSION_CAMPAIGN_ID, EXPANSION_CONTENT_REVISION, EXPANSION_RULESET_ID, type ExpansionReplayInput } from "../src/sim/expansion/types";
+import { EXPANSION_CAMPAIGN_ID, EXPANSION_CONTENT_REVISION, EXPANSION_RULESET_ID, type ExpansionGameState, type ExpansionReplayInput } from "../src/sim/expansion/types";
 import { startExpansionPrepPhase } from "../src/sim/expansion/waves";
 
 const hash = getExpansionLevelContentHash(1);
 const initial = createExpansionGameState({ levelId: 1, contentHash: hash, seed: "expansion-sim-check" });
 const perimeterRejected = applyExpansionCommand(initial, { type: "placeUnit", position: { x: 0, y: 2 }, unit: "latencyTrap" });
 expectEqual(perimeterRejected, initial, "Latency Trap was placed on the perimeter.");
+
+const spawnGuardBase: ExpansionGameState = {
+  ...initial,
+  bandwidth: 1_000,
+  config: { ...initial.config, waves: [initial.config.waves[0]] },
+};
+const initialSpawnPositions = getOpenExpansionSpawnPositions(spawnGuardBase);
+let spawnGuarded = spawnGuardBase;
+for (const position of initialSpawnPositions.slice(0, -1)) {
+  spawnGuarded = applyExpansionCommand(spawnGuarded, { type: "placeUnit", position, unit: "relay" });
+}
+const finalSpawnPosition = initialSpawnPositions.at(-1);
+if (!finalSpawnPosition) throw new Error("Level 1 Wave 1 has no valid spawn position.");
+expectEqual(getOpenExpansionSpawnPositions(spawnGuarded).length, 1, "Spawn-cell fixture did not leave one opening.");
+expectEqual(
+  applyExpansionCommand(spawnGuarded, { type: "placeUnit", position: finalSpawnPosition, unit: "relay" }),
+  spawnGuarded,
+  "Placement consumed the final valid spawn cell.",
+);
 
 const withTrap = applyExpansionCommand(initial, { type: "placeUnit", position: { x: 1, y: 4 }, unit: "latencyTrap" });
 expectEqual(withTrap.signal.status, "live", "Latency Trap altered the signal route.");
@@ -113,7 +132,7 @@ for (const commands of [
   );
 }
 
-console.log("Expansion simulator verification passed: placement, trap ordering, replay identity, and determinism.");
+console.log("Expansion simulator verification passed: placement, spawn guard, trap ordering, replay identity, and determinism.");
 
 function expectEqual<T>(actual: T, expected: T, message: string): void { if (actual !== expected) throw new Error(message); }
 function expectDeepEqual(actual: unknown, expected: unknown, message: string): void { if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error(message); }

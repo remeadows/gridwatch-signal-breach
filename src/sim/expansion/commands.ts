@@ -6,6 +6,7 @@ import {
   setExpansionTile,
   setExpansionTileKind,
 } from "./grid";
+import { getOpenExpansionSpawnPositions } from "./intrusions";
 import { withRecomputedExpansionSignal } from "./state";
 import type {
   ExpansionGameState,
@@ -38,6 +39,7 @@ function placeExpansionUnit(
   if (!isExpansionInBounds(state.grid, position)) return state;
   if (isSpecialPosition(state, position)) return state;
   if (unit === "latencyTrap" && isExpansionPerimeter(state.grid, position)) return state;
+  if (wouldCloseRemainingSpawnEdge(state, position)) return state;
   const tileKind = getExpansionTileKind(state.grid, position);
   if (unit === "scrubber" ? tileKind !== "corrupted" : tileKind !== "empty") return state;
   if (state.intrusions.some((intrusion) => sameExpansionPosition(intrusion.position, position))) return state;
@@ -54,6 +56,16 @@ function placeExpansionUnit(
       ...(definition.charges === undefined ? {} : { charges: definition.charges }),
       ...(unit === "scrubber" ? { progress: 0 } : {}),
     }),
+  });
+}
+
+function wouldCloseRemainingSpawnEdge(
+  state: ExpansionGameState,
+  position: Readonly<{ x: number; y: number }>,
+): boolean {
+  return state.config.waves.slice(state.waveIndex).some((wave) => {
+    const openPositions = getOpenExpansionSpawnPositions(state, wave.spawnEdges);
+    return openPositions.length === 1 && sameExpansionPosition(openPositions[0], position);
   });
 }
 

@@ -1,6 +1,6 @@
 import { getCurrentExpansionWave } from "../sim/expansion/waves";
 import { getExpansionTile } from "../sim/expansion/grid";
-import type { ExpansionGameState, ExpansionPlayerTool } from "../sim/expansion/types";
+import type { ExpansionGameState, ExpansionHardwareKind, ExpansionPlayerTool } from "../sim/expansion/types";
 import type { GridPosition } from "../sim/types";
 import { getBoardMetrics } from "./canvas";
 import { getExpansionSprite } from "./expansionAssetRegistry";
@@ -69,7 +69,13 @@ function drawTile(context: CanvasRenderingContext2D, state: ExpansionGameState, 
     context.strokeRect(x + 5, y + 5, size - 10, size - 10);
   }
   if (["relay", "firewall", "turret", "scrubber", "overclock"].includes(tile.kind)) {
-    drawSprite(context, tile.kind as Phase6BoardSpriteId, x, y, size);
+    const hardwareKind = tile.kind as Exclude<ExpansionHardwareKind, "latencyTrap">;
+    drawSprite(context, hardwareKind, x, y, size);
+    const maxHp = state.config.units[hardwareKind].hp;
+    const hp = tile.hp ?? maxHp;
+    if (maxHp !== null && hp !== null && hp < maxHp) {
+      drawHardwareHp(context, hp, maxHp, x, y, size);
+    }
   } else if (tile.kind === "latencyTrap") {
     drawImageOrGlyph(context, getExpansionSprite("latencyTrap"), "LAT", "#b381ff", x, y, size);
     drawCharges(context, tile.charges ?? 0, x, y, size);
@@ -139,6 +145,18 @@ function drawCharges(context: CanvasRenderingContext2D, charges: number, x: numb
     context.fillStyle = index < charges ? "#b381ff" : "rgba(179,129,255,.2)";
     context.beginPath(); context.arc(x + size * (.36 + index * .14), y + size * .84, Math.max(2, size * .035), 0, Math.PI * 2); context.fill();
   }
+}
+
+function drawHardwareHp(context: CanvasRenderingContext2D, hp: number, maxHp: number, x: number, y: number, size: number): void {
+  const width = size * .68;
+  const height = Math.max(3, size * .05);
+  const left = x + size * .16;
+  const top = y + size * .88;
+  const ratio = Math.max(0, Math.min(1, hp / maxHp));
+  context.fillStyle = "rgba(0,0,0,.82)";
+  context.fillRect(left, top, width, height);
+  context.fillStyle = ratio > .4 ? "#ffd35a" : "#ff4f91";
+  context.fillRect(left, top, width * ratio, height);
 }
 
 function drawHp(context: CanvasRenderingContext2D, hp: number, maxHp: number, position: GridPosition, ox: number, oy: number, size: number): void {

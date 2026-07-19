@@ -25,6 +25,7 @@ import type {
   ExpansionHardwareKind,
   ExpansionIntrusionState,
 } from "./types";
+import type { SpawnEdge } from "../types";
 import { getCurrentExpansionWave } from "./waves";
 
 const ENEMY_ORDER: readonly ExpansionEnemyKind[] = ["probe", "crawler", "spoof", "hunter", "splitter", "goliath", "rusher"];
@@ -161,20 +162,39 @@ function totalWeight(weights: Readonly<Record<ExpansionEnemyKind, number>>): num
 }
 
 function pickSpawnPosition(state: ExpansionGameState) {
-  const wave = getCurrentExpansionWave(state);
-  const candidates = sortExpansionPositions(getExpansionPerimeterPositions(state.grid).filter((position) =>
-    wave.spawnEdges.some((edge) => edge === "north" ? position.y === 0 : edge === "east" ? position.x === state.grid.size - 1 : edge === "south" ? position.y === state.grid.size - 1 : position.x === 0),
-  ).filter((position) => isSpawnable(state, position)));
+  const candidates = getOpenExpansionSpawnPositions(state).filter((position) =>
+    !state.intrusions.some((intrusion) => sameExpansionPosition(intrusion.position, position)),
+  );
   if (candidates.length === 0) return { rng: state.rng, position: null };
   const pick = nextInt(state.rng, 0, candidates.length);
   return { rng: pick.rng, position: candidates[pick.value] };
 }
 
-function isSpawnable(state: ExpansionGameState, position: Readonly<{ x: number; y: number }>): boolean {
+export function getOpenExpansionSpawnPositions(
+  state: ExpansionGameState,
+  spawnEdges: readonly SpawnEdge[] = getCurrentExpansionWave(state).spawnEdges,
+): readonly Readonly<{ x: number; y: number }>[] {
+  return sortExpansionPositions(getExpansionPerimeterPositions(state.grid).filter((position) =>
+    spawnEdges.some((edge) => isPositionOnSpawnEdge(state.grid.size, position, edge)) &&
+    isOpenSpawnPosition(state, position),
+  ));
+}
+
+function isOpenSpawnPosition(state: ExpansionGameState, position: Readonly<{ x: number; y: number }>): boolean {
   return !sameExpansionPosition(position, state.config.source) &&
     !sameExpansionPosition(position, state.config.core) &&
-    getExpansionTileKind(state.grid, position) === "empty" &&
-    !state.intrusions.some((intrusion) => sameExpansionPosition(intrusion.position, position));
+    getExpansionTileKind(state.grid, position) === "empty";
+}
+
+function isPositionOnSpawnEdge(
+  gridSize: number,
+  position: Readonly<{ x: number; y: number }>,
+  edge: SpawnEdge,
+): boolean {
+  if (edge === "north") return position.y === 0;
+  if (edge === "east") return position.x === gridSize - 1;
+  if (edge === "south") return position.y === gridSize - 1;
+  return position.x === 0;
 }
 
 function getTargetSets(state: ExpansionGameState): TargetSets {
