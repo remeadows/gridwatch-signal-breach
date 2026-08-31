@@ -27,7 +27,7 @@ if (expansionPlayEnabled) {
     mountRusherVisualPreview(document.body);
   });
 } else if (sapperPreviewEnabled) {
-  void import("./render/sapperPrototypePreview")
+  void import("./ui/sapperPrototypePreview")
     .then(({ mountSapperPrototypePreview }) => {
       mountSapperPrototypePreview(document.body);
     })

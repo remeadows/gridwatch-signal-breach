@@ -1,5 +1,27 @@
 # GridWatch Handoff
 
+## PR #76 Review Remediation - 2026-08-31
+
+- PR #76 has one valid Codex review finding: the local Sapper laboratory mixed
+  DOM/UI orchestration with Canvas2D drawing under `src/render/`. The follow-up
+  separates the preview shell, controls, telemetry, event list, and styles into
+  `src/ui/`, while `src/render/sapperPrototypeCanvas.ts` now owns only Canvas2D
+  drawing. The isolated Sapper simulation contract and production scope do not
+  change.
+- The repository's tracked `main-protection` ruleset and the corresponding live
+  GitHub ruleset now require all pull-request review conversations to be
+  resolved before merge. The live update preserved the existing required
+  review, build-check, linear-history, deletion, and force-push protections and
+  added no bypass actor.
+- The complete local build, simulator/content/replay/progress, asset, balance,
+  tool-typecheck, audit, frozen-validator, and responsive browser gates pass.
+  Desktop and 390x844 QA prove both formation outcomes, completed-control and
+  reset behavior, zero horizontal overflow, and zero console warning/error.
+  CodeRabbit CLI review reports zero findings. Publish only to the existing PR
+  branch, resolve the reviewed conversation only after the fix is visible in
+  PR #76, and follow all replacement checks. Do not merge the PR; the owner
+  retains that action.
+
 ## Phase 9A - Expansion 1 Chapter 2 Sapper Mechanic Proof - Publication Authorized - 2026-08-31
 
 - Work is active on `codex/phase9a-sapper-prototype`, rebased onto current
