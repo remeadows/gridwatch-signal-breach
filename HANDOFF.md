@@ -1,13 +1,51 @@
 # GridWatch Handoff
 
-## Phase 8F - Expansion 1 Chapter 1 Local Acceptance - Accepted - 2026-07-18
+## Phase 9A - Expansion 1 Chapter 2 Sapper Mechanic Proof - Publication Authorized - 2026-08-31
 
-- Work is active on `codex/phase8f-chapter1-content`, based on merged PR #62
-  (`462014e`), and is under final review in PR #63. The owner accepted the
-  complete production build at `http://127.0.0.1:4175/?expansion-nav=1` on
-  desktop/mobile on 2026-07-18. The accepted batch and subsequent review
-  remediations have been pushed; do not merge until PR #63 has zero unresolved
-  conversations and every GitHub check is green.
+- Work is active on `codex/phase9a-sapper-prototype`, rebased onto current
+  `main` (`8715281`). The owner approved the local-only Sapper mechanic proof
+  on 2026-07-19 and authorized its commit and publication on 2026-08-31. The
+  reviewed batch remains available at
+  `http://127.0.0.1:4177/?sapper-preview=1`; do not add production behavior or
+  art to this isolated prototype publication.
+- The proposed Sapper is an isolated 16 HP enemy that moves every two active
+  ticks, strictly prefers a reachable Firewall, chews for 8 damage, and emits
+  one 6-damage Manhattan-1 death pulse when neutralized. Equal targets resolve
+  by path length and stable board order. Expansion ICE retains its existing
+  4-damage tuning, so four hits neutralize the prototype.
+- The local Canvas2D lab compares identical combat timing in two formations.
+  Safe spacing neutralizes the Sapper with zero hardware affected; clustering
+  causes the pulse to destroy the adjacent 6 HP Relay and reduce the adjacent
+  Firewall and ICE to 18 HP and 4 HP. Step, Auto, Reset, safe/clustered controls,
+  target telemetry, HP, pulse reach, and ordered events remain procedural and
+  require no new production asset.
+- `sapper` remains absent from the playable expansion types, data, renderer,
+  replays, validator, and Chapter 1 content. This gate does not authorize
+  Sapper production art, Honeypot, Jammer, a boss, Levels 6-10, a new ruleset,
+  Supabase/Edge changes, leaderboard categories, or any GridWatchGamesDB write.
+  The exact contract and acceptance matrix are in
+  `docs/EXPANSION_CHAPTER_02_SAPPER_SPEC.md`.
+- Sapper, Chapter 1 content/sim/progress/balance, current replay/balance, asset,
+  build, tool typecheck, and audit gates pass. The Expansion balance hash stays
+  `1cf49097f34151cfe0fdae7ba837056753c3d591eb29fc80faed2ca18194fe5b`;
+  the `phase4-v1` validator remains byte-identical at
+  `48a3ecf68be9d05e57ccabb2c90e335669a1a1808fbda814ac7ea81a952dafa6`.
+  Automated browser QA passes both formation outcomes at desktop and 390x844,
+  with zero horizontal overflow and zero console warning/error. Local Codex
+  review corrected a radial-looking pulse telegraph so only the four affected
+  orthogonal cells illuminate. CodeRabbit CLI 0.7.5 review found one minor
+  completed-state control issue; Auto Run is now disabled after neutralization
+  and re-enabled by Reset. The full post-rebase regression, security, browser,
+  validator, Codex, and CodeRabbit gates must remain green for the authorized
+  single push.
+
+## Phase 8F - Expansion 1 Chapter 1 Complete - PR #63 Merged - 2026-07-19
+
+- PR #63 merged the accepted Chapter 1 batch to `main` as `2e46eac` on
+  2026-07-19. The owner accepted the complete production build at
+  `http://127.0.0.1:4175/?expansion-nav=1` on desktop/mobile on 2026-07-18;
+  all subsequent review conversations and required checks were resolved before
+  merge.
 - The batch authors exactly Expansion 1 Chapter 1: Levels 1–5, five waves per
   level (25 waves), immutable content revision `expansion-1-r1`, and literal
   SHA-256 campaign/level hashes. Chapters 2–6 remain reserved and contain no
@@ -44,8 +82,8 @@
   assets, 1440-class desktop presentation, and 390x844 mobile presentation with
   zero browser console errors. Keyboard-only Canvas QA also placed and sold a
   Latency Trap with Space/Delete (48→38→48 BW) and launched with Enter. The owner accepted the
-  localhost build; final local Codex/CodeRabbit review and clean regression and
-  security checks are required before the one approved push.
+  localhost build; local Codex/CodeRabbit review and clean regression and
+  security checks passed before the single approved push.
 
 ## Phase 8E - Latency Trap Visual Intake Complete - 2026-07-18
 
