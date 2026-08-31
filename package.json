@@ -18,6 +18,7 @@
     "verify:progress": "node scripts/run-typescript.mjs scripts/verify-progress.ts",
     "verify:replays": "node scripts/run-typescript.mjs scripts/verify-replays.ts",
     "verify:rusher": "node scripts/run-typescript.mjs scripts/verify-rusher.ts",
+    "verify:sapper": "node scripts/run-typescript.mjs scripts/verify-sapper.ts",
     "verify:expansion-sim": "node scripts/run-typescript.mjs scripts/verify-expansion-sim.ts",
     "verify:assets": "node scripts/verify-assets.mjs"
   },

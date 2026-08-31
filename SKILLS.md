@@ -107,6 +107,20 @@ In addition to the UI lane:
   until a separate server-first expansion validator/category release is
   approved and reviewed.
 
+### Expansion Chapter 2 mechanic prototypes
+
+- Keep an unapproved prototype absent from playable expansion types, content,
+  `src/sim/index.ts`, and the server validator bundle.
+- For the Sapper proof, run `npm run verify:sapper`, the Chapter 1 content and
+  replay gates, `npm run build:validator`, and confirm the validator bytes and
+  `expansion-1-r1` hashes do not change.
+- Use `?sapper-preview=1` only on `127.0.0.1` or another loopback hostname.
+  Verify Step, Auto, Reset, safe spacing, clustered failure, target telemetry,
+  390x844 and desktop layouts, horizontal overflow, and browser console output.
+- Owner acceptance of the mechanic proof authorizes only a later, separate
+  visual-intake decision. Production art, playable Chapter 2 content,
+  Honeypot/Jammer, backend changes, and publication retain their own gates.
+
 ### Expansion replay-boundary changes
 
 - Run `npm run verify:replays` to prove legacy, `phase4-v1`, and all rejected
