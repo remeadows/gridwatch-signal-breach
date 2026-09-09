@@ -10,6 +10,8 @@ const allowedDirectories = {
   source: ["art/source/phase6", "art/source/expansion1"],
   runtime: ["src/assets/board/phase6", "src/assets/board/expansion1"],
   prompt: ["art/prompts/phase6", "art/prompts/expansion1"],
+  model: ["art/source/expansion1"],
+  buildScript: ["art/blender/expansion1"],
 };
 
 if (!Array.isArray(manifest.assets) || manifest.assets.length === 0) {
@@ -56,6 +58,16 @@ for (const asset of manifest.assets) {
 
   if (!asset.generator || !asset.generatedAt || !Array.isArray(asset.referenceAssets)) {
     throw new Error(`Missing generation provenance: ${asset.id}`);
+  }
+  if (asset.generator.startsWith("Blender ")) {
+    const modelPath = resolveAllowedPath(asset.model, allowedDirectories.model);
+    const buildScriptPath = resolveAllowedPath(asset.buildScript, allowedDirectories.buildScript);
+    const [model, buildScript] = await Promise.all([
+      readFile(modelPath),
+      readFile(buildScriptPath),
+    ]);
+    assertHash(model, asset.modelSha256, asset.model);
+    assertHash(buildScript, asset.buildScriptSha256, asset.buildScript);
   }
   if (releaseMode && asset.ownerApproved !== true) {
     throw new Error(`Release asset lacks owner approval: ${asset.id}`);

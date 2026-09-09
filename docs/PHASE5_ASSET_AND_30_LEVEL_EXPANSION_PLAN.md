@@ -8,7 +8,10 @@ Phase 7A completed in PR #53, Phase 7B in PR #54, and Phase 7C's isolated
 replay boundary in PR #55. The reviewed no-write validator route is active in
 production before any expansion client exists. It must not add playable
 expansion level content, assets, database behavior, or deployment beyond the
-separately approved server promotion recorded in `HANDOFF.md`.
+separately approved server promotion recorded in `HANDOFF.md`. On 2026-09-08,
+the owner approved Blender as a local authoring tool for pre-rendered expansion
+assets; the runtime remains Canvas2D raster-only and each visual family still
+requires contextual owner approval before release.
 
 Date: 2026-07-16
 
@@ -124,6 +127,10 @@ rendering direction. Expansion implementation remains gated as follows:
 3. **Future expansion visual families — separately gated:** use the approved
    Phase 6 visual language and generate/approve each family through the asset
    intake process before it ships; do not bulk-generate an expansion roster.
+   Blender is approved as a reproducible local source-authoring tool when the
+   batch retains its `.blend`, deterministic Python build script, transparent
+   raster outputs, and hashes. This does not approve runtime 3D or the visual
+   result of a new family.
    The asset, Supabase migration, and Edge Function compatibility/owner-approval
    gates in Sections 9, 15, and 18 also apply.
 4. **Campaign isolation — approved:** identify each expansion run by campaign
@@ -306,6 +313,7 @@ Create these directories only after the visual direction is approved:
 
 ```text
 art/
+  blender/expansion1/
   prompts/phase6/
   source/phase6/
 src/assets/board/phase6/
@@ -315,6 +323,8 @@ docs/visual-qa/phase6/
 Rules:
 
 - `art/prompts/phase6/`: one Markdown prompt record per asset and iteration.
+- `art/blender/expansion1/`: deterministic Blender Python build scripts for
+  expansion assets authored in Blender.
 - `art/source/phase6/`: the selected, cropped, alpha master only; rejected
   generations stay outside the repository.
 - `src/assets/board/phase6/`: optimized runtime WebP or PNG assets imported by
@@ -345,9 +355,11 @@ gw-phase6-firewall-board-critical-v1.webp
 
 ### 8.3 Generation mode
 
-Use the built-in ImageGen path by default. Generate each asset separately; do
-not use one sprite sheet as the production source and crop it into individual
-pieces.
+Use the built-in ImageGen path by default. The owner-approved Blender path may
+be used for expansion 3D assets when a deterministic script constructs the
+scene and saves both the editable `.blend` and pre-rendered raster outputs.
+Generate or model each asset separately; do not use one sprite sheet as the
+production source and crop it into individual pieces.
 
 For simple opaque pieces:
 
@@ -363,6 +375,17 @@ Highly reflective, glass, translucent, smoke, or energy-heavy designs may fail
 chroma-key extraction. Do not silently switch tools or models. If that happens,
 pause and obtain owner approval before using a true native-transparency CLI
 fallback.
+
+Blender-authored assets render directly to native RGBA transparency and must:
+
+1. use the same locked camera, lighting, material, margin, and semantic rules;
+2. store the `.blend` under `art/source/expansion1/`;
+3. store the deterministic build script under `art/blender/expansion1/`;
+4. render a 1024px-or-larger master and the budgeted runtime raster from the
+   same scene;
+5. record model and build-script paths and SHA-256 hashes in the manifest;
+6. remain absent from playable registries until mechanic, visual, and release
+   gates are separately approved.
 
 ### 8.4 Prompt template
 
@@ -430,6 +453,8 @@ Add a machine-readable `src/assets/board/asset-manifest.json` and keep
   "source": "art/source/phase6/gw-phase6-relay-master-v1.png",
   "runtime": "src/assets/board/phase6/gw-phase6-relay-board-v1.webp",
   "prompt": "art/prompts/phase6/gw-phase6-relay-prompt-v1.md",
+  "model": "art/source/expansion1/gw-expansion1-example-source-v1.blend",
+  "buildScript": "art/blender/expansion1/build-example-v1.py",
   "sourceDimensions": [1024, 1024],
   "runtimeDimensions": [256, 256],
   "maxBytes": 90000,
@@ -438,6 +463,8 @@ Add a machine-readable `src/assets/board/asset-manifest.json` and keep
   "generatedAt": "<ISO-8601 UTC timestamp>",
   "referenceAssets": ["<approved style-anchor SHA-256>"],
   "promptSha256": "<computed from prompt record>",
+  "modelSha256": "<computed from Blender scene when applicable>",
+  "buildScriptSha256": "<computed from Blender script when applicable>",
   "camera": "orthographic-70deg",
   "light": "upper-left",
   "semanticAccent": "signal-cyan",

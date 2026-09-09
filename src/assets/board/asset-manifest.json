@@ -335,6 +335,37 @@
       "ownerApproved": true,
       "sourceSha256": "bb7ccb9e8aaa9f406893534558fd5074f9ce0d9b7527b6fad8fe11dac241e01b",
       "runtimeSha256": "5567f8dbcb8ec94e2ab9851fd17029e2f292a37ac8871e2a2f2fefa9d9705ca3"
+    },
+    {
+      "id": "sapper",
+      "version": "expansion1-v1",
+      "role": "intrusion",
+      "source": "art/source/expansion1/gw-expansion1-sapper-master-v1.png",
+      "runtime": "src/assets/board/expansion1/gw-expansion1-sapper-board-v1.png",
+      "prompt": "art/prompts/expansion1/gw-expansion1-sapper-prompt-v1.md",
+      "model": "art/source/expansion1/gw-expansion1-sapper-source-v1.blend",
+      "buildScript": "art/blender/expansion1/build-sapper-v1.py",
+      "sourceDimensions": [1024, 1024],
+      "runtimeDimensions": [256, 256],
+      "maxSourceBytes": 2000000,
+      "maxBytes": 90000,
+      "hasAlpha": true,
+      "generator": "Blender 5.1.0",
+      "generatedAt": "2026-09-08T00:00:00Z",
+      "referenceAssets": [
+        "gw-phase6-probe-master-v1",
+        "gw-phase6-hunter-master-v1",
+        "gw-expansion1-rusher-master-v1"
+      ],
+      "promptSha256": "d85e40583781ca8a734655b6481b5fae716b443b38c174e31d2a83987d34eef6",
+      "modelSha256": "1ce5446e3a73d7d50369c3dc21c1ab12808082c4264e6ab0c9614fa992100bb4",
+      "buildScriptSha256": "9a9d34429450fabc4fb4a6646cda16a24368f1e3315be14a94328a57f1c31c83",
+      "camera": "orthographic-70deg",
+      "light": "upper-left",
+      "semanticAccent": "hostile-magenta",
+      "ownerApproved": false,
+      "sourceSha256": "38fd659e369fc433be1eb45480b6093812f42b3dcda4890f7915ecc678b3de68",
+      "runtimeSha256": "dcd40d369809e45ba73676d54efba98224a2bf5d54014e71829d37e14de4a2d0"
     }
   ]
 }

@@ -1,7 +1,8 @@
 # Expansion 1 Chapter 2 Sapper Mechanic Proof
 
-Status: local prototype approved; production mechanic and art not yet approved
+Status: local prototype approved; Blender visual intake authorized; candidate visual and production mechanic not yet approved
 Owner approval to prototype: 2026-07-19
+Owner approval for Blender visual intake: 2026-09-08
 Campaign: `expansion-1`
 Future chapter: Chapter 2, Levels 6-10
 
@@ -145,3 +146,17 @@ Auto, and Reset, and confirm that target priority and pulse damage are readable
 without production art. Acceptance authorizes a separate Sapper visual-intake
 batch; it does not authorize Chapter 2 content, Honeypot, Jammer, backend work,
 or publication by itself.
+
+## 7. Phase 9B visual-intake boundary
+
+The owner authorized a separate Blender-authored Sapper visual-intake batch on
+2026-09-08 and authorized GitHub publication after local verification. That
+batch may add one reproducible Blender scene/build script, transparent master
+and runtime raster, manifest/provenance records, and contextual rendering in
+the existing localhost Sapper lab.
+
+The candidate remains non-production and must keep `ownerApproved: false` until
+the owner accepts it at desktop and mobile board scale. This authorization does
+not add `sapper` to playable types or content and does not approve Levels 6-10,
+Honeypot, Jammer, a boss, replay/validator changes, Supabase work, leaderboard
+categories, or any GridWatchGamesDB write.

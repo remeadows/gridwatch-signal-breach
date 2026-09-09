@@ -28,6 +28,7 @@ source license and crop-safe master have not yet been documented.
 | Phase 6 Source, Core, Relay, Firewall, ICE turret, Scrubber, Overclock, Probe, Crawler, Spoof, Hunter, Splitter, Goliath | OpenAI ImageGen source masters; local chroma-key extraction; prompt/hash manifest | Local PNG/WebP + Canvas2D | Default board presentation (`?art=glyphs` rollback) | 768 KiB runtime cap |
 | Expansion 1 Rusher (owner approved) | OpenAI ImageGen source master; approved Probe/Hunter style references; local chroma-key extraction; prompt/hash manifest | Local PNG + Canvas2D QA preview | Query-gated `?rusher-preview=1` visual intake only; not live gameplay | 90 KiB asset cap; 25,829 bytes actual |
 | Expansion 1 Latency Trap (owner approved) | OpenAI ImageGen source master; approved Firewall/Overclock style references; local chroma-key extraction; prompt/hash manifest | Local PNG + Canvas2D QA preview | Query-gated `?latency-trap-preview=1` visual intake only; not live gameplay | 90 KiB asset cap; 77,820 bytes actual |
+| Expansion 1 Sapper (owner review pending) | Locally scripted Blender 5.1 scene; editable `.blend`; approved Probe/Hunter/Rusher visual references; native-alpha renders; brief/script/model/image hashes | Local `.blend` + Python build script + PNG + Canvas2D QA preview | Query-gated `?sapper-preview=1` visual intake only; not live gameplay | 90 KiB asset cap; 43,607 bytes actual |
 
 ## Palette and Tactical Semantics
 
@@ -168,3 +169,27 @@ The owner accepted the production-built localhost desktop/mobile preview on
 2026-07-18, so the machine-readable manifest records `ownerApproved: true` and
 `npm run verify:assets -- --release` passes. The aggregate runtime total is now
 810,849 bytes, below the existing 1.5 MiB full-roster ceiling.
+
+## Phase 9B Sapper Blender Visual Intake
+
+The Chapter 2 Sapper candidate is a low tracked breaching drone built locally
+with Blender 5.1. Its two forward demolition jaws, segmented track housings,
+dark machined armor, and exposed magenta capacitor distinguish it from the
+flying Rusher, Probe, and Hunter while communicating strict hardware targeting
+and an orthogonal death pulse. The sprite itself contains no pulse, target,
+health, shadow, or damage-state effect; those remain procedural Canvas2D layers.
+
+The deterministic build script is
+`art/blender/expansion1/build-sapper-v1.py`; it constructs and saves the editable
+scene at `art/source/expansion1/gw-expansion1-sapper-source-v1.blend`, then
+renders the 1024x1024 transparent master and 256x256 runtime PNG from that same
+scene. Exact references, constraints, command, and hashes are recorded in
+`art/prompts/expansion1/gw-expansion1-sapper-prompt-v1.md` and the machine
+manifest.
+
+The candidate appears only in the responsive `?sapper-preview=1` mechanic lab,
+including 55/43/32 CSS-pixel scale samples and the procedural glyph fallback.
+It is not registered in playable expansion content, the public renderer,
+replays, validator, leaderboard, Supabase, or GridWatchGamesDB. The manifest
+keeps `ownerApproved: false` until the owner accepts the contextual desktop and
+mobile presentation.
