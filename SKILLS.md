@@ -1,6 +1,6 @@
 # GridWatch Skill Guide
 
-Last reviewed: 2026-07-18
+Last reviewed: 2026-09-09
 
 Use this file to select the right Codex skill and verification path for work in
 GridWatch: Signal Breach. `AGENTS.md` remains the highest-priority project guide.
@@ -62,6 +62,21 @@ Codex review, and local CodeRabbit review before publication. Do not push a
 partial batch for remote preview; make one final push only after the owner has
 accepted the finished localhost build. This workflow changes publication timing,
 not the existing requirement for GitHub/CodeRabbit/Codex review of every push.
+CodeRabbit must automatically review every non-draft pull request and every new
+head commit. Its request-changes workflow must remain enabled, the current head
+must receive the required approval, and every review conversation must be
+resolved before merge. A skipped, paused, missing, stale, or failed CodeRabbit
+review is a blocking gate, not permission to merge.
+
+The enforced GitHub gate requires `build` from GitHub Actions App ID `15368`
+and CodeRabbit's native `CodeRabbit` status from GitHub App ID `347564`.
+CodeRabbit's request-changes workflow must remain enabled: actionable findings
+produce a blocking `CHANGES_REQUESTED` review, and CodeRabbit changes that
+review to `APPROVED` only after its findings are resolved. The ruleset also
+requires one approval, dismisses stale approvals after pushes, requires approval
+of the latest push by someone other than its pusher, and requires every review
+conversation to be resolved. Do not substitute an unbound custom status for
+CodeRabbit's native App identity.
 
 ### UI, input, rendering, copy, or local asset changes
 

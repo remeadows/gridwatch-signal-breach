@@ -1,5 +1,44 @@
 # GridWatch Handoff
 
+## CodeRabbit Merge Gate Repair - In Progress - 2026-09-09
+
+- PR #79 merged without a CodeRabbit response because the live `main-protection`
+  ruleset required only the `build` status and conversation resolution; its
+  required approval count was zero. The CodeRabbit GitHub App installation has
+  now been repaired by adding only `remeadows/gridwatch-signal-breach` to the
+  six repositories it could already access.
+- Work is now on `codex/coderabbit-required-gate`. This batch adds a repository
+  `.coderabbit.yaml` that enables automatic incremental reviews, disables the
+  automatic review pause, publishes review progress, and turns on CodeRabbit's
+  request-changes workflow. The tracked `main-protection` ruleset requires one
+  current approval plus both `build` and `CodeRabbit` status contexts. The
+  `CodeRabbit` context is bound to the `coderabbitai` GitHub App integration ID
+  `347564`, preventing another status producer from satisfying that check; the
+  `build` context is separately bound to GitHub Actions integration ID `15368`.
+  CodeRabbit's request-changes workflow supplies the review decision: actionable
+  findings remain `CHANGES_REQUESTED` until resolved, then CodeRabbit changes
+  its review to `APPROVED`. The ruleset requires one approval, dismisses stale
+  approvals after every push, requires approval of the latest push by someone
+  other than its pusher, and requires every review conversation to be resolved.
+  Linear-history, deletion, and force-push protections remain active with no
+  bypass actor.
+- PR #80 is the live acceptance test. After the repository was connected, the
+  manual full-review command produced the native `CodeRabbit` status on head
+  `9912a83`; CodeRabbit completed it successfully and requested changes, proving
+  the live gate blocks. Before merge, prove that the native status succeeds,
+  `coderabbitai[bot]` approves the current head, every conversation is resolved,
+  and GitHub reports the PR mergeable. Do not merge this gate-repair PR; the
+  owner retains that action.
+- YAML syntax, the tracked ruleset JSON, production build, dependency audit,
+  and whitespace checks pass. The initial four-file CodeRabbit CLI review had
+  no findings. A later authenticated review correctly rejected the unbound
+  `CodeRabbit` context; that finding is resolved with integration ID `347564`.
+  The CLI is authenticated as `remeadows` and linked to the matching CodeRabbit
+  organization. CodeRabbit's documented request-changes workflow, native
+  app-bound status, required approval, stale-review dismissal, latest-push
+  approval, and conversation resolution are the supported enforcement chain.
+  Re-run the authenticated review before every subsequent push.
+
 ## Phase 9B - Sapper Blender Visual Intake - Locally Verified - 2026-09-08
 
 - PR #76 merged the isolated Sapper mechanic proof to `main` as `9bf83b2`.
