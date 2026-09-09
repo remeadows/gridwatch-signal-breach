@@ -1,5 +1,39 @@
 # GridWatch Handoff
 
+## Phase 9B - Sapper Blender Visual Intake - Locally Verified - 2026-09-08
+
+- PR #76 merged the isolated Sapper mechanic proof to `main` as `9bf83b2`.
+  The owner then approved Blender as a local 3D source-authoring tool and
+  authorized GitHub publication for the next completed batch. Work is on
+  `codex/phase9b-sapper-blender-visual`, branched from that merge.
+- This batch is one Sapper visual family only. The candidate is a low tracked
+  breaching drone with forward demolition jaws, segmented armor, and an exposed
+  magenta capacitor. Blender 5.1 generates an editable `.blend`, 1024x1024
+  transparent master, and 256x256 transparent runtime PNG from the deterministic
+  script under `art/blender/expansion1/`.
+- The raster is isolated to the localhost `?sapper-preview=1` lab, with
+  board-scale rendering, 55/43/32 CSS-pixel samples, and procedural fallback.
+  It is not added to playable enemy types, Chapter 2 content, `src/sim/index.ts`,
+  the production sprite registry, replays, validator, leaderboard, Supabase, or
+  GridWatchGamesDB.
+- The machine manifest records Blender scene/script/image provenance and keeps
+  `ownerApproved: false` until contextual desktop/mobile approval. The normal
+  asset gate verifies 16 assets at 854,456 runtime bytes; release mode rejects
+  Sapper as intended until that approval is recorded.
+- Local asset, Sapper, frozen-content/replay/progress, expansion-sim, balance,
+  validator-hash, build, tool-typecheck, audit, and responsive browser gates
+  pass. The Chapter 1 balance result remains 20/20 guided clears, 5/5 empty
+  losses, hash `1cf49097f34151cfe0fdae7ba837056753c3d591eb29fc80faed2ca18194fe5b`;
+  the validator remains byte-identical at
+  `48a3ecf68be9d05e57ccabb2c90e335669a1a1808fbda814ac7ea81a952dafa6`.
+  Chrome QA at 1440x1000 and 390x844 proves both Sapper outcomes, native
+  256x256 image loads, a 346px mobile canvas, zero horizontal overflow, and
+  zero page exceptions, log entries, or failed network loads. The independent
+  local Codex review reports no actionable regressions. The installed
+  CodeRabbit CLI is signed out, so the GitHub CodeRabbit app must review the
+  published PR before merge; follow and resolve every conversation. Do not
+  merge without separate owner approval.
+
 ## PR #76 Review Remediation - 2026-08-31
 
 - PR #76 has one valid Codex review finding: the local Sapper laboratory mixed

@@ -246,6 +246,36 @@
   text-transform: uppercase;
 }
 
+.sapper-lab__scale-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.sapper-lab__scale-sample {
+  display: grid;
+  min-height: 88px;
+  place-items: center;
+  align-content: center;
+  gap: 5px;
+  border: 1px solid rgba(120, 255, 238, .14);
+  background:
+    linear-gradient(90deg, transparent 49%, rgba(120, 255, 238, .08) 50%, transparent 51%),
+    linear-gradient(transparent 49%, rgba(120, 255, 238, .08) 50%, transparent 51%),
+    rgba(2, 9, 14, .72);
+}
+
+.sapper-lab__scale-sample img {
+  display: block;
+  object-fit: contain;
+}
+
+.sapper-lab__scale-sample span {
+  color: rgba(215, 255, 247, .58);
+  font-size: 9px;
+  text-transform: uppercase;
+}
+
 @media (max-width: 820px) {
   .sapper-lab__shell {
     width: min(100% - 20px, 680px);

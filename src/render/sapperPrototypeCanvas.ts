@@ -15,6 +15,7 @@ export function renderSapperPrototypeCanvas(
   context: CanvasRenderingContext2D,
   state: SapperPrototypeState,
   recentEvents: readonly SapperPrototypeEvent[],
+  sapperSprite: CanvasImageSource | null = null,
 ): void {
   context.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
   drawFloor(context);
@@ -34,7 +35,7 @@ export function renderSapperPrototypeCanvas(
   if (intrusion && selectedTarget) drawTargetPath(context, intrusion.position, selectedTarget.path);
   for (const item of state.hardware) drawHardware(context, item, selectedTarget?.position);
   drawCore(context, state.core.x, state.core.y);
-  if (intrusion) drawSapper(context, intrusion.position.x, intrusion.position.y, intrusion.hp);
+  if (intrusion) drawSapper(context, intrusion.position.x, intrusion.position.y, intrusion.hp, sapperSprite);
 
   const pulse = [...recentEvents].reverse().find((event) => event.type === "sapperDeathPulse");
   if (pulse?.type === "sapperDeathPulse") drawPulse(context, pulse.position.x, pulse.position.y);
@@ -116,8 +117,25 @@ function drawHardware(
   context.restore();
 }
 
-function drawSapper(context: CanvasRenderingContext2D, x: number, y: number, hp: number): void {
+function drawSapper(
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  hp: number,
+  sprite: CanvasImageSource | null,
+): void {
   const center = tileCenter(x, y);
+  if (sprite) {
+    context.save();
+    context.fillStyle = "rgba(0, 0, 0, .48)";
+    context.beginPath();
+    context.ellipse(center.x, center.y + 15, 25, 10, 0, 0, Math.PI * 2);
+    context.fill();
+    context.drawImage(sprite, center.x - 31, center.y - 31, 62, 62);
+    context.restore();
+    drawHpBar(context, x, y, hp, SAPPER_PROTOTYPE.maxHp, "#ff4f91");
+    return;
+  }
   context.save();
   context.translate(center.x, center.y);
   context.fillStyle = "rgba(255, 79, 145, .18)";

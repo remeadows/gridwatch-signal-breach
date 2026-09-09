@@ -1,4 +1,5 @@
 import "./sapperPrototypePreview.css";
+import sapperUrl from "../assets/board/expansion1/gw-expansion1-sapper-board-v1.png";
 import { renderSapperPrototypeCanvas } from "../render/sapperPrototypeCanvas";
 import {
   SAPPER_PROTOTYPE,
@@ -49,6 +50,8 @@ export function mountSapperPrototypePreview(parent: HTMLElement): () => void {
   let mode: FormationMode = "safe";
   let state = createFormation(mode);
   let timer: number | null = null;
+  let sapperSprite: HTMLImageElement | null = null;
+  let disposed = false;
 
   const stopAuto = () => {
     if (timer !== null) window.clearInterval(timer);
@@ -58,7 +61,7 @@ export function mountSapperPrototypePreview(parent: HTMLElement): () => void {
   };
 
   const render = (recentEvents: readonly SapperPrototypeEvent[] = []) => {
-    renderSapperPrototypeCanvas(context, state, recentEvents);
+    renderSapperPrototypeCanvas(context, state, recentEvents, sapperSprite);
     const intrusion = state.intrusions[0];
     const selectedTarget = intrusion ? selectSapperPrototypeTarget(state, intrusion) : null;
     status.textContent = intrusion
@@ -119,8 +122,14 @@ export function mountSapperPrototypePreview(parent: HTMLElement): () => void {
   }
   window.addEventListener("pagehide", stopAuto, { once: true });
   reset();
+  void loadSapperSprite().then((image) => {
+    if (disposed) return;
+    sapperSprite = image;
+    render();
+  });
 
   return () => {
+    disposed = true;
     stopAuto();
     window.removeEventListener("pagehide", stopAuto);
     preview.remove();
@@ -137,12 +146,13 @@ function createMarkup(): string {
     <div class="sapper-lab__shell">
       <header class="sapper-lab__header">
         <div>
-          <p class="sapper-lab__eyebrow">Expansion 1 · Phase 9A · Local mechanic proof</p>
+          <p class="sapper-lab__eyebrow">Expansion 1 · Phase 9B · Blender visual intake</p>
           <h1>Sapper formation test</h1>
           <p class="sapper-lab__summary">
             The Sapper strictly targets a reachable Firewall, then releases a 6-damage
             orthogonal pulse when ICE neutralizes it. Compare identical combat timing
-            with safe and clustered hardware placement. Procedural glyph only—production art is not approved.
+            with safe and clustered hardware placement. The Blender-built raster is isolated to this
+            preview pending owner visual approval.
           </p>
         </div>
         <a class="sapper-lab__button" href="/">OPEN CURRENT GAME</a>
@@ -194,6 +204,20 @@ function createMarkup(): string {
             </ul>
           </section>
 
+          <section class="sapper-lab__panel" aria-labelledby="sapper-scale-title">
+            <div class="sapper-lab__panel-heading">
+              <h2 id="sapper-scale-title">Board-scale read</h2>
+              <span class="sapper-lab__tag">55 / 43 / 32 CSS PX</span>
+            </div>
+            <div class="sapper-lab__scale-row">
+              ${[55, 43, 32].map((size) => `
+                <div class="sapper-lab__scale-sample">
+                  <img src="${sapperUrl}" alt="" width="${size}" height="${size}">
+                  <span>${size} px</span>
+                </div>`).join("")}
+            </div>
+          </section>
+
           <section class="sapper-lab__panel" aria-labelledby="sapper-events-title">
             <div class="sapper-lab__panel-heading">
               <h2 id="sapper-events-title">Recent sim events</h2>
@@ -204,6 +228,19 @@ function createMarkup(): string {
         </aside>
       </div>
     </div>`;
+}
+
+async function loadSapperSprite(): Promise<HTMLImageElement | null> {
+  const image = new Image();
+  image.decoding = "async";
+  image.src = sapperUrl;
+  try {
+    await image.decode();
+    return image;
+  } catch {
+    console.warn("GridWatch Sapper preview sprite failed to load; using the procedural fallback.");
+    return null;
+  }
 }
 
 function createFormation(mode: FormationMode): SapperPrototypeState {
