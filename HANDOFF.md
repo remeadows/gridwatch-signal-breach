@@ -1,5 +1,28 @@
 # GridWatch Handoff
 
+## CodeRabbit Merge Gate Repair - In Progress - 2026-09-09
+
+- PR #79 merged without a CodeRabbit response because the live `main-protection`
+  ruleset required only the `build` status and conversation resolution; its
+  required approval count was zero. The CodeRabbit GitHub App is installed on
+  the owner account, but its repository access still needs to be reconfirmed.
+- Work is now on `codex/coderabbit-required-gate`. This batch adds a repository
+  `.coderabbit.yaml` that enables automatic incremental reviews, disables the
+  automatic review pause, publishes review progress, and turns on CodeRabbit's
+  request-changes workflow. The tracked `main-protection` ruleset now requires
+  one current approval while preserving strict build, resolved-conversation,
+  linear-history, deletion, and force-push protections with no bypass actor.
+- Before merge, reconfirm that the CodeRabbit installation can access
+  `remeadows/gridwatch-signal-breach`, open the repair PR, and prove that
+  `coderabbitai[bot]` reviews the current head. Bind CodeRabbit's native check
+  run to the live ruleset if the repaired installation publishes one. Do not
+  merge this gate-repair PR; the owner retains that action.
+- YAML syntax, the tracked ruleset JSON, production build, dependency audit,
+  whitespace checks, and local CodeRabbit CLI review pass. CodeRabbit reported
+  no findings across the four changed files, while also confirming that this
+  repository is not currently connected to a CodeRabbit organization visible
+  to the CLI session.
+
 ## Phase 9B - Sapper Blender Visual Intake - Locally Verified - 2026-09-08
 
 - PR #76 merged the isolated Sapper mechanic proof to `main` as `9bf83b2`.
