@@ -1,0 +1,478 @@
+{
+  "version": "blender-v2-slice",
+  "blenderVersion": "5.1.0",
+  "sourceScript": "art/blender/expansion1/build-tactical-slice-v2.py",
+  "sourceScriptSha256": "9ede7766080ca385e8d948603f232fcd70c3ac166f6de187c44b96071bc67d3f",
+  "rigScript": "art/blender/expansion1/tactical-rig-v2.py",
+  "rigScriptSha256": "a1d3d8db8453de4c06781145be898a732862eec71f96cff978b0bb6b5fc5cd4c",
+  "renderEngine": "CYCLES",
+  "renderDevice": "CPU",
+  "renderThreads": 4,
+  "renderSeed": 17,
+  "masterSamples": 40,
+  "runtimeSamples": 64,
+  "assets": [
+    {
+      "id": "floor-chapter1",
+      "status": "candidate",
+      "ownerApproved": false,
+      "camera": "orthographic-90deg-square",
+      "light": "upper-left-studio-key",
+      "masterSize": [
+        1024,
+        1024
+      ],
+      "runtimeSize": [
+        256,
+        256
+      ],
+      "model": "art/source/blender-v2/gw-blender-v2-floor-chapter1-source.blend",
+      "modelSha256": "7e189c2f9a37c822c7688fe913111875004e8089e4f38cbe8aa579adce930aac",
+      "master": "art/source/blender-v2/gw-blender-v2-floor-chapter1-master.png",
+      "masterSha256": "a9512032b3392f6704d8ee28c9f971f2eb34121e701d9a43bfcf055e3ed2544c",
+      "runtime": "src/assets/board/blender-v2/gw-blender-v2-floor-chapter1-board.png",
+      "runtimeSha256": "a6a95f9f97fc9d7dd6c07040946301c5ccfacb07b8bbfca13cc70dac16b86884",
+      "runtimeBytes": 53629
+    },
+    {
+      "id": "floor-chapter2",
+      "status": "candidate",
+      "ownerApproved": false,
+      "camera": "orthographic-90deg-square",
+      "light": "upper-left-studio-key",
+      "masterSize": [
+        1024,
+        1024
+      ],
+      "runtimeSize": [
+        256,
+        256
+      ],
+      "model": "art/source/blender-v2/gw-blender-v2-floor-chapter2-source.blend",
+      "modelSha256": "5ed74703e33251c290e7e8f24203f23ed7f403b07ecf97b4309cb941c5afe9df",
+      "master": "art/source/blender-v2/gw-blender-v2-floor-chapter2-master.png",
+      "masterSha256": "68fac8f40e289765d7826f61bb6c46c3a147d4a3e299b51c8d22396fe9e2b5ed",
+      "runtime": "src/assets/board/blender-v2/gw-blender-v2-floor-chapter2-board.png",
+      "runtimeSha256": "73dddccea54b99091a96dc2d3ce9bfca5869deed06df45739970df19fd1a956c",
+      "runtimeBytes": 56119
+    },
+    {
+      "id": "floor-chapter3",
+      "status": "candidate",
+      "ownerApproved": false,
+      "camera": "orthographic-90deg-square",
+      "light": "upper-left-studio-key",
+      "masterSize": [
+        1024,
+        1024
+      ],
+      "runtimeSize": [
+        256,
+        256
+      ],
+      "model": "art/source/blender-v2/gw-blender-v2-floor-chapter3-source.blend",
+      "modelSha256": "9aafeb0076b3ed9ba7184cd4e48cb979a3e5bb0e3c1fdfd2b7369a6aafd30002",
+      "master": "art/source/blender-v2/gw-blender-v2-floor-chapter3-master.png",
+      "masterSha256": "85ff0b7e21187cd544cce9ac87c329c1bc18d3111aee21f6db08d3df4eb8896c",
+      "runtime": "src/assets/board/blender-v2/gw-blender-v2-floor-chapter3-board.png",
+      "runtimeSha256": "262df394e2c4cf17fb99ccc5e69005c046a4d36970059d695adf73279dc82eef",
+      "runtimeBytes": 55725
+    },
+    {
+      "id": "relay",
+      "status": "candidate",
+      "ownerApproved": false,
+      "camera": "orthographic-70deg",
+      "light": "upper-left-studio-key",
+      "masterSize": [
+        1024,
+        1024
+      ],
+      "runtimeSize": [
+        256,
+        256
+      ],
+      "model": "art/source/blender-v2/gw-blender-v2-relay-source.blend",
+      "modelSha256": "6180d7ad756645703ccc7eb99de847bc35f1c262bb894215841466d81ed997b2",
+      "master": "art/source/blender-v2/gw-blender-v2-relay-master.png",
+      "masterSha256": "bfe3d896fda096f6dcc5ce6ca5be31e27c97452c26a5940fc8f9bf07b82b22e2",
+      "runtime": "src/assets/board/blender-v2/gw-blender-v2-relay-board.png",
+      "runtimeSha256": "5f20b5f942c3ef739aea729ed94bde178c55ce597455221c1ab7ba0eab7a78af",
+      "runtimeBytes": 62187
+    },
+    {
+      "id": "turret",
+      "status": "candidate",
+      "ownerApproved": false,
+      "camera": "orthographic-70deg",
+      "light": "upper-left-studio-key",
+      "masterSize": [
+        1024,
+        1024
+      ],
+      "runtimeSize": [
+        256,
+        256
+      ],
+      "model": "art/source/blender-v2/gw-blender-v2-turret-source.blend",
+      "modelSha256": "8b3736c00195e55e303daa3f22063006b128d1534b55b15c46f7b044e9fb7ea6",
+      "master": "art/source/blender-v2/gw-blender-v2-turret-master.png",
+      "masterSha256": "8b3f2833ea19807bcdfb3885a7270fec976763ab1fd9011515e9c7877795f153",
+      "runtime": "src/assets/board/blender-v2/gw-blender-v2-turret-board.png",
+      "runtimeSha256": "fc59d7990466d1cd87923c6cccd9b26c567492064ab944753fd5b4790707d394",
+      "runtimeBytes": 62502
+    },
+    {
+      "id": "source",
+      "status": "candidate",
+      "ownerApproved": false,
+      "camera": "orthographic-70deg",
+      "light": "upper-left-studio-key",
+      "masterSize": [
+        1024,
+        1024
+      ],
+      "runtimeSize": [
+        256,
+        256
+      ],
+      "model": "art/source/blender-v2/gw-blender-v2-source-source.blend",
+      "modelSha256": "47c8699323998edbe2dadcec37193af2d0c7d902fb2175cedb782b818389eb16",
+      "master": "art/source/blender-v2/gw-blender-v2-source-master.png",
+      "masterSha256": "78238fc469a236ac4d7e7ad0537e077980777822fbb72db2bc3ce89d1412b938",
+      "runtime": "src/assets/board/blender-v2/gw-blender-v2-source-board.png",
+      "runtimeSha256": "9c6c1dbd2af6c23dfd1681fb591629415a8f619fdd37d8c51ba4eefe46e36e77",
+      "runtimeBytes": 60026
+    },
+    {
+      "id": "core",
+      "status": "candidate",
+      "ownerApproved": false,
+      "camera": "orthographic-70deg",
+      "light": "upper-left-studio-key",
+      "masterSize": [
+        1024,
+        1024
+      ],
+      "runtimeSize": [
+        256,
+        256
+      ],
+      "model": "art/source/blender-v2/gw-blender-v2-core-source.blend",
+      "modelSha256": "22efabaceeca80d120a49d3ce0d66bb41b16c20df6351aa81796495c0afb184b",
+      "master": "art/source/blender-v2/gw-blender-v2-core-master.png",
+      "masterSha256": "a3321b8f2c7d31548ed40017365b01a410e80d84586bec10cde2fc0b5b3d5fdd",
+      "runtime": "src/assets/board/blender-v2/gw-blender-v2-core-board.png",
+      "runtimeSha256": "32c18c0bf1fb29dd4f1e43d6b413132acff7accfddcba6288fdd54c4bab2ad92",
+      "runtimeBytes": 63604
+    },
+    {
+      "id": "firewall",
+      "status": "candidate",
+      "ownerApproved": false,
+      "camera": "orthographic-70deg",
+      "light": "upper-left-studio-key",
+      "masterSize": [
+        1024,
+        1024
+      ],
+      "runtimeSize": [
+        256,
+        256
+      ],
+      "model": "art/source/blender-v2/gw-blender-v2-firewall-source.blend",
+      "modelSha256": "6ba43b5eb9408b7f3d3072c25dd0696f02a69dda16ac63de664ef839400fa507",
+      "master": "art/source/blender-v2/gw-blender-v2-firewall-master.png",
+      "masterSha256": "7e000ca25cf187cc748fc5c2088855fb807fb70e2b9fbc693c6da71a6468fe6b",
+      "runtime": "src/assets/board/blender-v2/gw-blender-v2-firewall-board.png",
+      "runtimeSha256": "f22cb6bbc230642d78ba3cf7cdea966e484b68b1c729f1fc9e88de587162414b",
+      "runtimeBytes": 37189
+    },
+    {
+      "id": "scrubber",
+      "status": "candidate",
+      "ownerApproved": false,
+      "camera": "orthographic-70deg",
+      "light": "upper-left-studio-key",
+      "masterSize": [
+        1024,
+        1024
+      ],
+      "runtimeSize": [
+        256,
+        256
+      ],
+      "model": "art/source/blender-v2/gw-blender-v2-scrubber-source.blend",
+      "modelSha256": "f21864d8e5f70eadb0315d7f4c0f3169592bdaf83277896d81b3dd6f5852cc77",
+      "master": "art/source/blender-v2/gw-blender-v2-scrubber-master.png",
+      "masterSha256": "554f33f7b875116e00d6093a8a521805bc43a02c455724eef5d562e969aa3d5a",
+      "runtime": "src/assets/board/blender-v2/gw-blender-v2-scrubber-board.png",
+      "runtimeSha256": "c3976134a73fabd867e799172aa69e5fc4db0dc9b2c6254d9440386b2514a677",
+      "runtimeBytes": 59820
+    },
+    {
+      "id": "overclock",
+      "status": "candidate",
+      "ownerApproved": false,
+      "camera": "orthographic-70deg",
+      "light": "upper-left-studio-key",
+      "masterSize": [
+        1024,
+        1024
+      ],
+      "runtimeSize": [
+        256,
+        256
+      ],
+      "model": "art/source/blender-v2/gw-blender-v2-overclock-source.blend",
+      "modelSha256": "6a3ff49a04fe0e7540e4203fdf6614a51e976981d5bce42283967d4dfd981296",
+      "master": "art/source/blender-v2/gw-blender-v2-overclock-master.png",
+      "masterSha256": "acbef0fe2ba6e25303023e0c111b9589401890fe6cf4443172c8625f4754524d",
+      "runtime": "src/assets/board/blender-v2/gw-blender-v2-overclock-board.png",
+      "runtimeSha256": "5d7921bb57ccd5291653f667b45dab5d985916443ca13e8ad5d6ef7cacd5fe64",
+      "runtimeBytes": 59724
+    },
+    {
+      "id": "latency-trap",
+      "status": "candidate",
+      "ownerApproved": false,
+      "camera": "orthographic-70deg",
+      "light": "upper-left-studio-key",
+      "masterSize": [
+        1024,
+        1024
+      ],
+      "runtimeSize": [
+        256,
+        256
+      ],
+      "model": "art/source/blender-v2/gw-blender-v2-latency-trap-source.blend",
+      "modelSha256": "ab4337cc949069778321a8bf0a74097d5ebbb0b7e399b74a4a0b0d3ad01131cf",
+      "master": "art/source/blender-v2/gw-blender-v2-latency-trap-master.png",
+      "masterSha256": "bc0ef48cfb60de55f7e899a537d2e6384457e820c2c53cff21f83c29af878cae",
+      "runtime": "src/assets/board/blender-v2/gw-blender-v2-latency-trap-board.png",
+      "runtimeSha256": "0afe83d48a5142327b775267f519f71cbf80e4557f13a2a7ab8231cbbed0607a",
+      "runtimeBytes": 63768
+    },
+    {
+      "id": "probe",
+      "status": "candidate",
+      "ownerApproved": false,
+      "camera": "orthographic-70deg",
+      "light": "upper-left-studio-key",
+      "masterSize": [
+        1024,
+        1024
+      ],
+      "runtimeSize": [
+        256,
+        256
+      ],
+      "model": "art/source/blender-v2/gw-blender-v2-probe-source.blend",
+      "modelSha256": "c2e8fc8a99635a41c79e2420ec047953076207198efaf83d95d416c28b4f17d8",
+      "master": "art/source/blender-v2/gw-blender-v2-probe-master.png",
+      "masterSha256": "503b907f7b29e409f75ce19485ec189b25646141f744faf1c5287eaae8ca2ae7",
+      "runtime": "src/assets/board/blender-v2/gw-blender-v2-probe-board.png",
+      "runtimeSha256": "86c3b0e0fce948c814233e22d9d0dc2bb2703bd9d21858e95b1bd95b69caae8d",
+      "runtimeBytes": 29612
+    },
+    {
+      "id": "crawler",
+      "status": "candidate",
+      "ownerApproved": false,
+      "camera": "orthographic-70deg",
+      "light": "upper-left-studio-key",
+      "masterSize": [
+        1024,
+        1024
+      ],
+      "runtimeSize": [
+        256,
+        256
+      ],
+      "model": "art/source/blender-v2/gw-blender-v2-crawler-source.blend",
+      "modelSha256": "0e42ae2f3435a3f2f57ccd2d1ada3dc4cbc0aa362445e1302178733131249fae",
+      "master": "art/source/blender-v2/gw-blender-v2-crawler-master.png",
+      "masterSha256": "d5a2b6b9d6a6819975817c8621aa72af75a20630ef4201cfab870fff6d94dfde",
+      "runtime": "src/assets/board/blender-v2/gw-blender-v2-crawler-board.png",
+      "runtimeSha256": "2bee93c1bc7579d07aa07d560eaa9880625b3384a3a531f688532e30bf1bf35c",
+      "runtimeBytes": 46274
+    },
+    {
+      "id": "spoof",
+      "status": "candidate",
+      "ownerApproved": false,
+      "camera": "orthographic-70deg",
+      "light": "upper-left-studio-key",
+      "masterSize": [
+        1024,
+        1024
+      ],
+      "runtimeSize": [
+        256,
+        256
+      ],
+      "model": "art/source/blender-v2/gw-blender-v2-spoof-source.blend",
+      "modelSha256": "93be9d9e46c61cd7cc37c32ebd263f165a7c547147f129154c860f227c3d59c0",
+      "master": "art/source/blender-v2/gw-blender-v2-spoof-master.png",
+      "masterSha256": "40a328345b6f0aeab7c18500022d9977cc8402d861ad06f9771fb7e5a5d96df5",
+      "runtime": "src/assets/board/blender-v2/gw-blender-v2-spoof-board.png",
+      "runtimeSha256": "344fb25dda472ffb54e6bb3f03afc0938f1bf35708faec4589b2d35a6b0c1b54",
+      "runtimeBytes": 37597
+    },
+    {
+      "id": "hunter",
+      "status": "candidate",
+      "ownerApproved": false,
+      "camera": "orthographic-70deg",
+      "light": "upper-left-studio-key",
+      "masterSize": [
+        1024,
+        1024
+      ],
+      "runtimeSize": [
+        256,
+        256
+      ],
+      "model": "art/source/blender-v2/gw-blender-v2-hunter-source.blend",
+      "modelSha256": "e2216472afae7cc92f6f07dac649651e33528b2aa5274c092dd60a6cf3e6c8c0",
+      "master": "art/source/blender-v2/gw-blender-v2-hunter-master.png",
+      "masterSha256": "99b212e52f4ab58397d09decf284ea91d197c404d1d050c10bba81c82170a988",
+      "runtime": "src/assets/board/blender-v2/gw-blender-v2-hunter-board.png",
+      "runtimeSha256": "26d63bcc3cf91d2f17f2ed609da2a1785a467c362f7b73657924fe85a2359829",
+      "runtimeBytes": 42186
+    },
+    {
+      "id": "splitter",
+      "status": "candidate",
+      "ownerApproved": false,
+      "camera": "orthographic-70deg",
+      "light": "upper-left-studio-key",
+      "masterSize": [
+        1024,
+        1024
+      ],
+      "runtimeSize": [
+        256,
+        256
+      ],
+      "model": "art/source/blender-v2/gw-blender-v2-splitter-source.blend",
+      "modelSha256": "77a91c65c8db0996e1242008439f51159cefbf65ff9fa231e9293435dbfb1a71",
+      "master": "art/source/blender-v2/gw-blender-v2-splitter-master.png",
+      "masterSha256": "63f5e122b859ac757d46531dbd1f34b032d9365115c830a9bdd9b6a211d0dd0b",
+      "runtime": "src/assets/board/blender-v2/gw-blender-v2-splitter-board.png",
+      "runtimeSha256": "b447b871aa57ae8f044e1d45fd113750859b0f401e3c58a1aba5164ad4095d26",
+      "runtimeBytes": 38266
+    },
+    {
+      "id": "goliath",
+      "status": "candidate",
+      "ownerApproved": false,
+      "camera": "orthographic-70deg",
+      "light": "upper-left-studio-key",
+      "masterSize": [
+        1024,
+        1024
+      ],
+      "runtimeSize": [
+        256,
+        256
+      ],
+      "model": "art/source/blender-v2/gw-blender-v2-goliath-source.blend",
+      "modelSha256": "5f381a7a7c42d8b64c2aa00cc6a0931c2817347bb2a861fbf766ae0fa23de7e6",
+      "master": "art/source/blender-v2/gw-blender-v2-goliath-master.png",
+      "masterSha256": "588ceb9933572a8becdecd4142809a77a5c003a15be6e0f34309b717daf0e81a",
+      "runtime": "src/assets/board/blender-v2/gw-blender-v2-goliath-board.png",
+      "runtimeSha256": "516cd0463524dbd757d39da498673cfaad5e79f6f1d5360c0cf4427beed3a351",
+      "runtimeBytes": 55198
+    },
+    {
+      "id": "rusher",
+      "status": "candidate",
+      "ownerApproved": false,
+      "camera": "orthographic-70deg",
+      "light": "upper-left-studio-key",
+      "masterSize": [
+        1024,
+        1024
+      ],
+      "runtimeSize": [
+        256,
+        256
+      ],
+      "model": "art/source/blender-v2/gw-blender-v2-rusher-source.blend",
+      "modelSha256": "07d8fe4c9e2ae6c41b2fc67bf8751974ec7d873dc96b9b2bbcdcbeffd701d728",
+      "master": "art/source/blender-v2/gw-blender-v2-rusher-master.png",
+      "masterSha256": "f69db7f903a74a29d200ccf2e96cbcbccb0f991b22d4fe6e33f77be649b84670",
+      "runtime": "src/assets/board/blender-v2/gw-blender-v2-rusher-board.png",
+      "runtimeSha256": "361738532a3a194c628ed84286009a80e680f1e9f1b54a61a74d061a1f72eb47",
+      "runtimeBytes": 32372
+    },
+    {
+      "id": "sapper",
+      "status": "candidate",
+      "ownerApproved": false,
+      "camera": "orthographic-70deg",
+      "light": "upper-left-studio-key",
+      "masterSize": [
+        1024,
+        1024
+      ],
+      "runtimeSize": [
+        256,
+        256
+      ],
+      "model": "art/source/blender-v2/gw-blender-v2-sapper-source.blend",
+      "modelSha256": "e23c7e25c726d45692a44407471158678a84bbd1dc412d297d733777fe3d39c4",
+      "master": "art/source/blender-v2/gw-blender-v2-sapper-master.png",
+      "masterSha256": "ddf281c730bd5161e4c85f7f3cf6e24f4c2266936b2f380b06099dacfcdfcd66",
+      "runtime": "src/assets/board/blender-v2/gw-blender-v2-sapper-board.png",
+      "runtimeSha256": "0c5b8c68e90b4daca625c5f64ea39a6642b5c34da736d9402c1d6327ab3b585c",
+      "runtimeBytes": 45427
+    },
+    {
+      "id": "arc-turret",
+      "status": "candidate",
+      "ownerApproved": false,
+      "camera": "orthographic-70deg",
+      "light": "upper-left-studio-key",
+      "masterSize": [
+        1024,
+        1024
+      ],
+      "runtimeSize": [
+        256,
+        256
+      ],
+      "model": "art/source/blender-v2/gw-blender-v2-arc-turret-source.blend",
+      "modelSha256": "0fc95962afd63e667eacb6375e37aa8549a076f1e250520bce2aed2acc1795ec",
+      "master": "art/source/blender-v2/gw-blender-v2-arc-turret-master.png",
+      "masterSha256": "b1b60cc836524b47960f4da3c4ad5d46884aa8b240a22a90f4c6a0ee763f313a",
+      "runtime": "src/assets/board/blender-v2/gw-blender-v2-arc-turret-board.png",
+      "runtimeSha256": "d263e7f971ae3bc53877243141b1d2d8b4603239d08405487bbe15a9cd35b835",
+      "runtimeBytes": 59765
+    },
+    {
+      "id": "shield-drone",
+      "status": "candidate",
+      "ownerApproved": false,
+      "camera": "orthographic-70deg",
+      "light": "upper-left-studio-key",
+      "masterSize": [
+        1024,
+        1024
+      ],
+      "runtimeSize": [
+        256,
+        256
+      ],
+      "model": "art/source/blender-v2/gw-blender-v2-shield-drone-source.blend",
+      "modelSha256": "a432ceb77299277d1dbb4d067946abdd0c27ecc1ea81b6aa67010302b07e687f",
+      "master": "art/source/blender-v2/gw-blender-v2-shield-drone-master.png",
+      "masterSha256": "4045f6b958f73d1834bacd9d91234c55febe7dc2b538a2939a7dac6e29231898",
+      "runtime": "src/assets/board/blender-v2/gw-blender-v2-shield-drone-board.png",
+      "runtimeSha256": "291b7f9332414d5207689f4fc271d4b485847c85442a160a8f3a97ff9f25343e",
+      "runtimeBytes": 37154
+    }
+  ]
+}

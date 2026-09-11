@@ -1,0 +1,11 @@
+{
+  "version": "expansion-blender-v2-candidate",
+  "status": "candidate",
+  "ownerApproved": false,
+  "sourceProvenance": "art/source/blender-v2/provenance.json",
+  "maxActiveRosterBytes": 1572864,
+  "maxAssetBytes": 92160,
+  "maxActiveDecodedBytes": 25165824,
+  "runtimeDimensions": [256, 256],
+  "families": ["floor-chapter1", "floor-chapter2", "floor-chapter3", "source", "core", "relay", "firewall", "turret", "scrubber", "overclock", "latency-trap", "probe", "crawler", "spoof", "hunter", "splitter", "goliath", "rusher", "sapper", "arc-turret", "shield-drone"]
+}
