@@ -4,7 +4,7 @@ import { getExpansionSapperTarget } from "../sim/expansion/intrusions";
 import { ARC_ICE_RULES, getShieldLinks, type ShieldLink } from "../sim/expansion/shieldNetwork";
 import type { ExpansionGameState, ExpansionHardwareKind, ExpansionPlayerTool } from "../sim/expansion/types";
 import type { GridPosition } from "../sim/types";
-import { getBoardMetrics } from "./canvas";
+import { getExpansionBoardMetrics } from "./expansionCanvas";
 import { getExpansionArtSprite } from "./expansionBlenderRegistry";
 import { getExpansionFloorAssetId, type ExpansionArtMode, type ExpansionVisualAssetId } from "./expansionArtCatalog";
 import { getExpansionShotEndpoints, type ExpansionVisualSnapshot } from "./expansionVisualTimeline";
@@ -32,7 +32,7 @@ export function drawExpansionGrid(
   frame: ExpansionRenderFrame,
 ): void {
   const size = { width: canvas.width, height: canvas.height };
-  const metrics = getBoardMetrics(size);
+  const metrics = getExpansionBoardMetrics(canvas);
   const { originX, originY, tileSize } = metrics;
   context.clearRect(0, 0, size.width, size.height);
   const background = context.createRadialGradient(size.width * 0.5, size.height * 0.45, 20, size.width * 0.5, size.height * 0.5, size.width * 0.72);

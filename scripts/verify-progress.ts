@@ -141,14 +141,14 @@ expectEqual(
 );
 expectEqual(
   isExpansionChapterAvailable(2, chapterOneCleared.campaigns["expansion-1"].highestUnlockedLevel),
-  true,
-  "Clearing Level 5 must expose authored Chapter 2.",
+  false,
+  "Historical progress IDs must not be used as remapped r4 chapter access.",
 );
 const storedBeforeInvalidExpansionClear = legacyStorage.getItem(PROGRESS_STORAGE_KEY);
 const chapterStorage = new MemoryStorage();
 const chapterTwoCleared = markExpansionLevelCleared(chapterOneCleared, 10, chapterStorage);
 expectEqual(chapterTwoCleared.campaigns["expansion-1"].highestUnlockedLevel, 11, "Clearing Level 10 must unlock Level 11.");
-expectEqual(isExpansionChapterAvailable(3, chapterTwoCleared.campaigns["expansion-1"].highestUnlockedLevel), true, "Clearing Level 10 must expose Chapter 3.");
+expectEqual(isExpansionChapterAvailable(3, chapterTwoCleared.campaigns["expansion-1"].highestUnlockedLevel), false, "Historical progress needs r4 migration before Chapter 3 navigation.");
 expectDeepEqual(loadGameProgress(chapterStorage), chapterTwoCleared, "Chapter 3 unlock did not survive storage reload.");
 const milestoneCleared = markExpansionLevelCleared(chapterTwoCleared, 15, chapterStorage);
 expectEqual(milestoneCleared.campaigns["expansion-1"].highestUnlockedLevel, 16, "Milestone completion must preserve the next sequential identity.");

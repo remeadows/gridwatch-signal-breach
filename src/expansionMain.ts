@@ -11,7 +11,7 @@ import { ExpansionVisualTimeline } from "./render/expansionVisualTimeline";
 import { applyExpansionCommand, calculateExpansionScore, createExpansionGameState, tickExpansion, type ExpansionPlayerTool, type ExpansionSimCommand } from "./sim/expansion";
 import { getCurrentExpansionWave } from "./sim/expansion/waves";
 import type { GridPosition } from "./sim/types";
-import { loadGameProgress, markExpansionLevelCleared } from "./ui/progress";
+import { loadExpansionR4Progress, markExpansionR4LevelCleared } from "./ui/expansionProgressR4";
 
 const canvas = required<HTMLCanvasElement>("#game-canvas");
 const context = canvas.getContext("2d");
@@ -116,7 +116,7 @@ function frame(now: number): void {
   if (state.phase === "won" && !clearRecorded) {
     // The immutable updater persists through its default browser-storage
     // argument; the reload-driven level-select flow reads that stored result.
-    markExpansionLevelCleared(loadGameProgress(), levelId);
+    markExpansionR4LevelCleared(loadExpansionR4Progress(), levelId);
     clearRecorded = true;
   }
   previousPhase = state.phase;

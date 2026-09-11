@@ -1,5 +1,6 @@
 import { SECTORS } from "./data/levels";
 import { isExpansionChapterAvailable } from "./data/campaigns/expansion";
+import { loadExpansionR4Progress } from "./ui/expansionProgressR4";
 import { installPointerInput } from "./input/pointer";
 import { drawAmbientBackdrop, drawGrid } from "./render/renderer";
 import { getBoardArtMode, preloadPhase6BoardSprites } from "./render/assetRegistry";
@@ -95,10 +96,11 @@ function dispatch(command: SimCommand): void {
 }
 
 let progress: GameProgress = loadGameProgress();
+const expansionProgress = expansionNavigationEnabled ? loadExpansionR4Progress() : loadExpansionR4Progress(null);
 let currentSector = getInitialSector(getSignalBreachProgress(progress));
 const navigationQuery = new URLSearchParams(window.location.search);
 const requestedChapter = Number(navigationQuery.get("chapter"));
-const requestedChapterAvailable = isExpansionChapterAvailable(requestedChapter, progress.campaigns["expansion-1"].highestUnlockedLevel);
+const requestedChapterAvailable = isExpansionChapterAvailable(requestedChapter, expansionProgress.highestUnlockedLevel);
 let selectedExpansionChapterId = requestedChapterAvailable ? requestedChapter : 1;
 document.documentElement.dataset.sector = String(currentSector);
 let currentSeed = "";
@@ -558,6 +560,7 @@ function drawFrame(now: number): void {
     root: screenContainer,
     screen,
     progress,
+    expansionProgress,
     expansionNavigationEnabled,
     selectedExpansionChapterId,
     briefingMaxSector: getSignalBreachProgress(progress).highestUnlockedSector,

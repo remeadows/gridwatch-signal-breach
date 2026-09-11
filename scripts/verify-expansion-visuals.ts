@@ -4,7 +4,7 @@ import { ExpansionVisualTimeline, getExpansionShotEndpoints } from "../src/rende
 import { applyExpansionTurretCombat } from "../src/sim/expansion/combat";
 import { applyExpansionCommand } from "../src/sim/expansion/commands";
 import { createExpansionGrid, setExpansionTile } from "../src/sim/expansion/grid";
-import { createExpansionGameState } from "../src/sim/expansion/state";
+import { createExpansionGameState } from "./retained-expansion";
 import type { ExpansionGameState, ExpansionIntrusionState, ExpansionSimCommand, ExpansionSimEvent } from "../src/sim/expansion/types";
 
 const base = createExpansionGameState({ levelId: 1, contentHash: "visual-test", seed: "visual-test" });

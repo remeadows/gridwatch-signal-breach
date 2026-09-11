@@ -1,4 +1,5 @@
-import { EXPANSION_CHAPTER_01_CONTENT_REVISION, EXPANSION_CHAPTER_02_CONTENT_REVISION, EXPANSION_CONTENT_REVISION, type ExpansionContentRevision } from "../../../sim/expansion/types";
+import { EXPANSION_CHAPTER_01_CONTENT_REVISION, EXPANSION_CHAPTER_02_CONTENT_REVISION, EXPANSION_CONTENT_REVISION, EXPANSION_R3_CONTENT_REVISION, type ExpansionContentRevision } from "../../../sim/expansion/types";
+import r4Manifest from "./r4/manifest.json";
 
 export const EXPANSION_CHAPTER_01_CONTENT_MANIFEST = {
   revision: EXPANSION_CHAPTER_01_CONTENT_REVISION,
@@ -29,8 +30,8 @@ export const EXPANSION_CHAPTER_02_CONTENT_MANIFEST = {
 type ContentManifest = Readonly<{ revision: ExpansionContentRevision; campaignHash: string; levelHashes: Readonly<Record<number, string>> }>;
 
 /** r3 appends Chapter 3 without changing any r1/r2 level definition. */
-export const EXPANSION_CONTENT_MANIFEST = {
-  revision: EXPANSION_CONTENT_REVISION,
+export const EXPANSION_R3_CONTENT_MANIFEST = {
+  revision: EXPANSION_R3_CONTENT_REVISION,
   campaignHash: "df1b0920da63f189bd7c83f745b4a511877db6162f3f92f47ee0afdc0eb58957",
   levelHashes: {
     ...EXPANSION_CHAPTER_02_CONTENT_MANIFEST.levelHashes,
@@ -42,10 +43,13 @@ export const EXPANSION_CONTENT_MANIFEST = {
   },
 } as const;
 
-/** Older additive revisions only expose levels authored in that revision. */
+export const EXPANSION_CONTENT_MANIFEST = { ...r4Manifest, revision: EXPANSION_CONTENT_REVISION } as const;
+
+/** Older revisions only expose their original level identities. */
 const REVISION_MANIFESTS: Readonly<Record<ExpansionContentRevision, ContentManifest>> = {
   [EXPANSION_CHAPTER_01_CONTENT_REVISION]: EXPANSION_CHAPTER_01_CONTENT_MANIFEST,
   [EXPANSION_CHAPTER_02_CONTENT_REVISION]: EXPANSION_CHAPTER_02_CONTENT_MANIFEST,
+  [EXPANSION_R3_CONTENT_REVISION]: EXPANSION_R3_CONTENT_MANIFEST,
   [EXPANSION_CONTENT_REVISION]: EXPANSION_CONTENT_MANIFEST,
 };
 

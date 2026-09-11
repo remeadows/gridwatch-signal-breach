@@ -7,7 +7,7 @@ import { MAX_EXPANSION_REPLAY_TICKS, replayExpansionRun } from "../src/sim/expan
 import { calculateExpansionScore } from "../src/sim/expansion/scoring";
 import { createExpansionGameState } from "../src/sim/expansion/state";
 import { tickExpansion } from "../src/sim/expansion/tick";
-import type { ExpansionGameState, ExpansionHardwareKind, ExpansionRecordedCommand, ExpansionReplayInput, ExpansionSimCommand, PlaceExpansionUnitCommand } from "../src/sim/expansion/types";
+import type { ExpansionContentRevision, ExpansionGameState, ExpansionHardwareKind, ExpansionRecordedCommand, ExpansionReplayInput, ExpansionSimCommand, PlaceExpansionUnitCommand } from "../src/sim/expansion/types";
 import { stableStringify } from "./expansion-content-report-lib";
 import { HUMAN_BUILD_PLANS, validateHumanBuildPlan, type HumanBuildPlan } from "./expansion-human-plans";
 
@@ -44,13 +44,15 @@ export function runHumanPacedLevel(input: Readonly<{
   seed: string;
   actionIntervalTicks: 3 | 6;
   plan?: HumanBuildPlan;
+  contentRevision?: ExpansionContentRevision;
 }>) {
+  const contentRevision = input.contentRevision ?? "expansion-1-r3";
   const plan = input.plan ?? HUMAN_BUILD_PLANS[input.levelId];
   if (!plan) throw new Error(`No authored human build plan for Level ${input.levelId}.`);
-  const level = validateHumanBuildPlan(input.levelId, plan);
+  const level = validateHumanBuildPlan(input.levelId, plan, contentRevision);
   const relayCommands: PlaceExpansionUnitCommand[] = level.initialTiles.filter((tile) => tile.kind === "relay").map((tile) => ({ type: "placeUnit", unit: "relay", position: tile.position }));
   const plannedCommands = createPlannedCommands(plan);
-  let state = createExpansionGameState({ levelId: input.levelId, contentHash: getExpansionLevelContentHash(input.levelId), seed: input.seed });
+  let state = createExpansionGameState({ levelId: input.levelId, contentRevision, contentHash: getExpansionLevelContentHash(input.levelId, contentRevision), seed: input.seed });
   let observation = state;
   let lastObservationTick = state.tickCount;
   const commands: ExpansionRecordedCommand[] = [];
@@ -131,7 +133,9 @@ export async function buildHumanBalanceReport(input: Readonly<{
   levelIds?: readonly number[];
   plans?: Readonly<Record<number, HumanBuildPlan>>;
   seeds?: readonly string[];
+  contentRevision?: ExpansionContentRevision;
 }> = {}) {
+  const contentRevision = input.contentRevision ?? "expansion-1-r3";
   const levelIds = input.levelIds ?? Object.keys(HUMAN_BUILD_PLANS).map(Number);
   const plans = input.plans ?? HUMAN_BUILD_PLANS;
   const seeds = input.seeds ?? HUMAN_BALANCE_SEEDS;
@@ -141,14 +145,14 @@ export async function buildHumanBalanceReport(input: Readonly<{
   for (const levelId of levelIds) {
     const plan = plans[levelId];
     if (!plan) throw new Error(`Missing human build plan for Level ${levelId}.`);
-    validateHumanBuildPlan(levelId, plan);
+    validateHumanBuildPlan(levelId, plan, contentRevision);
     for (const seed of seeds) {
       const seeded = `human-level-${levelId}-${seed}`;
       for (const actionIntervalTicks of HUMAN_ACTION_INTERVALS) {
-        const run = runHumanPacedLevel({ levelId, seed: seeded, actionIntervalTicks, plan });
+        const run = runHumanPacedLevel({ levelId, seed: seeded, actionIntervalTicks, plan, contentRevision });
         runs.push({ ...run, commandLogHash: await sha256(stableStringify(run.replay)), finalStateHash: await sha256(stableStringify(run.state)) });
       }
-      const empty = runEmptyLevel(levelId, seeded);
+      const empty = runEmptyLevel(levelId, seeded, contentRevision);
       if (empty.phase !== "lost") throw new Error(`No-action baseline did not lose Level ${levelId}, ${seed}: ${empty.phase}.`);
       emptyRuns.push(empty);
     }
@@ -161,7 +165,7 @@ export async function buildHumanBalanceReport(input: Readonly<{
 }
 
 export function runControlledSapperSpacingComparison() {
-  const base = createExpansionGameState({ levelId: 6, contentHash: getExpansionLevelContentHash(6), seed: "controlled-spacing" });
+  const base = createExpansionGameState({ levelId: 6, contentRevision: "expansion-1-r3", contentHash: getExpansionLevelContentHash(6, "expansion-1-r3"), seed: "controlled-spacing" });
   const rows = (["spaced", "clustered"] as const).map((formation) => {
     const relay = formation === "spaced" ? { x: 4, y: 1 } : { x: 4, y: 2 };
     let grid = createExpansionGrid(8);
@@ -220,8 +224,8 @@ function validateActionCadence(attempts: readonly HumanCommandAttempt[], interva
   }
 }
 
-function runEmptyLevel(levelId: number, seed: string) {
-  let state = createExpansionGameState({ levelId, contentHash: getExpansionLevelContentHash(levelId), seed });
+function runEmptyLevel(levelId: number, seed: string, contentRevision: ExpansionContentRevision) {
+  let state = createExpansionGameState({ levelId, contentRevision, contentHash: getExpansionLevelContentHash(levelId, contentRevision), seed });
   while (state.phase !== "won" && state.phase !== "lost" && state.tickCount < MAX_EXPANSION_REPLAY_TICKS) {
     if (state.phase === "prep") state = applyExpansionCommand(state, { type: "skipPrep" });
     state = tickExpansion(state);

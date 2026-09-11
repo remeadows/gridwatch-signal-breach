@@ -1,6 +1,7 @@
 import assert from "./assert";
 import { EXPANSION_R4_PROGRESS_KEY, loadExpansionR4Progress, markExpansionR4LevelCleared } from "../src/ui/expansionProgressR4";
 import { PROGRESS_STORAGE_KEY } from "../src/ui/progress";
+import { isExpansionChapterAvailable } from "../src/data/campaigns/expansion";
 
 class MemoryStorage {
   values = new Map<string, string>();
@@ -38,6 +39,11 @@ for (let level = 1; level <= 25; level += 1) {
   assert.deepEqual(loadExpansionR4Progress(storage), progress);
 }
 assert.equal(progress.clearedLevels.length, 25);
+assert.equal(isExpansionChapterAvailable(2, 8), false);
+assert.equal(isExpansionChapterAvailable(2, 9), true);
+assert.equal(isExpansionChapterAvailable(3, 16), false);
+assert.equal(isExpansionChapterAvailable(3, 17), true);
+assert.equal(isExpansionChapterAvailable(4, 25), false);
 assert.equal(storage.getItem(PROGRESS_STORAGE_KEY), original);
 const writes = storage.writes.length;
 for (const level of [0, -1, 1.5, 26, Infinity, NaN]) assert.equal(markExpansionR4LevelCleared(progress, level, storage), progress);

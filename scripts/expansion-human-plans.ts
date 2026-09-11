@@ -1,5 +1,5 @@
 import { getExpansionLevelDefinition } from "../src/data/campaigns/expansion";
-import type { ExpansionLevelDefinition } from "../src/sim/expansion/types";
+import type { ExpansionContentRevision, ExpansionLevelDefinition } from "../src/sim/expansion/types";
 import type { GridPosition } from "../src/sim/types";
 
 export type HumanBuildPlan = Readonly<Record<"turret" | "latencyTrap" | "firewall", readonly GridPosition[]> & { arcIce?: readonly GridPosition[] }>;
@@ -20,8 +20,8 @@ export const HUMAN_BUILD_PLANS: Readonly<Record<number, HumanBuildPlan>> = {
   10: { turret: [{ x: 0, y: 3 }, { x: 7, y: 4 }, { x: 3, y: 7 }, { x: 4, y: 0 }, { x: 1, y: 4 }, { x: 6, y: 6 }, { x: 3, y: 0 }, { x: 7, y: 2 }, { x: 0, y: 5 }, { x: 5, y: 4 }], latencyTrap: [{ x: 1, y: 1 }, { x: 6, y: 4 }, { x: 2, y: 6 }, { x: 5, y: 1 }, { x: 3, y: 6 }, { x: 6, y: 2 }], firewall: [{ x: 6, y: 3 }, { x: 7, y: 7 }, { x: 0, y: 0 }, { x: 5, y: 6 }] },
 };
 
-export function validateHumanBuildPlan(levelId: number, plan: HumanBuildPlan): ExpansionLevelDefinition {
-  const level = getExpansionLevelDefinition(levelId);
+export function validateHumanBuildPlan(levelId: number, plan: HumanBuildPlan, contentRevision: ExpansionContentRevision = "expansion-1-r3"): ExpansionLevelDefinition {
+  const level = getExpansionLevelDefinition(levelId, contentRevision);
   if (!level) throw new Error(`Human plan references unauthored Level ${levelId}.`);
   return validateHumanBuildPlanDefinition(level, plan);
 }

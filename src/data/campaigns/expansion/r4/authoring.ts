@@ -23,12 +23,13 @@ type WaveInput = Readonly<{
   edges?: ExpansionWaveDefinition["spawnEdges"];
   scripts?: ExpansionWaveDefinition["scriptedSpawns"];
 }>;
+export const R4_WAVE_DEFAULTS = { prepTicks: 18, bandwidthTricklePerTick: 1, bandwidthTrickleEveryTicks: 6, spawnFirstTick: 3, perimeterPickAttempts: 16 } as const;
 export function waves(inputs: readonly WaveInput[]): ExpansionWaveDefinition[] {
   if (inputs.length !== 5) throw new Error("r4 levels require exactly five authored waves");
   return inputs.map((input, index) => ({ id: index + 1, label: input.label, briefing: input.briefing,
-    prepTicks: 18, bandwidthGrant: input.grant, bandwidthTricklePerTick: 1, bandwidthTrickleEveryTicks: 6,
-    spawnFirstTick: 3, spawnEveryTicks: input.cadence, maxActiveIntrusions: input.active,
-    maxSpawnedIntrusions: input.count, perimeterPickAttempts: 16, enemyWeights: input.weights,
+    ...R4_WAVE_DEFAULTS, bandwidthGrant: input.grant,
+    spawnEveryTicks: input.cadence, maxActiveIntrusions: input.active,
+    maxSpawnedIntrusions: input.count, enemyWeights: input.weights,
     spawnEdges: input.edges ?? ALL_EDGES, ...(input.scripts ? { scriptedSpawns: input.scripts } : {}),
   }));
 }

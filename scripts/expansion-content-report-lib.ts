@@ -1,8 +1,9 @@
 import { getExpansionLevelContentHash } from "../src/data/campaigns/expansion/contentManifest";
 import { createExpansionGameState } from "../src/sim/expansion/state";
-import { EXPANSION_CAMPAIGN_ID, EXPANSION_CONTENT_REVISION, EXPANSION_RULESET_ID } from "../src/sim/expansion/types";
+import { EXPANSION_CAMPAIGN_ID, EXPANSION_R3_CONTENT_REVISION, EXPANSION_RULESET_ID } from "../src/sim/expansion/types";
 import type {
   ExpansionEnemyDefinition,
+  ExpansionContentRevision,
   ExpansionEnemyKind,
   ExpansionHardwareKind,
   ExpansionLevelDefinition,
@@ -43,11 +44,13 @@ export function buildExpansionContentReport(
   levels: readonly ExpansionLevelDefinition[],
   campaignHash: string,
   levelHashes: Readonly<Record<number, string>>,
+  contentRevision: ExpansionContentRevision = EXPANSION_R3_CONTENT_REVISION,
 ) {
   const reportLevels = levels.map((level) => {
     const state = createExpansionGameState({
       levelId: level.id,
-      contentHash: levelHashes[level.id] ?? getExpansionLevelContentHash(level.id),
+      contentRevision,
+      contentHash: levelHashes[level.id] ?? getExpansionLevelContentHash(level.id, contentRevision),
       seed: "content-report",
     });
     const waves = level.waves.map((wave) => ({
@@ -78,7 +81,7 @@ export function buildExpansionContentReport(
       chapterId: level.chapterId,
       id: level.id,
       codename: level.codename,
-      contentHash: levelHashes[level.id] ?? getExpansionLevelContentHash(level.id),
+      contentHash: levelHashes[level.id] ?? getExpansionLevelContentHash(level.id, contentRevision),
       difficultyIndex: level.difficultyIndex,
       requiredMechanic: level.requiredMechanic,
       threatBudget: waves.reduce((total, wave) => total + wave.threatBudget, 0),
@@ -98,7 +101,7 @@ export function buildExpansionContentReport(
     schema: 2,
     campaign: EXPANSION_CAMPAIGN_ID,
     ruleset: EXPANSION_RULESET_ID,
-    contentRevision: EXPANSION_CONTENT_REVISION,
+    contentRevision,
     chapters: [...new Set(levels.map((level) => level.chapterId))],
     levelCount: levels.length,
     waveCount: levels.reduce((total, level) => total + level.waves.length, 0),
@@ -110,7 +113,7 @@ export function buildExpansionContentReport(
   } as const;
 }
 
-export function validateExpansionContent(levels: readonly ExpansionLevelDefinition[]): void {
+export function validateExpansionContent(levels: readonly ExpansionLevelDefinition[], contentRevision: ExpansionContentRevision = EXPANSION_R3_CONTENT_REVISION): void {
   requireUnique(levels.map((level) => level.id), "Expansion level IDs");
   let previousDifficulty = Number.NEGATIVE_INFINITY;
   let previousThreatBudget = Number.NEGATIVE_INFINITY;
@@ -152,7 +155,7 @@ export function validateExpansionContent(levels: readonly ExpansionLevelDefiniti
 
     requireUnique(level.waves.map((wave) => wave.id), `Level ${level.id} wave IDs`);
     let levelThreatBudget = 0;
-    const state = createExpansionGameState({ levelId: level.id, contentHash: "content-validation", seed: "content-validation" });
+    const state = createExpansionGameState({ levelId: level.id, contentRevision, contentHash: "content-validation", seed: "content-validation" });
     assert(state.signal.status === "live", `Level ${level.id} initial route is not live.`);
     for (const wave of level.waves) {
       validateWave(level, wave, state.config.enemies);

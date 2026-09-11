@@ -1,6 +1,14 @@
 html[data-expansion-play="true"] .game-logo small::after { content: " // EXPANSION 1 LOCAL"; color: #b381ff; }
 html[data-expansion-play="true"] .game-layout { border-color: rgba(179,129,255,.55); }
 html[data-expansion-play="true"] .game-panel { align-self: center; }
+/* Expansion owns its root directly; it does not run the original overlay
+   builder that assigns .overlay-root. Anchor its overlays explicitly. */
+html[data-expansion-play="true"] #overlay-root { position: absolute; inset: 0; display: grid; place-items: center; padding: 18px; pointer-events: none; z-index: 4; }
+html[data-expansion-play="true"] #overlay-root[data-overlay-key="won"],
+html[data-expansion-play="true"] #overlay-root[data-overlay-key="lost"] { position: fixed; inset: 0; z-index: 15; display: grid; overflow-y: auto; align-items: safe center; padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); background: rgba(3,7,11,.94); pointer-events: auto; }
+html[data-expansion-play="true"] #overlay-root .terminal-panel { width: min(530px, 100%); }
+/* Keep the native hidden contract authoritative over equally specific states. */
+html[data-expansion-play="true"] #overlay-root[hidden] { display: none; }
 html[data-expansion-play="true"] #game-canvas:focus-visible { outline: 2px solid #f3f7ff; outline-offset: 3px; }
 .expansion-hud [data-metric="level"] strong { font-size: clamp(.82rem, 1.3vw, 1.05rem); }
 .expansion-picker .tool-button { grid-template-columns: 40px minmax(0, 1fr) auto; }
@@ -30,7 +38,7 @@ html[data-expansion-play="true"] #game-canvas:focus-visible { outline: 2px solid
   /* Reserve the active HUD's three action rows plus the two-row tool dock. */
   html[data-expansion-play="true"] .game-panel { width: min(100%, calc(100dvh - 412px)); }
 }
-@media (max-width: 760px) and (max-height: 700px) and (orientation: portrait) {
+@media (max-width: 760px) and (max-height: 820px) and (orientation: portrait) {
   /* The wave bar already carries level/phase. Keep resources and signal above
      the board, reserving enough height for every two-row build-dock control. */
   .expansion-hud [data-metric="level"],
@@ -48,4 +56,28 @@ html[data-expansion-play="true"] #game-canvas:focus-visible { outline: 2px solid
   .expansion-hud .hud-actions .neon-button { min-height: 44px; padding: 4px 2px; font-size: 10px; line-height: 1.1; }
   .expansion-picker .tool-button { grid-template-columns: 24px minmax(0, 1fr) auto; grid-template-rows: auto; min-height: 44px; }
   .expansion-picker .expansion-tool-glyph { width: 24px; height: 24px; }
+}
+
+/* Wide phones still need the three-column landscape dock. Scope the extension
+   to expansion play so the frozen original campaign's layout is unchanged. */
+@media (min-width: 761px) and (max-width: 1100px) and (max-height: 520px) and (orientation: landscape) {
+  html[data-expansion-play="true"], html[data-expansion-play="true"] body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+  html[data-expansion-play="true"] .app-shell { width: 100%; height: 100dvh; min-height: 100dvh; align-content: stretch; gap: 0; padding: calc(4px + env(safe-area-inset-top)) calc(6px + env(safe-area-inset-right)) calc(4px + env(safe-area-inset-bottom)) calc(6px + env(safe-area-inset-left)); }
+  html[data-expansion-play="true"] .game-logo { display: none; }
+  html[data-expansion-play="true"] .game-layout { width: 100%; height: 100%; grid-template-columns: minmax(116px, 1fr) minmax(240px, calc(100dvh - 24px)) minmax(116px, 1fr); grid-template-rows: minmax(0, 1fr); gap: 6px; align-items: center; }
+  html[data-expansion-play="true"] .control-panel { display: contents; }
+  html[data-expansion-play="true"] .control-panel::before { display: none; }
+  html[data-expansion-play="true"] .game-panel { grid-column: 2; grid-row: 1; width: 100%; min-width: 0; min-height: 0; max-height: 100%; }
+  .expansion-hud { display: grid; grid-column: 1; grid-row: 1; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 4px; align-content: center; }
+  .expansion-hud .hud-hero, .expansion-hud .hud-rail { display: contents; }
+  .expansion-hud .hud-metric { display: grid; align-content: center; min-width: 0; min-height: 34px; padding: 3px 4px; gap: 2px; }
+  .expansion-hud .hud-metric span { font-size: 8px; }
+  .expansion-hud .hud-metric strong { font-size: 12px; }
+  .expansion-hud .hud-actions { grid-column: 1 / -1; margin: 0; gap: 4px; }
+  .expansion-hud .hud-actions .neon-button { min-height: 44px; padding: 4px; font-size: 10px; line-height: 1.1; }
+  .expansion-picker { grid-column: 3; grid-row: 1; grid-template-columns: minmax(0, 1fr); gap: 4px; padding: 4px; align-content: center; }
+  .expansion-picker .tool-button { grid-template-columns: 24px minmax(0, 1fr) auto; grid-template-rows: auto; grid-template-areas: "icon name cost"; min-height: 44px; padding: 3px 5px; gap: 3px; }
+  .expansion-picker .expansion-tool-glyph { width: 24px; height: 24px; }
+  .expansion-picker .tool-purpose { display: none; }
+  .expansion-picker .tool-name, .expansion-picker .tool-cost { font-size: 10px; white-space: nowrap; }
 }

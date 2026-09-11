@@ -1,4 +1,4 @@
-import { EXPANSION_LEVELS } from "../src/data/campaigns/expansion";
+import { EXPANSION_LEVELS } from "./retained-expansion";
 import { EXPANSION_CHAPTER_01_CONTENT_MANIFEST, EXPANSION_CHAPTER_02_CONTENT_MANIFEST } from "../src/data/campaigns/expansion/contentManifest";
 import { buildExpansionContentReport, stableStringify, validateExpansionContent } from "./expansion-content-report-lib";
 

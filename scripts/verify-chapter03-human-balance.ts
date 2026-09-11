@@ -1,8 +1,8 @@
 import recordedEvidence from "../docs/fixtures/expansion-1-r3-chapter-3-human-evidence.json";
-import { getExpansionLevelContentHash } from "../src/data/campaigns/expansion/contentManifest";
+import { getExpansionLevelContentHash } from "./retained-expansion";
 import { applyExpansionCommand } from "../src/sim/expansion/commands";
 import { getShieldLinks } from "../src/sim/expansion/shieldNetwork";
-import { createExpansionGameState } from "../src/sim/expansion/state";
+import { createExpansionGameState } from "./retained-expansion";
 import { tickExpansion } from "../src/sim/expansion/tick";
 import { CHAPTER_03_HUMAN_BUILD_PLANS } from "./expansion-chapter03-human-plans";
 import { stableStringify } from "./expansion-content-report-lib";

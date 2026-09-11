@@ -1,7 +1,5 @@
-import { getExpansionLevelContentHash } from "../src/data/campaigns/expansion/contentManifest";
-import { getExpansionLevelDefinition } from "../src/data/campaigns/expansion";
+import { getExpansionLevelContentHash, getExpansionLevelDefinition, createExpansionGameState } from "./retained-expansion";
 import { applyExpansionCommand } from "../src/sim/expansion/commands";
-import { createExpansionGameState } from "../src/sim/expansion/state";
 import { tickExpansion } from "../src/sim/expansion/tick";
 import { getExpansionTileKind, listExpansionPositions } from "../src/sim/expansion/grid";
 import type { ExpansionGameState, ExpansionHardwareKind } from "../src/sim/expansion/types";

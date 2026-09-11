@@ -60,7 +60,7 @@ function validateExpansionCommand(value: unknown, revision: ExpansionContentRevi
   if (value.type === "sellUnit") return { type: "sellUnit", position: validatePosition(value.position) };
   if (value.type === "placeUnit") {
     if (typeof value.unit !== "string" || !isExpansionHardwareKind(value.unit)) throw new ExpansionReplayError("Expansion placement command has an invalid unit.");
-    if (value.unit === "arcIce" && revision !== "expansion-1-r3") throw new ExpansionReplayError("Arc ICE is not part of this replay revision.");
+    if (value.unit === "arcIce" && revision !== "expansion-1-r3" && revision !== "expansion-1-r4") throw new ExpansionReplayError("Arc ICE is not part of this replay revision.");
     return { type: "placeUnit", position: validatePosition(value.position), unit: value.unit };
   }
   throw new ExpansionReplayError("Expansion command type is unknown.");

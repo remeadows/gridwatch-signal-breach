@@ -1,6 +1,6 @@
 import { ENEMY_TUNING } from "../src/data/enemies";
 import { EXPANSION_1_R1_TUNING } from "../src/data/campaigns/expansion/tuning";
-import { EXPANSION_LEVELS } from "../src/data/campaigns/expansion";
+import { EXPANSION_LEVELS } from "./retained-expansion";
 import { replayRun } from "../src/sim/replay";
 import {
   CHAPTER_02_ENEMY_PROTOTYPES,

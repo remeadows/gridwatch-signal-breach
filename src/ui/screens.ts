@@ -12,6 +12,7 @@ import {
   type ChapterDefinition,
 } from "../data/campaigns";
 import { SECTORS } from "../data/levels";
+import type { ExpansionR4Progress } from "./expansionProgressR4";
 import { fetchLeaderboard, type LeaderboardEntry } from "../leaderboard/api";
 import { leaderboardConfig } from "../leaderboard/config";
 import type { IconName } from "../render/iconPaths";
@@ -39,6 +40,7 @@ export type ScreenOptions = Readonly<{
   root: HTMLElement;
   screen: AppScreen;
   progress: GameProgress;
+  expansionProgress: ExpansionR4Progress;
   expansionNavigationEnabled: boolean;
   selectedExpansionChapterId: number;
   briefingMaxSector: number;
@@ -300,7 +302,7 @@ function renderCampaignSelectScreen(options: ScreenOptions): void {
   const header = createNavigationHeader(
     "CAMPAIGN ROUTER",
     "Select campaign",
-    "Choose the original campaign or Expansion 1. The first three of six planned chapters (15 of 30 levels) are playable locally. Expansion progress stays in this browser; online scoring is not enabled.",
+    "Choose the original campaign or Expansion 1: three chapters, 25 levels. Expansion progress stays in this browser; online scoring is not enabled.",
   );
   const grid = document.createElement("div");
   const backButton = createNavigationButton("BACK", "secondary", onBackToTitle);
@@ -316,11 +318,11 @@ function renderCampaignSelectScreen(options: ScreenOptions): void {
     const button = createNavigationCard({
       index: isExpansion ? "EXPANSION 01" : "CURRENT CAMPAIGN",
       title: isExpansion ? "EXPANSION UPLINK" : "SIGNAL BREACH",
-      name: isExpansion ? "THREE CHAPTERS // 75 WAVES" : "THREE SECTORS // TWELVE WAVES",
+      name: isExpansion ? "THREE CHAPTERS // 125 WAVES" : "THREE SECTORS // TWELVE WAVES",
       detail: isExpansion
-        ? "Fifteen fresh tactical boards. Master delay, demolition spacing, and shield-breaking chain attacks."
+        ? "Twenty-five fresh tactical boards. Master delay, demolition spacing, and shield-breaking chain attacks."
         : "Defend the original three-sector uplink. Your existing progress and leaderboard remain separate.",
-      meta: isExpansion ? "LEVELS 01–15" : "SECTORS 01–03",
+      meta: isExpansion ? "LEVELS 01–25" : "SECTORS 01–03",
       status: isExpansion ? "LOCAL ONLY" : "ACTIVE",
       disabled: false,
       onSelect: () => onSelectCampaign(campaign.id),
@@ -337,7 +339,7 @@ function renderCampaignSelectScreen(options: ScreenOptions): void {
 
 function renderChapterSelectScreen(options: ScreenOptions): void {
   const { root, onBackToCampaignSelect, onSelectExpansionChapter } = options;
-  const expansionProgress = options.progress.campaigns["expansion-1"];
+  const expansionProgress = options.expansionProgress;
 
   if (root.dataset.screenKey === `chapterSelect-${expansionProgress.highestUnlockedLevel}`) {
     return;
@@ -348,7 +350,7 @@ function renderChapterSelectScreen(options: ScreenOptions): void {
   const header = createNavigationHeader(
     "EXPANSION ROUTER",
     "Select chapter",
-    "Three chapters are ready to play. Clear five levels to unlock the next front; later chapters are still under construction.",
+    "Three fronts, 25 levels. Clear eight levels in Latency Front, eight in Demolition Front, then nine in Shield Front. Each level starts fresh.",
   );
   const grid = document.createElement("div");
   const backButton = createNavigationButton("BACK", "secondary", onBackToCampaignSelect);
@@ -367,7 +369,7 @@ function renderChapterSelectScreen(options: ScreenOptions): void {
     const button = createNavigationCard({
       index: `CHAPTER ${String(chapter.id).padStart(2, "0")}`,
       title: isUnlocked ? chapter.codename : "ENCRYPTED CHAPTER",
-      name: isUnlocked ? "FIVE LEVELS // 25 WAVES" : "SIGNAL LOCKED",
+      name: isUnlocked ? `${chapter.levelIds.length} LEVELS // ${chapter.levelIds.length * 5} WAVES` : "SIGNAL LOCKED",
       detail: isUnlocked
         ? chapter.id === 3
           ? "Break Shield Drone links with Arc ICE, then combine coverage, spacing, and signal recovery."
@@ -393,7 +395,7 @@ function renderChapterSelectScreen(options: ScreenOptions): void {
 function renderLevelSelectScreen(options: ScreenOptions): void {
   const { root, selectedExpansionChapterId, onBackToChapterSelect, onSelectExpansionLevel } = options;
   const chapter = getExpansionNavigationChapter(selectedExpansionChapterId);
-  const expansionProgress = options.progress.campaigns["expansion-1"];
+  const expansionProgress = options.expansionProgress;
   const key = `levelSelect-${chapter.id}-${expansionProgress.highestUnlockedLevel}-${expansionProgress.clearedLevels.join(".")}`;
 
   if (root.dataset.screenKey === key) {
@@ -405,9 +407,7 @@ function renderLevelSelectScreen(options: ScreenOptions): void {
   const header = createNavigationHeader(
     "EXPANSION ROUTER",
     `${chapter.codename} // Levels`,
-    chapter.id <= 3
-      ? "Five levels. Each starts fresh and contains five waves; no score leaves this browser."
-      : "This chapter is reserved for a later reviewed content batch.",
+    `${chapter.levelIds.length} levels. Each starts fresh and contains five waves; no score leaves this browser.`,
   );
   const grid = document.createElement("div");
   const backButton = createNavigationButton("BACK", "secondary", onBackToChapterSelect);

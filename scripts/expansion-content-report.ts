@@ -1,5 +1,5 @@
 import contentReportFixture from "../docs/fixtures/expansion-1-r3-content-report.json";
-import { EXPANSION_CONTENT_MANIFEST } from "../src/data/campaigns/expansion/contentManifest";
+import { EXPANSION_CONTENT_MANIFEST } from "./retained-expansion";
 import { stableStringify } from "./expansion-content-report-lib";
 import { buildCurrentExpansionContentReport } from "./expansion-content-report-source";
 

@@ -119,7 +119,10 @@ function renderRoster(api, mode) {
   const state = { ...base, grid, intrusions };
   const before = JSON.stringify(state);
   const drawn = drawing();
-  api.drawExpansionGrid(drawn.context, { width: 888, height: 888 }, state, {
+  api.drawExpansionGrid(drawn.context, {
+    width: 888, height: 888,
+    getBoundingClientRect: () => ({ left: 0, top: 0, width: 888, height: 888 }),
+  }, state, {
     timeMs: 0, effects: [], intrusionPositions: new Map(intrusions.map((entry) => [entry.id, entry.position])),
     hover: null, focus: null, selectedTool: "arcIce", buildMode: true,
     rangePreviewEnabled: false, rangePreviewPosition: null,

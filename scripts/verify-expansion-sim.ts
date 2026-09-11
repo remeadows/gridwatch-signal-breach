@@ -1,13 +1,13 @@
-import { getExpansionLevelContentHash } from "../src/data/campaigns/expansion/contentManifest";
+import { getExpansionLevelContentHash } from "./retained-expansion";
 import { applyExpansionCommand } from "../src/sim/expansion/commands";
 import { applyExpansionTurretCombat } from "../src/sim/expansion/combat";
 import { createExpansionGrid, getExpansionTile, listExpansionPositions, sameExpansionPosition, setExpansionTile } from "../src/sim/expansion/grid";
 import { getExpansionSapperTarget, getOpenExpansionSpawnPositions, moveExpansionIntrusions, spawnExpansionIntrusions } from "../src/sim/expansion/intrusions";
 import { applyExpansionLatencyTraps } from "../src/sim/expansion/latency";
 import { ExpansionReplayError, replayExpansionRun } from "../src/sim/expansion/replay";
-import { createExpansionGameState } from "../src/sim/expansion/state";
+import { createExpansionGameState } from "./retained-expansion";
 import { tickExpansion } from "../src/sim/expansion/tick";
-import { EXPANSION_CAMPAIGN_ID, EXPANSION_CONTENT_REVISION, EXPANSION_RULESET_ID, type ExpansionGameState, type ExpansionIntrusionState, type ExpansionReplayInput } from "../src/sim/expansion/types";
+import { EXPANSION_CAMPAIGN_ID, EXPANSION_R3_CONTENT_REVISION as EXPANSION_CONTENT_REVISION, EXPANSION_RULESET_ID, type ExpansionGameState, type ExpansionIntrusionState, type ExpansionReplayInput } from "../src/sim/expansion/types";
 import { startExpansionPrepPhase } from "../src/sim/expansion/waves";
 
 const hash = getExpansionLevelContentHash(1);

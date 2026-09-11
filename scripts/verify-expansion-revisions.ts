@@ -1,6 +1,6 @@
-import { getExpansionLevelContentHash } from "../src/data/campaigns/expansion/contentManifest";
+import { getExpansionLevelContentHash } from "./retained-expansion";
 import { replayExpansionRun } from "../src/sim/expansion/replay";
-import { EXPANSION_CONTENT_REVISION, type ExpansionReplayInput } from "../src/sim/expansion/types";
+import { EXPANSION_R3_CONTENT_REVISION as EXPANSION_CONTENT_REVISION, type ExpansionReplayInput } from "../src/sim/expansion/types";
 
 const current: ExpansionReplayInput = {
   schema: 2, ruleset: "expansion-v1", campaign: "expansion-1", level: 2,

@@ -52,6 +52,9 @@ jobs:
           npm run verify:expansion-revisions
           npm run verify:expansion-revision-lookup
           npm run verify:expansion-progress-r4
+          npm run verify:expansion-r4-drafts
+          npm run verify:expansion-canvas
+          npm run verify:expansion-r4-evidence
           npm run verify:expansion-retained-evidence
           npm run verify:expansion-visuals
           npm run verify:shield-network
