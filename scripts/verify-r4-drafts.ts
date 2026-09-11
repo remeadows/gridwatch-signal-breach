@@ -1,11 +1,12 @@
 import assert from "./assert";
 import { R4_CHAPTER_01_LEVELS } from "../src/data/campaigns/expansion/r4/chapter01";
+import { R4_CHAPTER_02_LEVELS } from "../src/data/campaigns/expansion/r4/chapter02";
 import { createExpansionGrid, setExpansionTile } from "../src/sim/expansion/grid";
 import { computeExpansionSignalRoute } from "../src/sim/expansion/routing";
 import { validateHumanBuildPlanDefinition } from "./expansion-human-plans";
 import { R4_HUMAN_BUILD_PLANS } from "./expansion-r4-human-plans";
 
-const chapters = [R4_CHAPTER_01_LEVELS];
+const chapters = [R4_CHAPTER_01_LEVELS, R4_CHAPTER_02_LEVELS];
 for (const levels of chapters) {
   for (const level of levels) {
     assert.equal(level.waves.length, 5);
