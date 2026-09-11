@@ -33,8 +33,9 @@ export type CreateExpansionGameStateOptions = Readonly<{
 export function createExpansionGameState(
   options: CreateExpansionGameStateOptions,
 ): ExpansionGameState {
-  const level = getRequiredExpansionLevel(options.levelId);
-  const config = createExpansionSimConfig(level, options.contentHash, options.contentRevision ?? EXPANSION_CONTENT_REVISION);
+  const revision = options.contentRevision ?? EXPANSION_CONTENT_REVISION;
+  const level = getRequiredExpansionLevel(options.levelId, revision);
+  const config = createExpansionSimConfig(level, options.contentHash, revision);
   let grid = createExpansionGrid(config.gridSize);
 
   for (const position of level.voidTiles) {
@@ -188,8 +189,8 @@ function createInitialExpansionTile(
   };
 }
 
-function getRequiredExpansionLevel(levelId: number): ExpansionLevelDefinition {
-  const level = getExpansionLevelDefinition(levelId);
-  if (!level) throw new Error(`Unknown expansion level id: ${levelId}.`);
+function getRequiredExpansionLevel(levelId: number, revision: ExpansionContentRevision): ExpansionLevelDefinition {
+  const level = getExpansionLevelDefinition(levelId, revision);
+  if (!level) throw new Error(`Unknown expansion level id: ${levelId} in ${revision}.`);
   return level;
 }

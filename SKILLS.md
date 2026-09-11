@@ -187,3 +187,10 @@ Use the commands in `AGENTS.md` and `HANDOFF.md` as the canonical checklist.
 For current leaderboard-enabled builds, network/env searches must distinguish
 the sanctioned code under `src/leaderboard/` and Supabase from accidental new
 network dependencies elsewhere.
+# Current execution contract — 2026-09-11
+
+Use `docs/EXPANSION_25_LOCAL_PLAN.md` for the approved 25-level (8/8/9) local
+revision. Resolve content by revision plus level ID, isolate r4 progress, keep
+historical fixtures immutable, and use full provenance-verified Blender CLI
+rebuilds. Keep chapter-sized local checkpoints and test before commits. CodeRabbit
+may review the diff; GitHub publication and deployment are not authorized.

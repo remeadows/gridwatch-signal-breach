@@ -57,3 +57,9 @@ the app is served from the root of its host (Cloudflare Pages).
   compatible server-first order recorded in `HANDOFF.md`.
 - The `phase4-v1` client must not reach production before its additive migration
   and backward-compatible Edge Function have been deployed and verified.
+# Current local target — 2026-09-11
+
+Owner-approved expansion r4 is three chapters / 25 total levels, split 8/8/9,
+five waves per level. See `docs/EXPANSION_25_LOCAL_PLAN.md`. Preserve original V2,
+historical expansion revisions, old progress and shared leaderboard behavior.
+Local commits and CodeRabbit diff review only; no push or deployment.

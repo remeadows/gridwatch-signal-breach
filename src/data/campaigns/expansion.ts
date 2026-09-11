@@ -4,9 +4,7 @@ import type {
   ExpansionCampaignLevelDefinition,
 } from "./types";
 import { EXPANSION_CAMPAIGN_ID, EXPANSION_CONTENT_REVISION, EXPANSION_RULESET_ID } from "../../sim/expansion/types";
-import { CHAPTER_01_LEVELS } from "./expansion/chapter01";
-import { CHAPTER_02_LEVELS } from "./expansion/chapter02";
-import { CHAPTER_03_LEVELS } from "./expansion/chapter03";
+import { EXPANSION_R3_LEVELS, getRetainedExpansionLevel } from "./expansion/retained";
 
 const EXPANSION_CHAPTER_COUNT = 6;
 const LEVELS_PER_EXPANSION_CHAPTER = 5;
@@ -46,7 +44,7 @@ export const EXPANSION_NAVIGATION_PLACEHOLDER_LEVELS: readonly ExpansionNavigati
  * Chapters 1–3 contain fifteen authored expansion levels. Later reviewed
  * chapter batches append their own immutable expansion-only records.
  */
-export const EXPANSION_LEVELS: readonly ExpansionCampaignLevelDefinition[] = [...CHAPTER_01_LEVELS, ...CHAPTER_02_LEVELS, ...CHAPTER_03_LEVELS];
+export const EXPANSION_LEVELS: readonly ExpansionCampaignLevelDefinition[] = EXPANSION_R3_LEVELS;
 
 export const EXPANSION_CAMPAIGN: ExpansionCampaignDefinition = {
   id: EXPANSION_CAMPAIGN_ID,
@@ -58,8 +56,9 @@ export const EXPANSION_CAMPAIGN: ExpansionCampaignDefinition = {
 
 export function getExpansionLevelDefinition(
   levelId: number,
+  contentRevision: string = EXPANSION_CONTENT_REVISION,
 ): ExpansionCampaignLevelDefinition | undefined {
-  return EXPANSION_LEVELS.find((candidate) => candidate.id === levelId);
+  return getRetainedExpansionLevel(levelId, contentRevision);
 }
 
 export function isExpansionChapterAuthored(chapterId: number): boolean {

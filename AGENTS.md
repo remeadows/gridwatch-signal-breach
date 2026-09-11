@@ -19,6 +19,12 @@ payloads.
 
 ## Approved Expansion Scope
 
+**Current owner override (2026-09-11):** the local end state is exactly three
+chapters / 25 levels split 8 / 8 / 9, five waves each. Follow
+`docs/EXPANSION_25_LOCAL_PLAN.md`; retain r1/r2/r3 identities and use r4 for the
+new layout. Deliver chapter-sized local checkpoints; no push or deploy. The
+30-level/six-chapter text below is historical scope, not the current target.
+
 The owner has additionally authorized exactly one separate `expansion-1`
 campaign. It contains 30 standalone 8x8 levels arranged as six chapters of five
 levels, with five authored waves per level (150 expansion waves total). Each

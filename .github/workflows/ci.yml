@@ -50,6 +50,8 @@ jobs:
           npm run verify:sapper
           npm run verify:expansion-sim
           npm run verify:expansion-revisions
+          npm run verify:expansion-revision-lookup
+          npm run verify:expansion-progress-r4
           npm run verify:expansion-retained-evidence
           npm run verify:expansion-visuals
           npm run verify:shield-network

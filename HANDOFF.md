@@ -1,5 +1,17 @@
 # GridWatch Handoff
 
+## Expansion r4 / 25-level local revision — in progress — 2026-09-11
+
+- Working on `codex/expansion-25-local`, based on completed local `b77203f`.
+- Owner confirmed exactly three chapters with 8 / 8 / 9 levels (125 waves),
+  consistent Blender CLI grid/assets, and a tested local playable finish.
+- Follow `docs/EXPANSION_25_LOCAL_PLAN.md`. Preserve historical r1/r2/r3 content
+  and replay/progress identities; introduce revision-scoped lookup and a separate
+  r4 progress key before activating remapped levels.
+- CodeRabbit diff upload and local commits are authorized. No GitHub push,
+  deployment or shared database changes. Previous 15-level evidence below is a
+  historical baseline, not evidence that the new 25-level milestone is complete.
+
 ## Chapters 1–3 local milestone — implemented and reviewed — 2026-09-10
 
 - Current work: `codex/phase10-shield-front`, based on local Chapter 2 checkpoint
