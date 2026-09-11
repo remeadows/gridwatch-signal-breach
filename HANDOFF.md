@@ -4,8 +4,8 @@
 
 - Current work: `codex/phase10-shield-front`, based on local Chapter 2 checkpoint
   `512d096` after Blender roster checkpoint `8e70d9a`. Corrective Blender
-  provenance/full-rerender checkpoint: `af4e922`. Remaining Chapter 3 source,
-  UI and verification changes form the next local checkpoint on this branch.
+  provenance/full-rerender checkpoint: `af4e922`. Chapter 3 source, UI,
+  compatibility tests and review dispositions are committed in `2aa5a8c`.
 - Expansion 1 now has Chapters 1–3 / Levels 1–15 / 75 authored waves. Chapter 3
   introduces Shield Drones and Arc ICE; Chapters 4–6 remain unavailable roadmap
   content. The original three-sector/twelve-wave campaign is unchanged.
@@ -23,7 +23,8 @@
 - Browser checks cover the six planned viewport sizes, range inspection with
   no spend, ordinary placement/refund, guide pause/resume, active low effects,
   a real loss/retry reset and normal menu navigation. The smallest portrait
-  dock overflow, tight landscape labels and stretched desktop grid were fixed.
+  dock overflow, the 700→701 portrait breakpoint, tight landscape labels and
+  stretched desktop grid were fixed. Ten viewport/breakpoint cases pass.
 - Local Mac URL: `http://127.0.0.1:4391/` (`npm run dev:local`). Built static
   preview: `http://127.0.0.1:4393/`. Trusted-LAN phone server: port 4392
   (`npm run dev:phone`), credentials suppressed. Do not reuse 4175/4176/4177/4185;
