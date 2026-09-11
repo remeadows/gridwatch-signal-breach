@@ -10,9 +10,10 @@ import type {
 
 export const EXPANSION_RULESET_ID = "expansion-v1";
 export const EXPANSION_CAMPAIGN_ID = "expansion-1";
-export const EXPANSION_CONTENT_REVISION = "expansion-1-r2";
+export const EXPANSION_CONTENT_REVISION = "expansion-1-r3";
 export const EXPANSION_CHAPTER_01_CONTENT_REVISION = "expansion-1-r1";
-export type ExpansionContentRevision = typeof EXPANSION_CHAPTER_01_CONTENT_REVISION | typeof EXPANSION_CONTENT_REVISION;
+export const EXPANSION_CHAPTER_02_CONTENT_REVISION = "expansion-1-r2";
+export type ExpansionContentRevision = typeof EXPANSION_CHAPTER_01_CONTENT_REVISION | typeof EXPANSION_CHAPTER_02_CONTENT_REVISION | typeof EXPANSION_CONTENT_REVISION;
 
 export const EXPANSION_TILE_KINDS = [
   "empty",
@@ -172,6 +173,8 @@ export type ExpansionSimEvent =
   | Readonly<{
       type: "turretHit";
       weapon?: "arcIce";
+      /** Previous target for an Arc continuation; absent on the first beam. */
+      sourceIntrusionId?: number;
       tick: number;
       turretPosition: GridPosition;
       targetId: number;

@@ -7,13 +7,15 @@ import type { GridPosition } from "../sim/types";
 import { getBoardMetrics } from "./canvas";
 import { getExpansionArtSprite } from "./expansionBlenderRegistry";
 import { getExpansionFloorAssetId, type ExpansionArtMode, type ExpansionVisualAssetId } from "./expansionArtCatalog";
-import type { ExpansionVisualSnapshot } from "./expansionVisualTimeline";
+import { getExpansionShotEndpoints, type ExpansionVisualSnapshot } from "./expansionVisualTimeline";
 
 export type ExpansionRenderFrame = ExpansionVisualSnapshot & Readonly<{
   hover: GridPosition | null;
   focus: GridPosition | null;
   selectedTool: ExpansionPlayerTool;
   buildMode: boolean;
+  rangePreviewEnabled: boolean;
+  rangePreviewPosition: GridPosition | null;
   reducedMotion: boolean;
   lowQuality: boolean;
   artMode: ExpansionArtMode;
@@ -122,14 +124,19 @@ function drawTile(context: CanvasRenderingContext2D, state: ExpansionGameState, 
 }
 
 function drawWeaponRange(context: CanvasRenderingContext2D, state: ExpansionGameState, frame: ExpansionRenderFrame, ox: number, oy: number, size: number): void {
-  const origin = frame.focus ?? frame.hover;
-  if (!origin || !frame.buildMode || (frame.selectedTool !== "turret" && frame.selectedTool !== "arcIce")) return;
+  const origin = (frame.rangePreviewEnabled ? frame.rangePreviewPosition : null) ?? frame.focus ?? frame.hover;
+  if (!origin || (!frame.buildMode && !frame.rangePreviewEnabled) || (frame.selectedTool !== "turret" && frame.selectedTool !== "arcIce")) return;
   const range = frame.selectedTool === "arcIce" ? ARC_ICE_RULES.firstTargetRange : state.config.turretRange;
   context.save();
   context.strokeStyle = frame.selectedTool === "arcIce" ? "rgba(194,159,255,.6)" : "rgba(138,217,255,.55)";
   context.lineWidth = Math.max(1, size * .02);
   for (let y = 0; y < state.grid.size; y += 1) for (let x = 0; x < state.grid.size; x += 1) {
     if (Math.abs(origin.x - x) + Math.abs(origin.y - y) <= range) context.strokeRect(ox + (x + .09) * size, oy + (y + .09) * size, size * .82, size * .82);
+  }
+  if (frame.rangePreviewEnabled) {
+    context.strokeStyle = "#f3f7ff";
+    context.lineWidth = Math.max(2, size * .035);
+    context.strokeRect(ox + (origin.x + .04) * size, oy + (origin.y + .04) * size, size * .92, size * .92);
   }
   context.restore();
 }
@@ -181,7 +188,7 @@ function drawShieldLinks(context: CanvasRenderingContext2D, state: ExpansionGame
   let links = shieldLinks.get(state);
   if (!links) { links = getShieldLinks(state.intrusions); shieldLinks.set(state, links); }
   context.save();
-  context.strokeStyle = "rgba(117,186,255,.85)";
+  context.strokeStyle = "rgba(179,129,255,.85)";
   context.lineWidth = Math.max(2, size * .028);
   context.setLineDash([size * .045, size * .055]);
   for (const link of links) {
@@ -234,9 +241,9 @@ function drawCombatEffects(context: CanvasRenderingContext2D, frame: ExpansionRe
     context.globalAlpha = 1 - progress;
     context.lineWidth = Math.max(2, size * .035);
     if (event.type === "turretHit") {
-      const target = frame.intrusionPositions.get(event.targetId) ?? event.targetPosition;
-      const fromX = ox + (event.turretPosition.x + .5) * size;
-      const fromY = oy + (event.turretPosition.y + .5) * size;
+      const { source, target } = getExpansionShotEndpoints(event, frame.intrusionPositions);
+      const fromX = ox + (source.x + .5) * size;
+      const fromY = oy + (source.y + .5) * size;
       const toX = ox + (target.x + .5) * size;
       const toY = oy + (target.y + .5) * size;
       context.strokeStyle = event.weapon === "arcIce" ? "#c6a2ff" : "#8ad9ff";

@@ -3,6 +3,7 @@ import { getExpansionLevelDefinition } from "./data/campaigns/expansion";
 import { getExpansionLevelContentHash } from "./data/campaigns/expansion/contentManifest";
 import { installExpansionKeyboardInput } from "./input/expansionKeyboard";
 import { installExpansionPointerInput } from "./input/expansionPointer";
+import { canPreviewExpansionTool, ExpansionRangePreview } from "./input/expansionRangePreview";
 import { getExpansionArtMode, getExpansionArtUrl, preloadExpansionLevelArt } from "./render/expansionBlenderRegistry";
 import { getExpansionLevelArtRoster, type ExpansionVisualAssetId } from "./render/expansionArtCatalog";
 import { drawExpansionGrid } from "./render/expansionRenderer";
@@ -31,6 +32,7 @@ let selectedTool: ExpansionPlayerTool = defaultTool();
 const artMode = getExpansionArtMode();
 let hover: GridPosition | null = null;
 let keyboardFocus: GridPosition | null = null;
+const rangePreview = new ExpansionRangePreview();
 let running = false;
 let paused = false;
 let lastTime = performance.now();
@@ -67,7 +69,9 @@ installExpansionPointerInput({
   getState: () => state,
   getSelectedTool: () => selectedTool,
   isEnabled: () => !paused && (state.phase === "prep" || state.phase === "active"),
-  onHover: (position) => { hover = position; },
+  onHover: (position) => { hover = position; if (position) rangePreview.inspect(position); },
+  isRangePreviewEnabled: () => rangePreview.enabled,
+  onRangePreview: inspectRange,
   dispatch,
 });
 installExpansionKeyboardInput({
@@ -75,7 +79,7 @@ installExpansionKeyboardInput({
   getState: () => state,
   getSelectedTool: () => selectedTool,
   isEnabled: () => !paused && (state.phase === "prep" || state.phase === "active"),
-  onFocus: (position) => { keyboardFocus = position; },
+  onFocus: (position) => { keyboardFocus = position; if (position) rangePreview.inspect(position); },
   dispatch,
 });
 
@@ -85,6 +89,7 @@ window.addEventListener("keydown", (event) => {
     if (event.key === "Tab") { event.preventDefault(); overlay.querySelector<HTMLButtonElement>("[data-close-guide]")?.focus(); }
     return;
   }
+  if (event.key === "Escape" && rangePreview.enabled) { event.preventDefault(); exitRangePreview(); return; }
   if (event.target instanceof HTMLButtonElement) return;
   if (event.key === "Enter" && state.phase === "prep" && !running) { event.preventDefault(); launchWave(); }
   if ((event.key === "Escape" || event.key.toLowerCase() === "p") && running && (state.phase === "prep" || state.phase === "active")) paused = !paused;
@@ -119,6 +124,8 @@ function frame(now: number): void {
     ...visualTimeline.snapshot(state, reducedMotion),
     hover, focus: keyboardFocus, selectedTool,
     buildMode: state.phase === "prep" && !running,
+    rangePreviewEnabled: rangePreview.enabled,
+    rangePreviewPosition: rangePreview.position,
     reducedMotion, lowQuality, artMode,
   });
   renderHud();
@@ -129,6 +136,12 @@ function frame(now: number): void {
 }
 
 function dispatch(command: ExpansionSimCommand): void {
+  // Both pointer taps and keyboard placement/sale commands pass this one gate.
+  // Preview never changes the grid, bandwidth, command log, or replay state.
+  if (rangePreview.filterCommand(command) === null) {
+    inspectRange(rangePreview.position!);
+    return;
+  }
   const previous = state;
   state = applyExpansionCommand(state, command);
   if (command.type !== "skipPrep") {
@@ -137,6 +150,17 @@ function dispatch(command: ExpansionSimCommand): void {
       ? `Cannot ${command.type === "sellUnit" ? "sell" : "build"} at ${cell}. Check the tile and available bandwidth.`
       : `${command.type === "sellUnit" ? "Unit sold" : "Unit placed"} at ${cell}. ${state.bandwidth} bandwidth remaining.`;
   }
+}
+
+function inspectRange(position: GridPosition): void {
+  if (!rangePreview.enabled) return;
+  rangePreview.inspect(position);
+  toolStatus.textContent = `${selectedTool === "arcIce" ? "Arc ICE" : "ICE"} range preview at column ${position.x + 1}, row ${position.y + 1}. No bandwidth spent. Exit preview to build.`;
+}
+
+function exitRangePreview(): void {
+  rangePreview.exit();
+  toolStatus.textContent = "Build mode. Tapping a tile will place the selected tool.";
 }
 
 function launchWave(): void {
@@ -153,6 +177,7 @@ function restart(): void {
   selectedTool = defaultTool();
   hover = null;
   keyboardFocus = null;
+  rangePreview.exit();
   running = false;
   paused = false;
   clearRecorded = false;
@@ -169,6 +194,20 @@ function restart(): void {
 function buildHud(): void {
   hud.className = "hud expansion-hud";
   hud.innerHTML = `<section class="hud-hero"><div class="hud-metric hud-metric-primary" data-metric="bandwidth"><span>Bandwidth</span><strong></strong></div><div class="hud-metric hud-metric-primary" data-metric="core"><span>Core</span><strong></strong></div></section><section class="hud-rail"><div class="hud-metric hud-metric-secondary" data-metric="level"><span>Level</span><strong></strong></div><div class="hud-metric hud-metric-secondary" data-metric="wave"><span>Wave</span><strong></strong></div><div class="hud-metric hud-metric-secondary" data-metric="phase"><span>Phase</span><strong></strong></div><div class="hud-metric hud-metric-secondary" data-metric="signal"><span>Signal</span><strong></strong></div><div class="hud-metric hud-metric-secondary" data-metric="intrusions"><span>Intrusions</span><strong></strong></div><div class="hud-metric hud-metric-secondary" data-metric="neutralized"><span>Neutralized</span><strong></strong></div><div class="hud-actions"><button class="neon-button neon-button-secondary" type="button" data-pause>PAUSE</button><button class="neon-button neon-button-secondary" type="button" data-guide>FIELD GUIDE</button><button class="neon-button neon-button-secondary" type="button" data-quality aria-pressed="${lowQuality}">LOW EFFECTS</button><button class="neon-button neon-button-secondary" type="button" data-exit>LEVEL SELECT</button></div></section>`;
+  const preview = document.createElement("button");
+  preview.type = "button";
+  preview.className = "neon-button neon-button-secondary";
+  preview.dataset.rangePreview = "";
+  preview.textContent = "PREVIEW RANGE";
+  preview.setAttribute("aria-pressed", "false");
+  preview.addEventListener("click", () => {
+    if (rangePreview.enabled) exitRangePreview();
+    else {
+      rangePreview.toggle(selectedTool);
+      toolStatus.textContent = "Range preview. Tap a tile to inspect coverage without spending bandwidth. Exit preview to build.";
+    }
+  });
+  hud.querySelector(".hud-actions")?.prepend(preview);
   hud.querySelector("[data-pause]")?.addEventListener("click", () => { if (running) paused = !paused; });
   hud.querySelector("[data-exit]")?.addEventListener("click", openLevelSelect);
   hud.querySelector("[data-guide]")?.addEventListener("click", openGuide);
@@ -191,6 +230,15 @@ function renderHud(): void {
   setMetric("neutralized", String(state.neutralizedCount));
   const pause = hud.querySelector<HTMLButtonElement>("[data-pause]");
   if (pause) { pause.hidden = !running || state.phase === "won" || state.phase === "lost"; pause.textContent = paused ? "RESUME" : "PAUSE"; }
+  const preview = hud.querySelector<HTMLButtonElement>("[data-range-preview]");
+  if (preview) {
+    preview.hidden = !canPreviewExpansionTool(selectedTool) || state.phase === "won" || state.phase === "lost";
+    preview.disabled = paused;
+    preview.textContent = rangePreview.enabled ? "EXIT PREVIEW" : "PREVIEW RANGE";
+    preview.setAttribute("aria-pressed", String(rangePreview.enabled));
+    preview.setAttribute("aria-label", rangePreview.enabled ? "Exit range preview and return to build mode" : "Preview weapon range without spending bandwidth");
+  }
+  canvas.dataset.rangePreview = String(rangePreview.enabled);
 }
 
 function setMetric(key: string, value: string): void {
@@ -216,7 +264,10 @@ function buildPicker(): void {
     button.setAttribute("aria-pressed", String(tool === selectedTool));
     button.addEventListener("click", () => {
       selectedTool = tool;
-      toolStatus.textContent = `${label} selected. ${purpose}. ${tool === "sell" ? "Select a placed unit to sell it." : `Costs ${state.config.units[tool].cost} bandwidth. Select an available tile.`}`;
+      rangePreview.selectTool(tool);
+      toolStatus.textContent = rangePreview.enabled
+        ? `${label} selected. Range preview remains on. Tap a tile to inspect coverage; no bandwidth is spent.`
+        : `${label} selected. ${purpose}. ${tool === "sell" ? "Select a placed unit to sell it." : `Costs ${state.config.units[tool].cost} bandwidth. Select an available tile.`}`;
     });
     picker.append(button);
   }
@@ -233,7 +284,13 @@ function renderPicker(): void {
     button.setAttribute("aria-pressed", String(tool === selectedTool));
     const cost = button.querySelector<HTMLElement>("[data-cost]");
     if (tool === "sell") { button.disabled = false; if (cost) cost.textContent = state.phase === "prep" ? "FULL" : "PART"; }
-    else { const amount = state.config.units[tool].cost; button.disabled = state.bandwidth < amount; if (cost) cost.textContent = `${amount} BW`; }
+    else {
+      const amount = state.config.units[tool].cost;
+      // Weapon selection must remain available for free range inspection even
+      // when a purchase is unaffordable; the simulation still enforces cost.
+      button.disabled = state.bandwidth < amount && !canPreviewExpansionTool(tool);
+      if (cost) cost.textContent = `${amount} BW`;
+    }
   }
 }
 
@@ -242,7 +299,7 @@ function renderPlayUi(): void {
   playUi.hidden = false;
   playUi.className = "play-ui";
   const wave = getCurrentExpansionWave(state);
-  const key = `${state.waveIndex}-${state.phase}-${running}-${selectedTool}`;
+  const key = `${state.waveIndex}-${state.phase}-${running}-${selectedTool}-${rangePreview.enabled}`;
   if (playUi.dataset.playUiKey === key) return;
   playUi.dataset.playUiKey = key;
   playUi.innerHTML = "";
@@ -254,7 +311,9 @@ function renderPlayUi(): void {
   }
   const readout = document.createElement("div");
   readout.className = "tool-readout";
-  readout.textContent = selectedTool === "arcIce"
+  readout.textContent = rangePreview.enabled
+    ? "RANGE PREVIEW · TAP TO INSPECT · NO BW SPENT · EXIT PREVIEW TO BUILD"
+    : selectedTool === "arcIce"
     ? "ARC ICE · RANGE 3 · CHAIN UP TO 3 · 3/2/1 DAMAGE · IGNORES SHIELDS"
     : selectedTool === "latencyTrap"
     ? "LATENCY TRAP · WALK-THROUGH · 3 CHARGES · +3 MOVE DELAY · 10 BW"
@@ -271,8 +330,12 @@ function renderOverlay(): void {
     overlay.hidden = false;
     if (overlay.dataset.overlayKey !== "guide") {
       overlay.dataset.overlayKey = "guide";
-      overlay.innerHTML = `<div class="overlay-cover"><section class="overlay-panel expansion-guide" role="dialog" aria-modal="true" aria-labelledby="expansion-guide-title"><h2 id="expansion-guide-title" class="overlay-title">Field guide</h2><p>Connect Source to Core through Relays and Firewalls. Spend bandwidth to build, then launch each of the five waves. ICE fires automatically within ${state.config.turretRange} tiles.</p><p>Latency Traps delay enemies that step onto them. Each trap has three charges. Keep ICE close enough to cover the delayed enemies.</p>${getExpansionLevelArtRoster(level).includes("sapper") ? "<p><strong>Sapper:</strong> prioritizes reachable Firewalls, then other reachable hardware, then Core. Its dashed line marks its current target. On destruction, its pulse damages hardware in up to four orthogonal neighboring tiles; diagonals are safe. Keep important units out of that cross.</p>" : ""}${level.requiredMechanic === "shieldNetwork" ? "<p><strong>Shield Drone:</strong> blue links protect nearby enemies within two tiles, reducing each normal ICE hit by two damage (minimum one). Drones do not protect themselves or other drones. Eliminate the drone to remove its links.</p><p><strong>Arc ICE:</strong> seeks a Shield Drone within three tiles first, then chains to up to two more enemies within two tiles per jump. Hits deal 3, 2, then 1 damage and ignore shields. Normal ICE remains stronger against an isolated target. Hover or focus a tile to see placement range.</p>" : ""}<p>Build phases have no timer. You can also build during combat. Build-phase sales give a full refund; combat sales return part of the cost.</p><div class="expansion-guide-roster" data-guide-roster aria-label="Units and enemies in this level"></div><button class="neon-button neon-button-primary" type="button" data-close-guide>BACK TO GAME</button></section></div>`;
+      const trapGuide = level.toolsUnlocked.includes("latencyTrap") ? "<p>Latency Traps delay enemies that step onto them. Each trap has three charges. Keep ICE close enough to cover the delayed enemies.</p>" : "";
+      overlay.innerHTML = `<div class="overlay-cover"><section class="overlay-panel expansion-guide" role="dialog" aria-modal="true" aria-labelledby="expansion-guide-title"><h2 id="expansion-guide-title" class="overlay-title">Field guide</h2><p>Connect Source to Core through Relays and Firewalls. Spend bandwidth to build, then launch each of the five waves. ICE fires automatically within ${state.config.turretRange} tiles.</p>${trapGuide}${getExpansionLevelArtRoster(level).includes("sapper") ? "<p><strong>Sapper:</strong> prioritizes reachable Firewalls, then other reachable hardware, then Core. Its dashed line marks its current target. On destruction, its pulse damages hardware in up to four orthogonal neighboring tiles; diagonals are safe. Keep important units out of that cross.</p>" : ""}${level.requiredMechanic === "shieldNetwork" ? "<p><strong>Shield Drone:</strong> violet links protect nearby enemies within two tiles, reducing each normal ICE hit by two damage (minimum one). Drones do not protect themselves or other drones. Eliminate the drone to remove its links.</p><p><strong>Arc ICE:</strong> seeks a Shield Drone within three tiles first, then chains to up to two more enemies within two tiles per jump. Hits deal 3, 2, then 1 damage and ignore shields. Normal ICE remains stronger against an isolated target. Hover or focus a tile to see placement range.</p>" : ""}<p>Build phases have no timer. You can also build during combat. Build-phase sales give a full refund; combat sales return part of the cost.</p><div class="expansion-guide-roster" data-guide-roster aria-label="Units and enemies in this level"></div><button class="neon-button neon-button-primary" type="button" data-close-guide>BACK TO GAME</button></section></div>`;
       const roster = overlay.querySelector<HTMLElement>("[data-guide-roster]");
+      const rangeGuide = document.createElement("p");
+      rangeGuide.textContent = "To inspect weapon range on touch, select ICE or Arc ICE, turn on PREVIEW RANGE, then tap a cell. No bandwidth is spent. EXIT PREVIEW returns to build mode. Mouse hover and keyboard focus also show range during build phases.";
+      roster?.before(rangeGuide);
       for (const id of getExpansionLevelArtRoster(level).filter((id) => !id.startsWith("floor"))) {
         const figure = document.createElement("figure");
         const label = assetLabel(id);

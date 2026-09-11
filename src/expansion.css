@@ -1,5 +1,6 @@
 html[data-expansion-play="true"] .game-logo small::after { content: " // EXPANSION 1 LOCAL"; color: #b381ff; }
 html[data-expansion-play="true"] .game-layout { border-color: rgba(179,129,255,.55); }
+html[data-expansion-play="true"] .game-panel { align-self: center; }
 html[data-expansion-play="true"] #game-canvas:focus-visible { outline: 2px solid #f3f7ff; outline-offset: 3px; }
 .expansion-hud [data-metric="level"] strong { font-size: clamp(.82rem, 1.3vw, 1.05rem); }
 .expansion-picker .tool-button { grid-template-columns: 40px minmax(0, 1fr) auto; }
@@ -9,7 +10,8 @@ html[data-expansion-play="true"] #game-canvas:focus-visible { outline: 2px solid
 .expansion-picker button[data-tool="latencyTrap"].selected { border-color: #b381ff; box-shadow: inset 0 0 20px rgba(179,129,255,.2), 0 0 12px rgba(179,129,255,.22); }
 .expansion-picker button[data-tool="latencyTrap"] .tool-name { color: #d4b8ff; }
 .expansion-picker .tool-button:focus-visible { outline: 2px solid #f3f7ff; outline-offset: 3px; }
-.expansion-hud [data-quality][aria-pressed="true"] { border-color: #b381ff; color: #e4d3ff; background: rgba(179,129,255,.16); }
+.expansion-hud [data-quality][aria-pressed="true"],
+.expansion-hud [data-range-preview][aria-pressed="true"] { border-color: #b381ff; color: #e4d3ff; background: rgba(179,129,255,.16); }
 .expansion-hud .hud-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .expansion-hud .hud-actions .neon-button { min-width: 0; font-size: .76rem; }
 .expansion-guide { max-height: min(82dvh, 780px); overflow-y: auto; overscroll-behavior: contain; }
@@ -24,7 +26,26 @@ html[data-expansion-play="true"] #game-canvas:focus-visible { outline: 2px solid
   .expansion-picker .tool-button { grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: 32px auto; min-height: 60px; }
   .expansion-picker .expansion-tool-glyph { width: 30px; height: 30px; justify-self: center; font-size: .58rem; }
 }
+@media (max-width: 760px) and (orientation: portrait) {
+  /* Reserve the active HUD's three action rows plus the two-row tool dock. */
+  html[data-expansion-play="true"] .game-panel { width: min(100%, calc(100dvh - 412px)); }
+}
+@media (max-width: 760px) and (max-height: 700px) and (orientation: portrait) {
+  /* The wave bar already carries level/phase. Keep resources and signal above
+     the board, reserving enough height for every two-row build-dock control. */
+  .expansion-hud [data-metric="level"],
+  .expansion-hud [data-metric="phase"],
+  .expansion-hud [data-metric="intrusions"],
+  .expansion-hud [data-metric="neutralized"] { display: none; }
+  .expansion-hud .hud-actions { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .expansion-hud .hud-actions .neon-button { min-height: 44px; padding: 4px; font-size: 10px; }
+  html[data-expansion-play="true"] .game-panel { width: min(100%, calc(100dvh - 312px)); }
+}
 @media (max-width: 760px) and (max-height: 520px) and (orientation: landscape) {
+  .expansion-hud .hud-metric { min-height: 34px; padding: 3px 4px; }
+  .expansion-hud .hud-metric span { font-size: 7px; }
+  .expansion-hud .hud-metric strong { font-size: 11px; }
+  .expansion-hud .hud-actions .neon-button { min-height: 44px; padding: 4px 2px; font-size: 10px; line-height: 1.1; }
   .expansion-picker .tool-button { grid-template-columns: 24px minmax(0, 1fr) auto; grid-template-rows: auto; min-height: 44px; }
   .expansion-picker .expansion-tool-glyph { width: 24px; height: 24px; }
 }

@@ -33,7 +33,7 @@ where source art or implementation was approved.
 | Work | Skill | Project-specific note |
 |---|---|---|
 | Game design, gameplay, or interactive simulation | `axiom-games` | The available skill is oriented toward Apple game frameworks. Use its general game-loop discipline, but this repository's vanilla TypeScript/Canvas2D architecture is authoritative. |
-| Browser interaction and mobile/desktop visual QA | `playwright` | Use the CLI workflow for 320, 390/393, 420, 760, and desktop viewport checks. Keep temporary artifacts out of the repository when the task is complete. |
+| Browser interaction and mobile/desktop visual QA | `frontend-testing-debugging` plus available browser controls | Prefer the installed Computer Use browser API; test 320px, 390px, landscape and desktop viewports. Keep temporary screenshots outside the repo. Do not substitute viewport emulation for physical-phone acceptance. |
 | Asset generation or editing | `imagegen` or local Blender | Generated assets must be local, optimized, documented, and usable offline. Expansion 3D assets may use the owner-approved reproducible Blender pipeline; keep editable `.blend` source and deterministic build scripts, then ship only pre-rendered raster sprites to Canvas2D. Never add a runtime image-generation or asset API. |
 | Cloudflare Pages configuration or release work | `cloudflare` | Preserve Git-integrated previews and production deploys from `main`. Do not add Pages Functions or another backend. |
 | Supabase Auth, leaderboard, database, or Edge Function work | `supabase` | `GridWatchGamesDB` is shared. Preserve RLS, Auth identity, the game slug, replay validation, and service-role isolation. |

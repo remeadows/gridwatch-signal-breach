@@ -1,4 +1,5 @@
 import { SECTORS } from "./data/levels";
+import { isExpansionChapterAvailable } from "./data/campaigns/expansion";
 import { installPointerInput } from "./input/pointer";
 import { drawAmbientBackdrop, drawGrid } from "./render/renderer";
 import { getBoardArtMode, preloadPhase6BoardSprites } from "./render/assetRegistry";
@@ -95,13 +96,18 @@ function dispatch(command: SimCommand): void {
 
 let progress: GameProgress = loadGameProgress();
 let currentSector = getInitialSector(getSignalBreachProgress(progress));
-let selectedExpansionChapterId = 1;
+const navigationQuery = new URLSearchParams(window.location.search);
+const requestedChapter = Number(navigationQuery.get("chapter"));
+const requestedChapterAvailable = isExpansionChapterAvailable(requestedChapter, progress.campaigns["expansion-1"].highestUnlockedLevel);
+let selectedExpansionChapterId = requestedChapterAvailable ? requestedChapter : 1;
 document.documentElement.dataset.sector = String(currentSector);
 let currentSeed = "";
 let recordedCommands: RecordedCommand[] = [];
 let state = createRunState();
 let selectedTool: PlayerTool = getDefaultTool(state);
-let screen: AppScreen = expansionNavigationEnabled && new URLSearchParams(window.location.search).get("expansion-nav") === "1" ? "chapterSelect" : "title";
+let screen: AppScreen = expansionNavigationEnabled && navigationQuery.get("expansion-nav") === "1"
+  ? requestedChapterAvailable ? "levelSelect" : "chapterSelect"
+  : "title";
 let briefingReturn: AppScreen = "sectorSelect";
 let leaderboardReturn: AppScreen = "title";
 let hoverTile: GridPosition | null = null;

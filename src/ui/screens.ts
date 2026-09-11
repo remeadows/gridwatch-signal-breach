@@ -300,7 +300,7 @@ function renderCampaignSelectScreen(options: ScreenOptions): void {
   const header = createNavigationHeader(
     "CAMPAIGN ROUTER",
     "Select campaign",
-    "Signal Breach remains production-active. Expansion 1 Chapters 1 and 2 are available here only for localhost acceptance testing.",
+    "Choose the original campaign or Expansion 1. The first three of six planned chapters (15 of 30 levels) are playable locally. Expansion progress stays in this browser; online scoring is not enabled.",
   );
   const grid = document.createElement("div");
   const backButton = createNavigationButton("BACK", "secondary", onBackToTitle);
@@ -316,11 +316,11 @@ function renderCampaignSelectScreen(options: ScreenOptions): void {
     const button = createNavigationCard({
       index: isExpansion ? "EXPANSION 01" : "CURRENT CAMPAIGN",
       title: isExpansion ? "EXPANSION UPLINK" : "SIGNAL BREACH",
-      name: isExpansion ? "TWO-CHAPTER LOCAL PLAYTEST" : "THREE SECTORS // TWELVE WAVES",
+      name: isExpansion ? "THREE CHAPTERS // 75 WAVES" : "THREE SECTORS // TWELVE WAVES",
       detail: isExpansion
-        ? "Ten authored levels and 50 waves. Progress stays isolated; leaderboard submission remains disabled."
-        : "The frozen V2 campaign continues using its original sector progress and replay identity.",
-      meta: isExpansion ? "LEVELS 01–10" : "SECTORS 01–03",
+        ? "Fifteen fresh tactical boards. Master delay, demolition spacing, and shield-breaking chain attacks."
+        : "Defend the original three-sector uplink. Your existing progress and leaderboard remain separate.",
+      meta: isExpansion ? "LEVELS 01–15" : "SECTORS 01–03",
       status: isExpansion ? "LOCAL ONLY" : "ACTIVE",
       disabled: false,
       onSelect: () => onSelectCampaign(campaign.id),
@@ -348,7 +348,7 @@ function renderChapterSelectScreen(options: ScreenOptions): void {
   const header = createNavigationHeader(
     "EXPANSION ROUTER",
     "Select chapter",
-    "Six chapter slots are reserved. Latency Front and Demolition Front are authored; later chapters remain locked and spoiler-safe.",
+    "Three chapters are ready to play. Clear five levels to unlock the next front; later chapters are still under construction.",
   );
   const grid = document.createElement("div");
   const backButton = createNavigationButton("BACK", "secondary", onBackToCampaignSelect);
@@ -369,10 +369,12 @@ function renderChapterSelectScreen(options: ScreenOptions): void {
       title: isUnlocked ? chapter.codename : "ENCRYPTED CHAPTER",
       name: isUnlocked ? "FIVE LEVELS // 25 WAVES" : "SIGNAL LOCKED",
       detail: isUnlocked
-        ? chapter.id === 2
-          ? "Local acceptance build with Sapper target locks, death pulses, and fresh starting conditions per level."
-          : "Local acceptance build with Latency Trap, Rusher, and fresh starting conditions per level."
-        : "This chapter stays spoiler-safe until an earlier chapter is cleared.",
+        ? chapter.id === 3
+          ? "Break Shield Drone links with Arc ICE, then combine coverage, spacing, and signal recovery."
+          : chapter.id === 2
+            ? "Read Sapper target locks. Isolate blast zones and protect your relay spine."
+            : "Catch fast Rushers with Latency Traps while keeping Source connected to Core."
+        : chapter.id <= 3 ? "Clear the preceding chapter to unlock this front." : "Future chapter. Not included in this three-chapter milestone.",
       meta: isUnlocked ? `LEVELS ${formatChapterLevels(chapter)}` : "LEVELS LOCKED",
       status: isUnlocked ? "LOCAL PLAYTEST" : "LOCKED",
       disabled: !isUnlocked,
@@ -403,8 +405,8 @@ function renderLevelSelectScreen(options: ScreenOptions): void {
   const header = createNavigationHeader(
     "EXPANSION ROUTER",
     `${chapter.codename} // Levels`,
-    chapter.id <= 2
-      ? "Five local-review levels. Each starts fresh and contains five waves; no score leaves this browser."
+    chapter.id <= 3
+      ? "Five levels. Each starts fresh and contains five waves; no score leaves this browser."
       : "This chapter is reserved for a later reviewed content batch.",
   );
   const grid = document.createElement("div");

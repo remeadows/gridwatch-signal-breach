@@ -16,6 +16,19 @@ export type ExpansionVisualSnapshot = Readonly<{
   intrusionPositions: ReadonlyMap<number, GridPosition>;
 }>;
 
+/** Resolve both ends from one visual snapshot so moving Arc chains stay joined. */
+export function getExpansionShotEndpoints(
+  event: Extract<ExpansionSimEvent, { type: "turretHit" }>,
+  positions: ReadonlyMap<number, GridPosition>,
+): Readonly<{ source: GridPosition; target: GridPosition }> {
+  return {
+    source: event.sourceIntrusionId === undefined
+      ? event.turretPosition
+      : positions.get(event.sourceIntrusionId) ?? event.turretPosition,
+    target: positions.get(event.targetId) ?? event.targetPosition,
+  };
+}
+
 type TimedEffect = Readonly<{ event: ExpansionVisualEvent; startedAt: number; durationMs: number }>;
 type Movement = Readonly<{ from: GridPosition; to: GridPosition; startedAt: number; durationMs: number }>;
 

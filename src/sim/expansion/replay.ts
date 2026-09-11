@@ -4,7 +4,7 @@ import { applyExpansionCommand } from "./commands";
 import { calculateExpansionScore } from "./scoring";
 import { createExpansionGameState } from "./state";
 import { tickExpansion } from "./tick";
-import { EXPANSION_CAMPAIGN_ID, EXPANSION_RULESET_ID, type ExpansionRecordedCommand, type ExpansionReplayInput, type ExpansionReplayResult, type ExpansionSimCommand } from "./types";
+import { EXPANSION_CAMPAIGN_ID, EXPANSION_RULESET_ID, type ExpansionContentRevision, type ExpansionRecordedCommand, type ExpansionReplayInput, type ExpansionReplayResult, type ExpansionSimCommand } from "./types";
 
 export const MAX_EXPANSION_REPLAY_TICKS = 12000;
 export const MAX_EXPANSION_REPLAY_COMMANDS = 5000;
@@ -23,7 +23,7 @@ export function replayExpansionRun(input: ExpansionReplayInput): ExpansionReplay
     throw new ExpansionReplayError("Expansion replay revision or level is not authored.");
   }
   if (input.contentHash !== expectedContentHash) throw new ExpansionReplayError("Expansion content hash mismatch.");
-  const commands = validateExpansionCommands(input.commands as unknown);
+  const commands = validateExpansionCommands(input.commands as unknown, input.contentRevision);
   let state = createExpansionGameState({ levelId: input.level, contentHash: input.contentHash, contentRevision: input.contentRevision, seed: input.seed });
   let index = 0;
   let ticks = 0;
@@ -41,25 +41,26 @@ export function replayExpansionRun(input: ExpansionReplayInput): ExpansionReplay
   return { state, score: calculateExpansionScore(state) };
 }
 
-function validateExpansionCommands(value: unknown): readonly ExpansionRecordedCommand[] {
+function validateExpansionCommands(value: unknown, revision: ExpansionContentRevision): readonly ExpansionRecordedCommand[] {
   if (!Array.isArray(value)) throw new ExpansionReplayError("Expansion command log must be an array.");
   if (value.length > MAX_EXPANSION_REPLAY_COMMANDS) throw new ExpansionReplayError("Expansion command log exceeds the maximum command count.");
-  return value.map((entry) => validateExpansionRecordedCommand(entry));
+  return value.map((entry) => validateExpansionRecordedCommand(entry, revision));
 }
 
-function validateExpansionRecordedCommand(value: unknown): ExpansionRecordedCommand {
+function validateExpansionRecordedCommand(value: unknown, revision: ExpansionContentRevision): ExpansionRecordedCommand {
   if (!isRecord(value) || !Number.isInteger(value.t) || (value.t as number) < 0 || (value.t as number) > MAX_EXPANSION_REPLAY_TICKS) {
     throw new ExpansionReplayError("Expansion command has an invalid tick.");
   }
-  return { t: value.t as number, c: validateExpansionCommand(value.c) };
+  return { t: value.t as number, c: validateExpansionCommand(value.c, revision) };
 }
 
-function validateExpansionCommand(value: unknown): ExpansionSimCommand {
+function validateExpansionCommand(value: unknown, revision: ExpansionContentRevision): ExpansionSimCommand {
   if (!isRecord(value) || typeof value.type !== "string") throw new ExpansionReplayError("Expansion command is malformed.");
   if (value.type === "skipPrep") return { type: "skipPrep" };
   if (value.type === "sellUnit") return { type: "sellUnit", position: validatePosition(value.position) };
   if (value.type === "placeUnit") {
     if (typeof value.unit !== "string" || !isExpansionHardwareKind(value.unit)) throw new ExpansionReplayError("Expansion placement command has an invalid unit.");
+    if (value.unit === "arcIce" && revision !== "expansion-1-r3") throw new ExpansionReplayError("Arc ICE is not part of this replay revision.");
     return { type: "placeUnit", position: validatePosition(value.position), unit: value.unit };
   }
   throw new ExpansionReplayError("Expansion command type is unknown.");

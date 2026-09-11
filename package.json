@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:phone": "vite --mode lan-preview --host 0.0.0.0 --port 4185 --strictPort",
+    "dev:phone": "vite --mode lan-preview --host 0.0.0.0 --port 4392 --strictPort",
+    "dev:local": "vite --host 127.0.0.1 --port 4391 --strictPort",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "build:validator": "esbuild src/sim/index.ts --bundle --format=esm --platform=neutral --target=es2022 --legal-comments=none --outfile=supabase/functions/submit-gridwatch-score/sim.bundle.js",
@@ -23,12 +24,15 @@
     "verify:sapper": "node scripts/run-typescript.mjs scripts/verify-sapper.ts",
     "verify:expansion-sim": "node scripts/run-typescript.mjs scripts/verify-expansion-sim.ts",
     "verify:expansion-revisions": "node scripts/run-typescript.mjs scripts/verify-expansion-revisions.ts",
+    "verify:expansion-retained-evidence": "node scripts/run-typescript.mjs scripts/verify-expansion-retained-evidence.ts",
     "verify:expansion-visuals": "node scripts/run-typescript.mjs scripts/verify-expansion-visuals.ts",
     "verify:shield-network": "node scripts/run-typescript.mjs scripts/verify-shield-network.ts",
     "verify:shield-combat": "node scripts/run-typescript.mjs scripts/verify-shield-combat.ts",
     "verify:preview-policy": "node scripts/run-typescript.mjs scripts/verify-preview-policy.ts",
     "verify:assets": "node scripts/verify-assets.mjs",
-    "verify:expansion-art": "node scripts/verify-expansion-art.mjs"
+    "verify:expansion-art": "node scripts/verify-expansion-art.mjs",
+    "verify:expansion-art-fallback": "node scripts/verify-expansion-art-fallback.mjs",
+    "verify:chapter03-human": "node scripts/run-typescript.mjs scripts/verify-chapter03-human-balance.ts"
   },
   "devDependencies": {
     "esbuild": "^0.28.0",

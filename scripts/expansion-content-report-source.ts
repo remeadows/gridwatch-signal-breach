@@ -1,5 +1,5 @@
 import { EXPANSION_LEVELS } from "../src/data/campaigns/expansion";
-import { EXPANSION_CHAPTER_01_CONTENT_MANIFEST } from "../src/data/campaigns/expansion/contentManifest";
+import { EXPANSION_CHAPTER_01_CONTENT_MANIFEST, EXPANSION_CHAPTER_02_CONTENT_MANIFEST } from "../src/data/campaigns/expansion/contentManifest";
 import { buildExpansionContentReport, stableStringify, validateExpansionContent } from "./expansion-content-report-lib";
 
 /** Shared by verification and the explicit generated-report writer. */
@@ -11,6 +11,9 @@ export async function buildCurrentExpansionContentReport() {
     if (levelHashes[Number(levelId)] !== hash) throw new Error(`Frozen Chapter 1 Level ${levelId} content changed; report regeneration refused.`);
   }
   validateExpansionContent(EXPANSION_LEVELS);
+  for (const [levelId, hash] of Object.entries(EXPANSION_CHAPTER_02_CONTENT_MANIFEST.levelHashes)) {
+    if (levelHashes[Number(levelId)] !== hash) throw new Error(`Frozen r2 Level ${levelId} content changed; report regeneration refused.`);
+  }
   return buildExpansionContentReport(EXPANSION_LEVELS, await sha256(stableStringify(EXPANSION_LEVELS)), levelHashes);
 }
 

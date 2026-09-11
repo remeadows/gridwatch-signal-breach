@@ -33,24 +33,39 @@ npm run preview
 
 The Vite base path is `/` so the app is served from the root of its host.
 
-### Expansion 1 Chapters 1-2 local acceptance
+### Expansion 1 Chapters 1–3 local acceptance
 
-The expansion is intentionally available only on `localhost`/`127.0.0.1` while its
-separate server validator and leaderboard categories remain unpublished:
+The expansion stays local while its separate server validator and leaderboard
+categories remain unpublished. Dedicated ports avoid the other GridWatch games:
 
 ```sh
-npm run build
-npm run preview -- --host 127.0.0.1 --port 4177 --strictPort
+npm run dev:local
 ```
 
-Open `http://127.0.0.1:4177/?expansion-nav=1`. The ten authored levels contain
-five waves each and use isolated `expansion-v1` state, additive content hashes,
-and progress. Chapter 2 introduces the approved Sapper and its spacing counter.
-Local results never submit to Supabase. These query flags are hostname-gated
-and cannot enable expansion play on the public site.
+Open `http://127.0.0.1:4391/` and choose **Expansion Campaign**. Fifteen authored
+levels contain five waves each and use isolated `expansion-v1` state, additive
+content hashes, and progress. Chapter 2 introduces Sapper spacing; Chapter 3
+introduces Shield Drones and shield-piercing Arc ICE. Blender CLI produces the
+three themed grids and consistent hardware/enemy roster; Canvas2D remains the
+runtime renderer. Source scenes and raster provenance are versioned in the repo.
 
-Use `npm run verify:expansion-sim`, `npm run expansion:balance`, and
-`npm run expansion:content-report` for the Chapter 1-2 deterministic gates.
+Local results never submit to Supabase. Production builds cannot enable the
+expansion on public hosts. For a physical phone on trusted Wi-Fi, use
+`npm run dev:phone` on port 4392; that explicit dev mode suppresses leaderboard
+credentials. See `docs/LOCAL_PHONE_ACCEPTANCE.md`. Do not use ports 4175–4185
+without checking ownership: several other games are being tested concurrently.
+
+Run `npm run verify:expansion-sim`, `npm run verify:expansion-revisions`,
+`npm run verify:expansion-retained-evidence`,
+`npm run expansion:human-balance`, `npm run verify:chapter03-human`,
+`npm run verify:expansion-art`, `npm run verify:expansion-art-fallback`, and
+`npm run expansion:content-report`.
+The historical `expansion:balance` lane proves deterministic solvability, not
+human fun or phone performance. Contextual owner approval remains pending;
+asset release gates intentionally reject candidate art until it is recorded.
+
+Use `?art=phase6` or `?art=glyphs` for visual rollback and `?quality=low` for
+reduced effects. These switches do not change the simulation or scores.
 
 ## Deploy
 

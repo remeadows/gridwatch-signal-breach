@@ -7,6 +7,15 @@ import { getExpansionTileKind, listExpansionPositions } from "../src/sim/expansi
 import type { ExpansionGameState, ExpansionHardwareKind } from "../src/sim/expansion/types";
 import type { GridPosition } from "../src/sim/types";
 
+// HISTORICAL FAST-BOT FIXTURE, not a validated human build blueprint.
+// Preserve candidate order, overlapping/illegal attempts, and the frozen report
+// hashes: addOne submits candidates through the real placement rules, so these
+// rejected attempts are part of the historical policy's behavior. Normalizing
+// this list and re-freezing its hash would replace the regression baseline.
+// Current acceptance uses expansion-human-plans.ts, which rejects conflicting
+// placements before simulation, and expansion-human-balance-lib.ts for measured
+// action cadence, rejected-command counts, replay logs, and controlled spacing.
+// See docs/THREE_CHAPTER_BLENDER_GOAL_PLAN.md, checkpoint A.
 const PLANS: Readonly<Record<number, Readonly<Record<"turret" | "latencyTrap" | "firewall", readonly GridPosition[]>>>> = {
   1: { turret: [{ x: 1, y: 3 }, { x: 5, y: 3 }, { x: 3, y: 5 }, { x: 5, y: 5 }, { x: 1, y: 5 }], latencyTrap: [{ x: 1, y: 4 }, { x: 3, y: 4 }, { x: 5, y: 4 }, { x: 6, y: 3 }, { x: 6, y: 5 }], firewall: [{ x: 2, y: 3 }, { x: 4, y: 5 }] },
   2: { turret: [{ x: 6, y: 1 }, { x: 3, y: 4 }, { x: 1, y: 4 }, { x: 4, y: 1 }, { x: 6, y: 3 }], latencyTrap: [{ x: 1, y: 3 }, { x: 3, y: 5 }, { x: 4, y: 3 }, { x: 6, y: 4 }, { x: 5, y: 1 }], firewall: [{ x: 1, y: 2 }, { x: 5, y: 2 }] },
@@ -19,6 +28,8 @@ const PLANS: Readonly<Record<number, Readonly<Record<"turret" | "latencyTrap" | 
   9: { turret: [{ x: 0, y: 4 }, { x: 7, y: 4 }, { x: 4, y: 7 }, { x: 4, y: 0 }, { x: 1, y: 4 }, { x: 6, y: 4 }, { x: 3, y: 7 }, { x: 7, y: 1 }, { x: 0, y: 1 }, { x: 4, y: 2 }], latencyTrap: [{ x: 0, y: 6 }, { x: 7, y: 6 }, { x: 0, y: 2 }, { x: 7, y: 2 }, { x: 3, y: 3 }, { x: 4, y: 6 }], firewall: [{ x: 3, y: 1 }, { x: 0, y: 0 }, { x: 7, y: 7 }, { x: 1, y: 3 }] },
   10: { turret: [{ x: 0, y: 3 }, { x: 7, y: 4 }, { x: 3, y: 7 }, { x: 4, y: 0 }, { x: 1, y: 4 }, { x: 6, y: 6 }, { x: 3, y: 0 }, { x: 7, y: 2 }, { x: 0, y: 5 }, { x: 5, y: 4 }], latencyTrap: [{ x: 0, y: 2 }, { x: 7, y: 5 }, { x: 2, y: 7 }, { x: 5, y: 0 }, { x: 3, y: 6 }, { x: 6, y: 2 }], firewall: [{ x: 6, y: 3 }, { x: 7, y: 7 }, { x: 0, y: 0 }, { x: 5, y: 6 }] },
 };
+// Retained confounded historical build comparison. These are priority lists,
+// not a claim that every listed unit can coexist or that spacing is isolated.
 const CLUSTERED_LEVEL_SIX_PLAN = {
   turret: [{ x: 4, y: 1 }, { x: 3, y: 2 }, { x: 5, y: 2 }, { x: 4, y: 3 }, { x: 3, y: 3 }, { x: 5, y: 3 }, { x: 2, y: 2 }, { x: 6, y: 2 }],
   latencyTrap: [{ x: 4, y: 0 }, { x: 3, y: 0 }, { x: 5, y: 0 }, { x: 2, y: 0 }],
@@ -58,9 +69,9 @@ console.log(`Chapter 1 deterministic report hash: ${chapterOneHash}`);
 console.log(`Chapter 2 deterministic report hash: ${chapterTwoHash}`);
 if (chapterTwoRows.some((row) => row.phase !== "won")) throw new Error("A guided Chapter 2 plan failed a fixed seed.");
 if (chapterTwoEmptyRows.some((row) => row.phase !== "lost")) throw new Error("An empty-loadout baseline cleared a Chapter 2 level.");
-const spacedLevelSix = chapterTwoRows.filter((row) => row.levelId === 6).reduce((total, row) => total + row.integrity, 0);
-const clusteredLevelSix = clusteredRows.reduce((total, row) => total + row.integrity, 0);
-if (clusteredLevelSix >= spacedLevelSix - 80) throw new Error("Level 6 clustered counter-negative plan was not materially worse than safe spacing.");
+const historicalStandardLevelSix = chapterTwoRows.filter((row) => row.levelId === 6).reduce((total, row) => total + row.integrity, 0);
+const historicalClusteredLevelSix = clusteredRows.reduce((total, row) => total + row.integrity, 0);
+if (historicalClusteredLevelSix >= historicalStandardLevelSix - 80) throw new Error("Level 6 historical clustered build no longer satisfies the frozen integrity-difference guard.");
 for (let levelId = 6; levelId <= 10; levelId += 1) {
   const integrity = chapterTwoRows.filter((row) => row.levelId === levelId).map((row) => row.integrity).sort((a, b) => a - b);
   const median = (integrity[1]! + integrity[2]!) / 2;

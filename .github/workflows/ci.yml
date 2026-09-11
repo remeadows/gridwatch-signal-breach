@@ -43,12 +43,14 @@ jobs:
           npm run typecheck:tools
           npm run verify:assets
           npm run verify:expansion-art
+          npm run verify:expansion-art-fallback
           npm run verify:replays
           npm run verify:latency-trap
           npm run verify:rusher
           npm run verify:sapper
           npm run verify:expansion-sim
           npm run verify:expansion-revisions
+          npm run verify:expansion-retained-evidence
           npm run verify:expansion-visuals
           npm run verify:shield-network
           npm run verify:shield-combat
@@ -58,6 +60,7 @@ jobs:
           npm run balance:report
           npm run expansion:balance
           npm run expansion:human-balance
+          npm run verify:chapter03-human
           npm run expansion:content-report
 
       - name: Verify score validator bundle is in sync

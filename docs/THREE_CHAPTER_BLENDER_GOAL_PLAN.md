@@ -1,10 +1,12 @@
 # Three-chapter Blender milestone
 
-Status: approved and active. The owner said "Proceed" to the recommended end
+Status: local implementation and review complete; owner/device release acceptance
+pending. The owner said "Proceed" to the recommended end
 state and explicitly approved sending the diff to CodeRabbit on 2026-09-10.
 Date: 2026-09-10
-Current base: `main` / `2e1f023`, with local Chapter 2 work on
-`codex/phase9-chapter2-sapper`.
+Current base: `main` / `2e1f023`, with local Chapter 2 checkpoint `512d096` and
+Chapter 3 work on `codex/phase10-shield-front`. Current evidence and review
+dispositions: `reviews/THREE_CHAPTER_FINAL_REVIEW.md`.
 
 Read the companion `THREE_CHAPTER_REVIEW_2026-09-10.md` before executing this
 plan. It records defects and evidence limits that the previous green test

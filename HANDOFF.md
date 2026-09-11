@@ -1,14 +1,52 @@
 # GridWatch Handoff
 
+## Chapters 1–3 local milestone — implemented and reviewed — 2026-09-10
+
+- Current work: `codex/phase10-shield-front`, based on local Chapter 2 checkpoint
+  `512d096` after Blender roster checkpoint `8e70d9a`. Corrective Blender
+  provenance/full-rerender checkpoint: `af4e922`. Remaining Chapter 3 source,
+  UI and verification changes form the next local checkpoint on this branch.
+- Expansion 1 now has Chapters 1–3 / Levels 1–15 / 75 authored waves. Chapter 3
+  introduces Shield Drones and Arc ICE; Chapters 4–6 remain unavailable roadmap
+  content. The original three-sector/twelve-wave campaign is unchanged.
+- The Blender CLI produced 21 versioned families with editable scenes, masters,
+  runtime sprites, three chapter floors and exact provenance. The corrected
+  generator rejects mixed-lineage partial rebuilds. All artifacts were genuinely
+  rerendered, not relabeled; runtime total 1,058,094 bytes, largest loaded level
+  roster 792,098 bytes. Source/picker/Field Guide/board use consistent families.
+- Exact evidence: 60/60 normal paced-policy wins, 56/60 stress wins, 116 saved
+  winning logs replayed, 115 historical r1/r2 equivalents, 60 no-action losses.
+  All original validator bytes and retained Chapter 1/2 content hashes match.
+- CodeRabbit's authorized full-diff CLI review completed with 19 findings.
+  See `docs/reviews/THREE_CHAPTER_FINAL_REVIEW.md` for every disposition, plus
+  independent Codex checks. This is not GitHub approval or a green PR status.
+- Browser checks cover the six planned viewport sizes, range inspection with
+  no spend, ordinary placement/refund, guide pause/resume, active low effects,
+  a real loss/retry reset and normal menu navigation. The smallest portrait
+  dock overflow, tight landscape labels and stretched desktop grid were fixed.
+- Local Mac URL: `http://127.0.0.1:4391/` (`npm run dev:local`). Built static
+  preview: `http://127.0.0.1:4393/`. Trusted-LAN phone server: port 4392
+  (`npm run dev:phone`), credentials suppressed. Do not reuse 4175/4176/4177/4185;
+  other games own those ports. See `docs/LOCAL_PHONE_ACCEPTANCE.md`.
+- Release remains pending owner gameplay-scale art/fun acceptance and physical
+  phone performance testing. The asset release verifier intentionally rejects
+  the unapproved candidate. No GitHub push, public activation, migration,
+  Edge Function deployment, token extraction, or leaderboard submission occurred.
+- Next owner step: test the local milestone; then explicitly authorize the
+  selected publication/release stage. Keep future PRs chapter-sized, with
+  native required CodeRabbit/Codex review and all conversations resolved.
+
 ## Local preview port correction — 2026-09-10
 
 - Browser verification found port 4177 currently serves **GridWatch Match**.
   Do not stop or replace that other project's server. The owner’s existing
   Signal Breach tab can retain old page content; its title is not proof of the
   current server identity.
-- Signal Breach’s credential-disabled development/phone server is running on
-  port 4185 (`npm run dev:phone`), including `http://127.0.0.1:4185/` and the
-  trusted LAN address `http://192.168.1.20:4185/`. Ports 4175/4176 remain reserved.
+- A second concurrent game bound loopback port 4185 after the LAN server
+  started. The agent stopped only its own 4185 process and reserved separate
+  Signal Breach ports: 4391 (`npm run dev:local`) for Mac preview, and 4392
+  (`npm run dev:phone`) for the credential-disabled trusted LAN preview.
+  Ports 4175/4176 remain reserved.
   This port substitution preserves project isolation and supersedes the older
   4177 preview target below.
 
@@ -65,7 +103,7 @@
   `6c2c3d4a739d8b945bbf44a2ff0c237e65007fe77555533498d6bb21d3fd2690`.
 - The expansion remains localhost-only and never submits a score. No Supabase
   migration, Edge Function deployment, leaderboard category, public feature
-  flag, or GridWatchGamesDB write is part of this batch. Use port 4177 because
+  flag, or GridWatchGamesDB write is part of this batch. Use port 4391 because
   ports 4175 and 4176 are reserved for GridWatchZero testing.
 
 ## CodeRabbit Merge Gate Repair - Complete - 2026-09-10
@@ -679,10 +717,10 @@ Note: the previous "zero network / no `import.meta.env`" invariant no longer hol
 - This directory is now its own standalone git repository. Its intended upstream is `https://github.com/remeadows/gridwatch-signal-breach.git`.
 - The only sanctioned runtime dependency is `@supabase/supabase-js` for the optional leaderboard. Dev dependencies are Vite, TypeScript, and esbuild (esbuild only bundles the leaderboard validator via `npm run build:validator`).
 - Keep gameplay tuning in `src/data/` where practical. Score weights currently live in `src/sim/scoring.ts`.
-- The leaderboard is the one sanctioned network feature. `src/sim` must stay pure and deterministic (no `Math.random`/`Date.now`) — the server-side anti-cheat replays it verbatim. After any `src/sim` change, run `npm run build:validator` and commit the regenerated `supabase/functions/submit-gridwatch-score/sim.bundle.js`, then redeploy the Edge Function.
+- The leaderboard is the one sanctioned network feature. `src/sim` must stay pure and deterministic (no `Math.random`/`Date.now`). Changes to the frozen V2 simulator require `npm run build:validator` and committing any reviewed change to `supabase/functions/submit-gridwatch-score/sim.bundle.js`; deployment is a separate owner-authorized action. Changes confined to `src/sim/expansion/` do not authorize or require deploying that phase4-v1 validator. Expansion 1 has its own immutable replay ruleset and requires isolated leaderboard categories and a separately approved server-first release. The original validator must remain byte-identical for this milestone.
 - Do not add manual path drawing, sectors beyond the existing three, or waves
   beyond the existing twelve to the frozen V2 campaign. Expansion 1 Chapters
-  1-2 are separately authored through Level 10; Chapters 3-6 remain reserved
+  1-3 are separately authored through Level 15; Chapters 4-6 remain reserved
   and unauthored until their one-chapter-at-a-time batches.
 
 ## Good Next Checks
@@ -691,7 +729,7 @@ Note: the previous "zero network / no `import.meta.env`" invariant no longer hol
   Phase 6 rollout. Use `?art=glyphs` for a visual diagnostic or rollback.
 - Keep Expansion 1 local-only until its separate server validator and isolated
   leaderboard categories pass the owner-approval and compatibility gates.
-  Chapter 2 must finish desktop/mobile owner acceptance before publication.
+  All three authored chapters must finish desktop/mobile owner acceptance before publication.
 - Keep every GitHub push behind both Codex and CodeRabbit review.
 - After any future Cloudflare Pages deploy, confirm
   `https://GridWatch-SignalBreach.warsignallabs.net` loads, hashed root-relative

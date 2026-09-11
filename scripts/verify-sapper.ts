@@ -22,7 +22,10 @@ expectEqual(getChapter02EnemyPrototype("sapper"), SAPPER_PROTOTYPE, "SA-01 Sappe
 expectEqual(getChapter02EnemyPrototype("hunter"), undefined, "SA-01 leaked existing enemies into the Chapter 2 prototype.");
 expectDeepEqual(Object.keys(CHAPTER_02_ENEMY_PROTOTYPES), ["sapper"], "SA-01 prototype registry drifted.");
 expectEqual(JSON.stringify(EXPANSION_LEVELS.filter((level) => level.chapterId === 1)).includes("sapper"), false, "SA-01 leaked Sapper into Chapter 1 content.");
-expectEqual(EXPANSION_LEVELS.filter((level) => level.chapterId === 2).every((level) => JSON.stringify(level.waves).includes("sapper")), true, "SA-01 Chapter 2 omitted its approved Sapper.");
+expectEqual(EXPANSION_LEVELS.filter((level) => level.chapterId === 2).every((level) =>
+  level.waves.every((wave) => (wave.enemyWeights.sapper ?? 0) > 0 ||
+    wave.scriptedSpawns?.some((spawn) => spawn.kind === "sapper")),
+), true, "SA-01 Chapter 2 omitted its approved Sapper.");
 
 // SA-02: exact proposed constants remain reviewable in one frozen object.
 expectDeepEqual(SAPPER_PROTOTYPE, {

@@ -1,17 +1,6 @@
 import type { GridPosition } from "../types";
-
-export const ARC_ICE_RULES = {
-  cost: 20, sellRefund: 10, hp: 10,
-  firstTargetRange: 3, chainJumpRange: 2,
-  chainDamage: [3, 2, 1] as readonly number[],
-} as const;
-
-export const SHIELD_DRONE_RULES = {
-  maxHp: 12, moveEveryTicks: 3, corruptionTicks: 8,
-  spawnBatchSize: 1, chewDamage: 1, coreContactDamage: 1,
-  targeting: "route", onDeathSpawn: null,
-  shieldRange: 2, shieldReduction: 2,
-} as const;
+import { ARC_ICE_RULES, SHIELD_DRONE_RULES } from "../../data/campaigns/expansion/tuning";
+export { ARC_ICE_RULES, SHIELD_DRONE_RULES } from "../../data/campaigns/expansion/tuning";
 
 export type ShieldNetworkEnemy = Readonly<{
   id: number; kind: string; hp: number; position: GridPosition;

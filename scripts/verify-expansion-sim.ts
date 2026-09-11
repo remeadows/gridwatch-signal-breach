@@ -15,6 +15,47 @@ const initial = createExpansionGameState({ levelId: 1, contentHash: hash, seed: 
 const perimeterRejected = applyExpansionCommand(initial, { type: "placeUnit", position: { x: 0, y: 2 }, unit: "latencyTrap" });
 expectEqual(perimeterRejected, initial, "Latency Trap was placed on the perimeter.");
 
+// Scrubber is intentionally not sellable: ordinary sale empties its cell and
+// would otherwise replace paid, timed cleansing with instant refunded cleanup.
+const scrubberBase = createExpansionGameState({ levelId: 2, contentHash: getExpansionLevelContentHash(2), seed: "scrubber-no-instant-sale" });
+const scrubberPosition = { x: 1, y: 1 };
+const corruptedScrubberBase = { ...scrubberBase, grid: setExpansionTile(scrubberBase.grid, scrubberPosition, { kind: "corrupted" }) };
+const placedScrubber = applyExpansionCommand(corruptedScrubberBase, { type: "placeUnit", position: scrubberPosition, unit: "scrubber" });
+expectEqual(getExpansionTile(placedScrubber.grid, scrubberPosition).kind, "scrubber", "Scrubber fixture requires a legal placement on corruption.");
+expectEqual(getExpansionTile(placedScrubber.grid, scrubberPosition).progress, 0, "Placed Scrubber must start with no cleansing progress.");
+expectEqual(placedScrubber.bandwidth, scrubberBase.bandwidth - scrubberBase.config.units.scrubber.cost, "Scrubber placement did not charge its full cost.");
+expectEqual(placedScrubber.config.scrubberCleanseTicks, 6, "Scrubber cleanse duration drifted from six active ticks.");
+for (const phase of ["prep", "active"] as const) {
+  const workingScrubber = { ...placedScrubber, phase };
+  const attemptedSale = applyExpansionCommand(workingScrubber, { type: "sellUnit", position: scrubberPosition });
+  expectEqual(attemptedSale, workingScrubber, `${phase}: selling Scrubber must be rejected without changing state.`);
+  expectEqual(attemptedSale.bandwidth, placedScrubber.bandwidth, `${phase}: attempted Scrubber sale must not refund bandwidth.`);
+  expectEqual(getExpansionTile(attemptedSale.grid, scrubberPosition).kind, "scrubber", `${phase}: attempted Scrubber sale instantly cleansed corruption.`);
+}
+expectEqual(getExpansionTile(tickExpansion(placedScrubber).grid, scrubberPosition).progress, 0, "Build phase advanced Scrubber cleanup before launch.");
+let cleaningScrubber = applyExpansionCommand(placedScrubber, { type: "skipPrep" });
+cleaningScrubber = {
+  ...cleaningScrubber,
+  // Isolate the full tick pipeline from enemy interference and income; the
+  // production cleansing duration, command rules and scrub stage are intact.
+  config: { ...cleaningScrubber.config, waves: cleaningScrubber.config.waves.map((wave) => ({ ...wave, spawnFirstTick: 100, scriptedSpawns: [], bandwidthTricklePerTick: 0 })) },
+};
+for (let tick = 1; tick <= 6; tick += 1) {
+  cleaningScrubber = tickExpansion(cleaningScrubber);
+  const tile = getExpansionTile(cleaningScrubber.grid, scrubberPosition);
+  expectEqual(cleaningScrubber.bandwidth, placedScrubber.bandwidth, "Scrubber completion must not refund its purchase.");
+  if (tick < 6) {
+    expectEqual(tile.kind, "scrubber", "Scrubber cleansed its cell before six active ticks.");
+    expectEqual(tile.progress, tick, "Scrubber did not advance by exactly one active tick.");
+    expectEqual(applyExpansionCommand(cleaningScrubber, { type: "sellUnit", position: scrubberPosition }), cleaningScrubber, "Partially completed Scrubber became sellable.");
+    expectEqual(cleaningScrubber.events.some((event) => event.type === "tileCleansed"), false, "Scrubber emitted cleanup feedback before completion.");
+  } else {
+    expectEqual(tile.kind, "empty", "Scrubber did not finish cleansing and disappear on its sixth active tick.");
+    expectEqual(cleaningScrubber.events.filter((event) => event.type === "tileCleansed" && sameExpansionPosition(event.position, scrubberPosition)).length, 1, "Scrubber completion must emit exactly one tile-cleansed event.");
+  }
+}
+expectEqual(getExpansionTile(corruptedScrubberBase.grid, scrubberPosition).kind, "corrupted", "Scrubber lifecycle mutated its input grid.");
+
 const spawnGuardBase: ExpansionGameState = {
   ...initial,
   bandwidth: 1_000,
@@ -177,14 +218,15 @@ pulseGrid = setExpansionTile(pulseGrid, { x: 4, y: 3 }, { kind: "firewall", hp: 
 pulseGrid = setExpansionTile(pulseGrid, { x: 2, y: 3 }, { kind: "turret", hp: 10 });
 pulseGrid = setExpansionTile(pulseGrid, { x: 7, y: 7 }, { kind: "turret", hp: 10 });
 pulseGrid = setExpansionTile(pulseGrid, { x: 4, y: 4 }, { kind: "relay", hp: 6 });
-const pulsed = applyExpansionTurretCombat({
+const pulseState: ExpansionGameState = {
   ...chapterTwo,
   tickCount: 20,
   phase: "active",
   config: { ...chapterTwo.config, turretRange: 10 },
   grid: pulseGrid,
   intrusions: [{ ...productionSapper, id: 52, hp: 4, position: { x: 3, y: 3 }, previousPosition: { x: 3, y: 3 } }],
-});
+};
+const pulsed = applyExpansionTurretCombat(pulseState);
 expectEqual(pulsed.intrusions.length, 0, "Production ICE did not neutralize the Sapper.");
 expectEqual(pulsed.events.find((event) => event.type === "sapperDeathPulse")?.affectedHardware, 3, "Production Sapper pulse did not hit exactly three orthogonal hardware tiles.");
 expectEqual(getExpansionTile(pulsed.grid, { x: 3, y: 2 }).kind, "empty", "Production Sapper pulse did not remove the adjacent Relay.");
@@ -193,6 +235,20 @@ expectEqual(getExpansionTile(pulsed.grid, { x: 4, y: 3 }).hp, 18, "Production Sa
 expectEqual(getExpansionTile(pulsed.grid, { x: 2, y: 3 }).hp, 4, "Production Sapper pulse did not damage adjacent ICE exactly once.");
 expectEqual(getExpansionTile(pulsed.grid, { x: 7, y: 7 }).hp, 10, "Production Sapper pulse escaped its orthogonal one-tile radius.");
 expectEqual(getExpansionTile(pulsed.grid, { x: 4, y: 4 }).hp, 6, "Production Sapper pulse damaged diagonal hardware.");
+expectThrows(
+  () => applyExpansionTurretCombat({
+    ...pulseState,
+    config: { ...pulseState.config, enemies: { ...pulseState.config.enemies, sapper: { ...pulseState.config.enemies.sapper, deathPulseRange: 2 } } },
+  }),
+  Error,
+  "An enabled Sapper pulse with an unsupported range must fail instead of silently disappearing.",
+);
+const disabledPulse = applyExpansionTurretCombat({
+  ...pulseState,
+  config: { ...pulseState.config, enemies: { ...pulseState.config.enemies, sapper: { ...pulseState.config.enemies.sapper, deathPulseDamage: 0, deathPulseRange: 0 } } },
+});
+expectEqual(disabledPulse.events.some((event) => event.type === "sapperDeathPulse"), false, "A disabled Sapper pulse must remain a no-op.");
+expectDeepEqual(disabledPulse.grid, pulseState.grid, "A disabled Sapper pulse damaged hardware.");
 
 // Production uses the common persistent Core-contact rule. The isolated lab's
 // one-shot Core arrival is a demonstration simplification, not this contract.
@@ -290,7 +346,7 @@ for (const commands of [
   );
 }
 
-console.log("Expansion simulator verification passed: placement, spawn guard, frozen generic targets, Sapper/Splitter death ordering, Sapper priority/chew/pulse, trap ordering, replay identity, and determinism.");
+console.log("Expansion simulator verification passed: placement, paid Scrubber lifecycle, spawn guard, frozen generic targets, Sapper/Splitter death ordering, Sapper priority/chew/pulse, trap ordering, replay identity, and determinism.");
 
 function testIntrusion(state: ExpansionGameState, id: number, kind: ExpansionIntrusionState["kind"], position: ExpansionIntrusionState["position"], lastMoveTick: number): ExpansionIntrusionState {
   const hp = state.config.enemies[kind].maxHp;

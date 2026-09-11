@@ -43,7 +43,7 @@ export function applyExpansionTurretCombat(state: ExpansionGameState): Expansion
       const target = state.intrusions.find((intrusion) => intrusion.id === targetId)!;
       const damage = ARC_ICE_RULES.chainDamage[index];
       hp.set(targetId, (hp.get(targetId) ?? target.hp) - damage);
-      events = [...events, { type: "turretHit", weapon: "arcIce", tick: state.tickCount, turretPosition: origin, targetId, targetPosition: target.position, damage }];
+      events = [...events, { type: "turretHit", weapon: "arcIce", ...(index > 0 ? { sourceIntrusionId: chain[index - 1] } : {}), tick: state.tickCount, turretPosition: origin, targetId, targetPosition: target.position, damage }];
       origin = target.position;
     }
   }
@@ -120,7 +120,8 @@ function applySapperDeathPulse(
   const definition = state.config.enemies.sapper;
   const damage = definition.deathPulseDamage ?? 0;
   const range = definition.deathPulseRange ?? 0;
-  if (damage <= 0 || range !== 1) return { grid: initialGrid, events: initialEvents };
+  if (damage <= 0) return { grid: initialGrid, events: initialEvents };
+  if (range !== 1) throw new Error(`Unsupported Sapper death-pulse range: ${range}. Expected 1.`);
   let grid = initialGrid;
   let events = initialEvents;
   let affectedHardware = 0;

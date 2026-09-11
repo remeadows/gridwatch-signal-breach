@@ -1,7 +1,7 @@
 # Local browser acceptance
 
 Port 4177 currently serves GridWatch Match and must not be replaced. Ports 4175
-and 4176 belong to GridWatchZero. Signal Breach uses port 4185 for development
+and 4176 belong to GridWatchZero. Signal Breach uses port 4391 for development
 acceptance; a phone cannot reach the Mac's loopback address.
 
 For physical-phone acceptance on the same trusted Wi-Fi network, run:
@@ -10,7 +10,7 @@ For physical-phone acceptance on the same trusted Wi-Fi network, run:
 npm run dev:phone
 ```
 
-Use Vite's printed private Network address on port 4185 and append
+Use Vite's printed private Network address on port 4392 and append
 `?expansion-nav=1`. This explicit development mode accepts private IPv4 hosts
 only. Do not forward the port or expose it to the internet. Stop the server
 after acceptance. The regular production build always compiles the LAN gate

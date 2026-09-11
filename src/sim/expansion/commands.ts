@@ -95,5 +95,8 @@ function isSpecialPosition(
 }
 
 function isSellableHardwareKind(value: string): value is ExpansionHardwareKind {
+  // Scrubber is a paid, timed cleanup operation, matching the original game.
+  // Selling would turn its corrupted work site into empty ground immediately
+  // and refund the cost in Build, bypassing the six-tick cleanse for free.
   return value === "relay" || value === "firewall" || value === "turret" || value === "arcIce" || value === "overclock" || value === "latencyTrap";
 }
