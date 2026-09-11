@@ -5,6 +5,7 @@ import type {
 } from "./types";
 import { EXPANSION_CAMPAIGN_ID, EXPANSION_CONTENT_REVISION, EXPANSION_RULESET_ID } from "../../sim/expansion/types";
 import { CHAPTER_01_LEVELS } from "./expansion/chapter01";
+import { CHAPTER_02_LEVELS } from "./expansion/chapter02";
 
 const EXPANSION_CHAPTER_COUNT = 6;
 const LEVELS_PER_EXPANSION_CHAPTER = 5;
@@ -21,12 +22,12 @@ export const EXPANSION_NAVIGATION_CHAPTERS: readonly ChapterDefinition[] =
 
     return {
       id: chapterId,
-      codename: chapterId === 1 ? "LATENCY FRONT" : `CHAPTER ${String(chapterId).padStart(2, "0")}`,
+      codename: chapterId === 1 ? "LATENCY FRONT" : chapterId === 2 ? "DEMOLITION FRONT" : `CHAPTER ${String(chapterId).padStart(2, "0")}`,
       levelIds: Array.from(
         { length: LEVELS_PER_EXPANSION_CHAPTER },
         (_, levelIndex) => firstLevelId + levelIndex,
       ),
-      visualThemeId: chapterId === 1 ? "latency-front" : "pending",
+      visualThemeId: chapterId === 1 ? "latency-front" : chapterId === 2 ? "demolition-front" : "pending",
     };
   });
 
@@ -41,10 +42,10 @@ export type ExpansionNavigationPlaceholderLevel = Readonly<{
 export const EXPANSION_NAVIGATION_PLACEHOLDER_LEVELS: readonly ExpansionNavigationPlaceholderLevel[] = [];
 
 /**
- * Chapter 1 contains the first five authored expansion levels. Later reviewed
+ * Chapters 1 and 2 contain ten authored expansion levels. Later reviewed
  * chapter batches append their own immutable expansion-only records.
  */
-export const EXPANSION_LEVELS: readonly ExpansionCampaignLevelDefinition[] = CHAPTER_01_LEVELS;
+export const EXPANSION_LEVELS: readonly ExpansionCampaignLevelDefinition[] = [...CHAPTER_01_LEVELS, ...CHAPTER_02_LEVELS];
 
 export const EXPANSION_CAMPAIGN: ExpansionCampaignDefinition = {
   id: EXPANSION_CAMPAIGN_ID,

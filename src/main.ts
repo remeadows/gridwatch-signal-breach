@@ -101,7 +101,7 @@ let currentSeed = "";
 let recordedCommands: RecordedCommand[] = [];
 let state = createRunState();
 let selectedTool: PlayerTool = getDefaultTool(state);
-let screen: AppScreen = "title";
+let screen: AppScreen = expansionNavigationEnabled && new URLSearchParams(window.location.search).get("expansion-nav") === "1" ? "chapterSelect" : "title";
 let briefingReturn: AppScreen = "sectorSelect";
 let leaderboardReturn: AppScreen = "title";
 let hoverTile: GridPosition | null = null;
@@ -294,7 +294,9 @@ function selectExpansionChapter(chapterId: number): void {
 
 function selectExpansionLevel(levelId: number): void {
   const url = new URL(window.location.href);
+  const retained = ["art", "quality"].map((key) => [key, url.searchParams.get(key)] as const);
   url.search = "";
+  for (const [key, value] of retained) if (value) url.searchParams.set(key, value);
   url.searchParams.set("expansion-play", "1");
   url.searchParams.set("level", String(levelId));
   window.location.assign(url.toString());

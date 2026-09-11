@@ -1,6 +1,81 @@
 # GridWatch Handoff
 
-## CodeRabbit Merge Gate Repair - In Progress - 2026-09-09
+## Local preview port correction — 2026-09-10
+
+- Browser verification found port 4177 currently serves **GridWatch Match**.
+  Do not stop or replace that other project's server. The owner’s existing
+  Signal Breach tab can retain old page content; its title is not proof of the
+  current server identity.
+- Signal Breach’s credential-disabled development/phone server is running on
+  port 4185 (`npm run dev:phone`), including `http://127.0.0.1:4185/` and the
+  trusted LAN address `http://192.168.1.20:4185/`. Ports 4175/4176 remain reserved.
+  This port substitution preserves project isolation and supersedes the older
+  4177 preview target below.
+
+## Three-Chapter Review and Blender Goal Definition - 2026-09-10
+
+- The owner requested a review of all current changes, end-state clarification,
+  then a goal for three chapters with Blender CLI grid/asset production.
+- The owner approved the recommended end state and sending the diff to
+  CodeRabbit: Chapters 1–3 total (15 levels/75 waves), a consistent Blender
+  grid/roster, and a local tested/committed build for acceptance. A matching
+  execution goal is active. See
+  `docs/THREE_CHAPTER_REVIEW_2026-09-10.md` and
+  `docs/THREE_CHAPTER_BLENDER_GOAL_PLAN.md`. Correctness repair, rendering and
+  Blender style-slice work are proceeding in independent packages.
+- Review corrections now preserve generic once-per-tick targeting, use the
+  updated grid for Splitter children, expire effects outside combat, honor
+  reduced motion, and replay retained content revisions. Targeted tests pass.
+  Human-paced validation clears 40/40 runs at one action per three ticks with
+  observation delay, and 36/40 at the six-tick stress pace. All 76 winning logs
+  replay exactly; all 40 no-action controls lose. Physical-phone and owner
+  contextual acceptance are still pending.
+- CodeRabbit's initial external diff upload was rejected; the owner then
+  explicitly authorized it and the new review completed with 14 findings.
+  Findings are being dispositioned against reproducible evidence; the request
+  to finish all six chapters is rejected because this milestone is exactly
+  three chapters. No push, merge or deployment is authorized by
+  this local milestone.
+
+## Phase 9C - Expansion Chapter 2 Local Implementation - In Progress - 2026-09-10
+
+- Work is local-only on `codex/phase9-chapter2-sapper`, branched from merged
+  PR #80 / `main` commit `2e1f023`. Do not push until the owner completes local
+  desktop/mobile acceptance and explicitly authorizes publication.
+- The owner accepted the Blender Sapper source visual and authorized local
+  integration. The machine manifest correctly keeps `ownerApproved: false`
+  until contextual desktop/mobile acceptance; the
+  expansion renderer preloads the 256x256 Sapper sprite and adds procedural
+  dashed target-lock plus orthogonal death-pulse telegraphs.
+- The exact approved Sapper contract is promoted into the pure expansion sim:
+  16 HP, one move per two active ticks, strict reachable-Firewall priority,
+  stable path/board tie-breaking, 8 chew damage, and one non-chaining
+  6-damage Manhattan-1 pulse on ICE neutralization. Production verification
+  covers priority, cadence, chew, pulse radius, and pulse damage.
+- Levels 6-10 are authored as Demolition Front: five fresh 8x8 boards, five
+  waves each, no persistence between levels, and no Honeypot, Jammer, or new
+  boss. The additive `expansion-1-r2` manifest contains ten levels / fifty
+  waves while retaining all five Chapter 1 per-level hashes byte-identically.
+- Current deterministic balance evidence is 20/20 Chapter 2 guided clears,
+  5/5 empty-build losses, median terminal integrity above 90 for every new
+  level, and a materially worse clustered Level 6 counter-negative result.
+  Chapter 1's frozen balance hash remains
+  `1cf49097f34151cfe0fdae7ba837056753c3d591eb29fc80faed2ca18194fe5b`;
+  Chapter 2's fixed report hash is
+  `6c2c3d4a739d8b945bbf44a2ff0c237e65007fe77555533498d6bb21d3fd2690`.
+- The expansion remains localhost-only and never submits a score. No Supabase
+  migration, Edge Function deployment, leaderboard category, public feature
+  flag, or GridWatchGamesDB write is part of this batch. Use port 4177 because
+  ports 4175 and 4176 are reserved for GridWatchZero testing.
+
+## CodeRabbit Merge Gate Repair - Complete - 2026-09-10
+
+- PR #80 is merged. The live `main-protection` ruleset requires app-bound
+  `build` and `CodeRabbit` checks, one current approval, latest-push approval,
+  stale-review dismissal, resolved conversations, linear history, and no
+  force-push/deletion bypass.
+
+## CodeRabbit Merge Gate Repair - Historical Implementation Notes - 2026-09-09
 
 - PR #79 merged without a CodeRabbit response because the live `main-protection`
   ruleset required only the `build` status and conversation resolution; its
@@ -606,17 +681,17 @@ Note: the previous "zero network / no `import.meta.env`" invariant no longer hol
 - Keep gameplay tuning in `src/data/` where practical. Score weights currently live in `src/sim/scoring.ts`.
 - The leaderboard is the one sanctioned network feature. `src/sim` must stay pure and deterministic (no `Math.random`/`Date.now`) — the server-side anti-cheat replays it verbatim. After any `src/sim` change, run `npm run build:validator` and commit the regenerated `supabase/functions/submit-gridwatch-score/sim.bundle.js`, then redeploy the Edge Function.
 - Do not add manual path drawing, sectors beyond the existing three, or waves
-  beyond the existing twelve to the frozen V2 campaign. Expansion 1 Chapter 1
-  is separately authored and owner-accepted through Level 5; Chapters 2–6
-  remain reserved and unauthored until their one-chapter-at-a-time batches.
+  beyond the existing twelve to the frozen V2 campaign. Expansion 1 Chapters
+  1-2 are separately authored through Level 10; Chapters 3-6 remain reserved
+  and unauthored until their one-chapter-at-a-time batches.
 
 ## Good Next Checks
 
 - Keep glyph fallback through at least one production release after the default
   Phase 6 rollout. Use `?art=glyphs` for a visual diagnostic or rollback.
 - Keep Expansion 1 local-only until its separate server validator and isolated
-  leaderboard categories pass the owner-approval and compatibility gates. After
-  Chapter 1 publication, author Chapter 2 as its own five-level reviewed batch.
+  leaderboard categories pass the owner-approval and compatibility gates.
+  Chapter 2 must finish desktop/mobile owner acceptance before publication.
 - Keep every GitHub push behind both Codex and CodeRabbit review.
 - After any future Cloudflare Pages deploy, confirm
   `https://GridWatch-SignalBreach.warsignallabs.net` loads, hashed root-relative

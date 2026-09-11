@@ -28,7 +28,7 @@ import type {
 import type { SpawnEdge } from "../types";
 import { getCurrentExpansionWave } from "./waves";
 
-const ENEMY_ORDER: readonly ExpansionEnemyKind[] = ["probe", "crawler", "spoof", "hunter", "splitter", "goliath", "rusher"];
+const ENEMY_ORDER: readonly ExpansionEnemyKind[] = ["probe", "crawler", "spoof", "hunter", "splitter", "goliath", "rusher", "sapper", "shieldDrone"];
 const JUMP_DELTAS = [{ x: 0, y: -1 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: -1, y: 0 }] as const;
 
 type TargetSets = Readonly<{ route: readonly Readonly<{ x: number; y: number }>[]; units: readonly Readonly<{ x: number; y: number }>[] }>;
@@ -53,6 +53,8 @@ export function spawnExpansionIntrusions(state: ExpansionGameState): ExpansionGa
 }
 
 export function moveExpansionIntrusions(state: ExpansionGameState): ExpansionGameState {
+  // Generic enemies retain their immutable expansion-v1 start-of-tick targets.
+  // Sappers use the working grid below for their distinct hardware-priority rule.
   const targets = getTargetSets(state);
   let grid = state.grid;
   let events = state.events;
@@ -66,6 +68,26 @@ export function moveExpansionIntrusions(state: ExpansionGameState): ExpansionGam
     }
 
     const working = { ...state, grid, events };
+    if (intrusion.kind === "sapper") {
+      const target = getExpansionSapperTarget(working, intrusion);
+      const nextPosition = target?.path[1];
+      if (!target || !nextPosition) {
+        intrusions.push({ ...intrusion, previousPosition: intrusion.position, lastMoveTick: state.tickCount });
+        continue;
+      }
+      const kind = getExpansionTileKind(grid, nextPosition);
+      if (isExpansionHardwareKind(kind) && kind !== "latencyTrap") {
+        const attacked = attackHardware(working, grid, events, intrusion, definition, nextPosition, kind, false);
+        grid = attacked.grid;
+        events = attacked.events;
+        intrusions.push({ ...intrusion, previousPosition: intrusion.position, lastMoveTick: state.tickCount, corruption: null });
+        continue;
+      }
+      events = [...events, moveEvent(state, intrusion, nextPosition)];
+      intrusions.push(moved(state, intrusion, nextPosition));
+      continue;
+    }
+
     const targetPositions = definition.targeting === "units" && targets.units.length > 0 ? targets.units : targets.route;
     const path = findPath(working, intrusion, targetPositions, false);
     if (path && path.length >= 2) {
@@ -96,6 +118,48 @@ export function moveExpansionIntrusions(state: ExpansionGameState): ExpansionGam
   }
 
   return { ...state, grid, events, intrusions };
+}
+
+export type ExpansionSapperTarget = Readonly<{
+  kind: ExpansionHardwareKind | "core";
+  position: Readonly<{ x: number; y: number }>;
+  path: readonly Readonly<{ x: number; y: number }>[];
+}>;
+
+/** Read-only target selection used by both the deterministic sim and telegraph renderer. */
+export function getExpansionSapperTarget(
+  state: ExpansionGameState,
+  intrusion: ExpansionIntrusionState,
+): ExpansionSapperTarget | null {
+  if (intrusion.kind !== "sapper") return null;
+  const positions = listExpansionPositions(state.grid);
+  const firewalls = positions.filter((position) => getExpansionTileKind(state.grid, position) === "firewall");
+  const preferred = selectReachableSapperHardware(state, intrusion, firewalls);
+  if (preferred) return preferred;
+  const hardware = positions.filter((position) => {
+    const kind = getExpansionTileKind(state.grid, position);
+    return isExpansionHardwareKind(kind) && kind !== "firewall" && kind !== "latencyTrap" && isTargetableExpansionHardwareKind(kind);
+  });
+  const fallback = selectReachableSapperHardware(state, intrusion, hardware);
+  if (fallback) return fallback;
+  const path = findPath(state, intrusion, [state.config.core], false);
+  return path ? { kind: "core", position: state.config.core, path } : null;
+}
+
+function selectReachableSapperHardware(
+  state: ExpansionGameState,
+  intrusion: ExpansionIntrusionState,
+  positions: readonly Readonly<{ x: number; y: number }>[],
+): ExpansionSapperTarget | null {
+  const candidates = positions.flatMap((position) => {
+    const path = findPath(state, intrusion, [position], false);
+    if (!path) return [];
+    const kind = getExpansionTileKind(state.grid, position);
+    if (!isExpansionHardwareKind(kind)) return [];
+    return [{ kind, position, path }];
+  });
+  candidates.sort((left, right) => left.path.length - right.path.length || left.position.y - right.position.y || left.position.x - right.position.x);
+  return candidates[0] ?? null;
 }
 
 function spawnScripted(state: ExpansionGameState): ExpansionGameState {
@@ -166,14 +230,14 @@ function pickKind(state: ExpansionGameState) {
   const pick = nextInt(state.rng, 0, totalWeight(weights));
   let cursor = pick.value;
   for (const kind of ENEMY_ORDER) {
-    cursor -= weights[kind];
+    cursor -= weights[kind] ?? 0;
     if (cursor < 0) return { rng: pick.rng, kind };
   }
   return { rng: pick.rng, kind: "rusher" as const };
 }
 
-function totalWeight(weights: Readonly<Record<ExpansionEnemyKind, number>>): number {
-  return ENEMY_ORDER.reduce((total, kind) => total + weights[kind], 0);
+function totalWeight(weights: Readonly<Partial<Record<ExpansionEnemyKind, number>>>): number {
+  return ENEMY_ORDER.reduce((total, kind) => total + (weights[kind] ?? 0), 0);
 }
 
 function pickSpawnPosition(state: ExpansionGameState) {
@@ -259,14 +323,16 @@ function isBlocker(state: ExpansionGameState, position: Readonly<{ x: number; y:
   return isExpansionHardwareKind(kind) && getExpansionHardwareCapabilities(kind).blocksMovement;
 }
 
-function attackHardware(state: ExpansionGameState, grid: ExpansionGridState, events: ExpansionGameState["events"], intrusion: ExpansionIntrusionState, definition: ExpansionEnemyDefinition, position: Readonly<{ x: number; y: number }>, unitKind: ExpansionHardwareKind) {
+function attackHardware(state: ExpansionGameState, grid: ExpansionGridState, events: ExpansionGameState["events"], intrusion: ExpansionIntrusionState, definition: ExpansionEnemyDefinition, position: Readonly<{ x: number; y: number }>, unitKind: ExpansionHardwareKind, corruptOnDestroy = true) {
   const tile = getExpansionTile(grid, position);
   const fallback = state.config.units[unitKind].hp ?? 0;
   const hp = Math.max(0, (tile.hp ?? fallback) - definition.chewDamage);
   if (unitKind === "latencyTrap") return { grid, events };
   const event = { type: "unitDamaged" as const, tick: state.tickCount, intrusionId: intrusion.id, position, unitKind, hp };
   return hp <= 0
-    ? { grid: setExpansionTile(grid, position, { kind: "corrupted" }), events: [...events, event, { type: "tileCorrupted" as const, tick: state.tickCount, intrusionId: intrusion.id, position }] }
+    ? corruptOnDestroy
+      ? { grid: setExpansionTile(grid, position, { kind: "corrupted" }), events: [...events, event, { type: "tileCorrupted" as const, tick: state.tickCount, intrusionId: intrusion.id, position }] }
+      : { grid: setExpansionTile(grid, position, { kind: "empty" }), events: [...events, event, { type: "hardwareDestroyed" as const, tick: state.tickCount, intrusionId: intrusion.id, position, unitKind, cause: "chew" as const }] }
     : { grid: setExpansionTile(grid, position, { ...tile, hp }), events: [...events, event] };
 }
 

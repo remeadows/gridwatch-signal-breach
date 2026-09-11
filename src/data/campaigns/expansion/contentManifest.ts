@@ -1,7 +1,7 @@
-import { EXPANSION_CONTENT_REVISION } from "../../../sim/expansion/types";
+import { EXPANSION_CHAPTER_01_CONTENT_REVISION, EXPANSION_CONTENT_REVISION, type ExpansionContentRevision } from "../../../sim/expansion/types";
 
 export const EXPANSION_CHAPTER_01_CONTENT_MANIFEST = {
-  revision: EXPANSION_CONTENT_REVISION,
+  revision: EXPANSION_CHAPTER_01_CONTENT_REVISION,
   campaignHash: "bdf03c4361f59cae61c34466e3c2b90f93c1788c242b99ceb3d5b54f12129a33",
   levelHashes: {
     1: "f35da0796b40ab420ea3f341479f96b1afe3020623cfdb860669a0c0c4cc7aaa",
@@ -12,8 +12,38 @@ export const EXPANSION_CHAPTER_01_CONTENT_MANIFEST = {
   },
 } as const;
 
-export function getExpansionLevelContentHash(levelId: number): string {
-  const hash = EXPANSION_CHAPTER_01_CONTENT_MANIFEST.levelHashes[levelId as keyof typeof EXPANSION_CHAPTER_01_CONTENT_MANIFEST.levelHashes];
-  if (!hash) throw new Error(`No Chapter 1 content hash for expansion level ${levelId}.`);
+/** Current additive manifest. Chapter 1 level hashes must stay identical to r1. */
+export const EXPANSION_CONTENT_MANIFEST = {
+  revision: EXPANSION_CONTENT_REVISION,
+  campaignHash: "c8020a21a276d35837bc13766d38d611a2e9499b71a3836b8d3803cc4dbd4796",
+  levelHashes: {
+    ...EXPANSION_CHAPTER_01_CONTENT_MANIFEST.levelHashes,
+    6: "9b97bd2f40a3da0f10df8f52be8908450c3071934830c6d2cf1596dc132f6917",
+    7: "ab072f4b3bc463c1bd2f6552eada8b5ff2f204e4b2304aef151e0d4874d36fbc",
+    8: "9ae65b56441e702a9ec6bca6e3d8402c9e7fe4fc1164579194474c43e2c329da",
+    9: "b1689464bc53d69c9fb5462b897ea74d39f3eec6918a22dc5953210cc6b88189",
+    10: "91284b14429bd25c626eea8e1925f2ff0b367fead03b0bd7a894cfc5a8782449",
+  },
+} as const;
+
+type ContentManifest = Readonly<{ revision: ExpansionContentRevision; campaignHash: string; levelHashes: Readonly<Record<number, string>> }>;
+
+/** Older additive revisions only expose levels authored in that revision. */
+const REVISION_MANIFESTS: Readonly<Record<ExpansionContentRevision, ContentManifest>> = {
+  [EXPANSION_CHAPTER_01_CONTENT_REVISION]: EXPANSION_CHAPTER_01_CONTENT_MANIFEST,
+  [EXPANSION_CONTENT_REVISION]: EXPANSION_CONTENT_MANIFEST,
+};
+
+export function getExpansionContentManifest(revision: string): ContentManifest {
+  if (!Object.prototype.hasOwnProperty.call(REVISION_MANIFESTS, revision)) {
+    throw new Error(`Unknown expansion content revision: ${revision}.`);
+  }
+  return REVISION_MANIFESTS[revision as ExpansionContentRevision];
+}
+
+export function getExpansionLevelContentHash(levelId: number, revision: ExpansionContentRevision = EXPANSION_CONTENT_REVISION): string {
+  const manifest = getExpansionContentManifest(revision);
+  const hash = Number.isInteger(levelId) ? manifest.levelHashes[levelId] : undefined;
+  if (!hash) throw new Error(`No content hash for expansion level ${levelId} in ${revision}.`);
   return hash;
 }

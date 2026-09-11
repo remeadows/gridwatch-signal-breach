@@ -3,9 +3,10 @@ import { getExpansionLevelDefinition } from "./data/campaigns/expansion";
 import { getExpansionLevelContentHash } from "./data/campaigns/expansion/contentManifest";
 import { installExpansionKeyboardInput } from "./input/expansionKeyboard";
 import { installExpansionPointerInput } from "./input/expansionPointer";
-import { preloadPhase6BoardSprites } from "./render/assetRegistry";
-import { preloadExpansionSprites } from "./render/expansionAssetRegistry";
+import { getExpansionArtMode, getExpansionArtUrl, preloadExpansionLevelArt } from "./render/expansionBlenderRegistry";
+import { getExpansionLevelArtRoster, type ExpansionVisualAssetId } from "./render/expansionArtCatalog";
 import { drawExpansionGrid } from "./render/expansionRenderer";
+import { ExpansionVisualTimeline } from "./render/expansionVisualTimeline";
 import { applyExpansionCommand, calculateExpansionScore, createExpansionGameState, tickExpansion, type ExpansionPlayerTool, type ExpansionSimCommand } from "./sim/expansion";
 import { getCurrentExpansionWave } from "./sim/expansion/waves";
 import type { GridPosition } from "./sim/types";
@@ -26,7 +27,8 @@ const level = getRequiredLevel(levelId);
 const contentHash = getExpansionLevelContentHash(levelId);
 let seed = createSeed();
 let state = createExpansionGameState({ levelId, contentHash, seed });
-let selectedTool: ExpansionPlayerTool = "latencyTrap";
+let selectedTool: ExpansionPlayerTool = defaultTool();
+const artMode = getExpansionArtMode();
 let hover: GridPosition | null = null;
 let keyboardFocus: GridPosition | null = null;
 let running = false;
@@ -34,13 +36,29 @@ let paused = false;
 let lastTime = performance.now();
 let previousPhase = state.phase;
 let clearRecorded = false;
+let lowQuality = new URLSearchParams(window.location.search).get("quality") === "low";
+const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+let reducedMotion = reducedMotionQuery.matches;
+const visualTimeline = new ExpansionVisualTimeline();
+let guideOpen = false;
+let pausedBeforeGuide = false;
+let guideReturnFocus: HTMLElement | null = null;
+let pickerKey = "";
+const toolStatus = document.createElement("p");
+toolStatus.id = "expansion-tool-status";
+toolStatus.className = "expansion-sr-only";
+toolStatus.setAttribute("role", "status");
+toolStatus.setAttribute("aria-live", "polite");
+picker.after(toolStatus);
+canvas.setAttribute("aria-describedby", toolStatus.id);
+reducedMotionQuery.addEventListener("change", (event) => { reducedMotion = event.matches; });
 
 document.documentElement.dataset.expansionPlay = "true";
 document.documentElement.dataset.expansionLevel = String(levelId);
+document.documentElement.dataset.artMode = artMode;
 screen.hidden = true;
 screen.setAttribute("aria-hidden", "true");
-preloadPhase6BoardSprites();
-preloadExpansionSprites();
+preloadExpansionLevelArt(level, artMode);
 buildHud();
 buildPicker();
 
@@ -62,6 +80,12 @@ installExpansionKeyboardInput({
 });
 
 window.addEventListener("keydown", (event) => {
+  if (guideOpen) {
+    if (event.key === "Escape") { event.preventDefault(); closeGuide(); }
+    if (event.key === "Tab") { event.preventDefault(); overlay.querySelector<HTMLButtonElement>("[data-close-guide]")?.focus(); }
+    return;
+  }
+  if (event.target instanceof HTMLButtonElement) return;
   if (event.key === "Enter" && state.phase === "prep" && !running) { event.preventDefault(); launchWave(); }
   if ((event.key === "Escape" || event.key.toLowerCase() === "p") && running && (state.phase === "prep" || state.phase === "active")) paused = !paused;
 });
@@ -70,10 +94,12 @@ document.addEventListener("visibilitychange", () => { if (document.hidden && run
 requestAnimationFrame(frame);
 
 function frame(now: number): void {
+  visualTimeline.advance(now, paused);
   if (!paused && running && state.phase === "active") {
     let steps = 0;
     while (now - lastTime >= state.config.simulationTickMs && steps < 5 && state.phase === "active") {
       state = tickExpansion(state);
+      visualTimeline.observe(state);
       lastTime += state.config.simulationTickMs;
       steps += 1;
     }
@@ -89,7 +115,12 @@ function frame(now: number): void {
     clearRecorded = true;
   }
   previousPhase = state.phase;
-  drawExpansionGrid(renderContext, canvas, state, { hover, focus: keyboardFocus, selectedTool, buildMode: state.phase === "prep" && !running, timeMs: now });
+  drawExpansionGrid(renderContext, canvas, state, {
+    ...visualTimeline.snapshot(state, reducedMotion),
+    hover, focus: keyboardFocus, selectedTool,
+    buildMode: state.phase === "prep" && !running,
+    reducedMotion, lowQuality, artMode,
+  });
   renderHud();
   renderPicker();
   renderPlayUi();
@@ -98,7 +129,14 @@ function frame(now: number): void {
 }
 
 function dispatch(command: ExpansionSimCommand): void {
+  const previous = state;
   state = applyExpansionCommand(state, command);
+  if (command.type !== "skipPrep") {
+    const cell = `column ${command.position.x + 1}, row ${command.position.y + 1}`;
+    toolStatus.textContent = state === previous
+      ? `Cannot ${command.type === "sellUnit" ? "sell" : "build"} at ${cell}. Check the tile and available bandwidth.`
+      : `${command.type === "sellUnit" ? "Unit sold" : "Unit placed"} at ${cell}. ${state.bandwidth} bandwidth remaining.`;
+  }
 }
 
 function launchWave(): void {
@@ -112,20 +150,33 @@ function launchWave(): void {
 function restart(): void {
   seed = createSeed();
   state = createExpansionGameState({ levelId, contentHash, seed });
-  selectedTool = "latencyTrap";
+  selectedTool = defaultTool();
   hover = null;
   keyboardFocus = null;
   running = false;
   paused = false;
   clearRecorded = false;
+  guideOpen = false;
+  previousPhase = state.phase;
+  lastTime = performance.now();
+  visualTimeline.reset(lastTime);
+  pickerKey = "";
+  toolStatus.textContent = "Level restarted. Select a tool and build your route.";
+  playUi.dataset.playUiKey = "";
   overlay.dataset.overlayKey = "";
 }
 
 function buildHud(): void {
   hud.className = "hud expansion-hud";
-  hud.innerHTML = `<section class="hud-hero"><div class="hud-metric hud-metric-primary" data-metric="bandwidth"><span>Bandwidth</span><strong></strong></div><div class="hud-metric hud-metric-primary" data-metric="core"><span>Core</span><strong></strong></div></section><section class="hud-rail"><div class="hud-metric hud-metric-secondary" data-metric="level"><span>Level</span><strong></strong></div><div class="hud-metric hud-metric-secondary" data-metric="wave"><span>Wave</span><strong></strong></div><div class="hud-metric hud-metric-secondary" data-metric="phase"><span>Phase</span><strong></strong></div><div class="hud-metric hud-metric-secondary" data-metric="signal"><span>Signal</span><strong></strong></div><div class="hud-metric hud-metric-secondary" data-metric="intrusions"><span>Intrusions</span><strong></strong></div><div class="hud-metric hud-metric-secondary" data-metric="neutralized"><span>Neutralized</span><strong></strong></div><div class="hud-actions"><button class="neon-button neon-button-secondary" type="button" data-pause>PAUSE</button><button class="neon-button neon-button-secondary" type="button" data-exit>LEVEL SELECT</button></div></section>`;
+  hud.innerHTML = `<section class="hud-hero"><div class="hud-metric hud-metric-primary" data-metric="bandwidth"><span>Bandwidth</span><strong></strong></div><div class="hud-metric hud-metric-primary" data-metric="core"><span>Core</span><strong></strong></div></section><section class="hud-rail"><div class="hud-metric hud-metric-secondary" data-metric="level"><span>Level</span><strong></strong></div><div class="hud-metric hud-metric-secondary" data-metric="wave"><span>Wave</span><strong></strong></div><div class="hud-metric hud-metric-secondary" data-metric="phase"><span>Phase</span><strong></strong></div><div class="hud-metric hud-metric-secondary" data-metric="signal"><span>Signal</span><strong></strong></div><div class="hud-metric hud-metric-secondary" data-metric="intrusions"><span>Intrusions</span><strong></strong></div><div class="hud-metric hud-metric-secondary" data-metric="neutralized"><span>Neutralized</span><strong></strong></div><div class="hud-actions"><button class="neon-button neon-button-secondary" type="button" data-pause>PAUSE</button><button class="neon-button neon-button-secondary" type="button" data-guide>FIELD GUIDE</button><button class="neon-button neon-button-secondary" type="button" data-quality aria-pressed="${lowQuality}">LOW EFFECTS</button><button class="neon-button neon-button-secondary" type="button" data-exit>LEVEL SELECT</button></div></section>`;
   hud.querySelector("[data-pause]")?.addEventListener("click", () => { if (running) paused = !paused; });
   hud.querySelector("[data-exit]")?.addEventListener("click", openLevelSelect);
+  hud.querySelector("[data-guide]")?.addEventListener("click", openGuide);
+  hud.querySelector("[data-quality]")?.addEventListener("click", () => {
+    lowQuality = !lowQuality;
+    hud.querySelector("[data-quality]")?.setAttribute("aria-pressed", String(lowQuality));
+    toolStatus.textContent = lowQuality ? "Low effects enabled. All tactical indicators remain visible." : "Full effects enabled.";
+  });
 }
 
 function renderHud(): void {
@@ -144,30 +195,42 @@ function renderHud(): void {
 
 function setMetric(key: string, value: string): void {
   const target = hud.querySelector<HTMLElement>(`[data-metric="${key}"] strong`);
-  if (target) target.textContent = value;
+  if (target && target.textContent !== value) target.textContent = value;
 }
 
 function buildPicker(): void {
   picker.className = "unit-picker expansion-picker";
+  picker.dataset.toolCount = String(state.config.toolsUnlocked.length);
+  picker.setAttribute("role", "group");
+  picker.setAttribute("aria-label", "Build tools");
   picker.innerHTML = "";
   const labels: Readonly<Record<ExpansionPlayerTool, readonly [string, string]>> = {
-    relay: ["Relay", "Extend signal"], firewall: ["Firewall", "Block enemies"], turret: ["ICE", "Attack nearby"], scrubber: ["Scrubber", "Clean corruption"], overclock: ["Overclock", "Boost ICE"], latencyTrap: ["Latency Trap", "Delay 3 ticks · 3 charges"], sell: ["Sell", "Recover bandwidth"],
+    relay: ["Relay", "Extend signal"], firewall: ["Firewall", "Block enemies"], turret: ["ICE", "Attack nearby"], arcIce: ["Arc ICE", "Break shields · chain 3"], scrubber: ["Scrubber", "Clean corruption"], overclock: ["Overclock", "Boost ICE"], latencyTrap: ["Latency Trap", "Delay 3 ticks · 3 charges"], sell: ["Sell", "Recover bandwidth"],
   };
   for (const tool of state.config.toolsUnlocked) {
     const button = document.createElement("button");
     button.type = "button"; button.dataset.tool = tool;
     const [label, purpose] = labels[tool];
-    button.innerHTML = `<span class="expansion-tool-glyph">${tool === "latencyTrap" ? "⌁" : tool === "sell" ? "↓" : label.slice(0, 3).toUpperCase()}</span><span class="tool-name">${label}</span><span class="tool-purpose">${purpose}</span><span class="tool-cost" data-cost></span>`;
-    button.addEventListener("click", () => { selectedTool = tool; });
+    button.innerHTML = `<span class="expansion-tool-glyph" aria-hidden="true">${tool === "latencyTrap" ? "⌁" : tool === "sell" ? "↓" : label.slice(0, 3).toUpperCase()}</span><span class="tool-name">${label}</span><span class="tool-purpose">${purpose}</span><span class="tool-cost" data-cost></span>`;
+    if (tool !== "sell") button.querySelector(".expansion-tool-glyph")?.replaceWith(createArtBadge(tool, label));
+    button.setAttribute("aria-pressed", String(tool === selectedTool));
+    button.addEventListener("click", () => {
+      selectedTool = tool;
+      toolStatus.textContent = `${label} selected. ${purpose}. ${tool === "sell" ? "Select a placed unit to sell it." : `Costs ${state.config.units[tool].cost} bandwidth. Select an available tile.`}`;
+    });
     picker.append(button);
   }
 }
 
 function renderPicker(): void {
+  const nextKey = `${selectedTool}-${state.bandwidth}-${state.phase}`;
+  if (pickerKey === nextKey) return;
+  pickerKey = nextKey;
   for (const tool of state.config.toolsUnlocked) {
     const button = picker.querySelector<HTMLButtonElement>(`[data-tool="${tool}"]`);
     if (!button) continue;
     button.className = tool === selectedTool ? "tool-button selected" : "tool-button";
+    button.setAttribute("aria-pressed", String(tool === selectedTool));
     const cost = button.querySelector<HTMLElement>("[data-cost]");
     if (tool === "sell") { button.disabled = false; if (cost) cost.textContent = state.phase === "prep" ? "FULL" : "PART"; }
     else { const amount = state.config.units[tool].cost; button.disabled = state.bandwidth < amount; if (cost) cost.textContent = `${amount} BW`; }
@@ -191,11 +254,39 @@ function renderPlayUi(): void {
   }
   const readout = document.createElement("div");
   readout.className = "tool-readout";
-  readout.textContent = selectedTool === "latencyTrap" ? "LATENCY TRAP · WALK-THROUGH · 3 CHARGES · +3 MOVE DELAY · 10 BW" : `${selectedTool.toUpperCase()} · LOCAL CHAPTER 1 PLAYTEST`;
+  readout.textContent = selectedTool === "arcIce"
+    ? "ARC ICE · RANGE 3 · CHAIN UP TO 3 · 3/2/1 DAMAGE · IGNORES SHIELDS"
+    : selectedTool === "latencyTrap"
+    ? "LATENCY TRAP · WALK-THROUGH · 3 CHARGES · +3 MOVE DELAY · 10 BW"
+    : level.requiredMechanic === "sapperSpacing"
+      ? `${selectedTool.toUpperCase()} · SAPPER PRIORITIZES REACHABLE FIREWALLS · PULSE: UP TO 4 ORTHOGONAL TILES`
+      : level.requiredMechanic === "shieldNetwork"
+        ? `${selectedTool.toUpperCase()} · SHIELD LINKS REDUCE NORMAL ICE DAMAGE · ARC ICE PRIORITIZES DRONES`
+        : `${selectedTool.toUpperCase()} · KEEP SOURCE CONNECTED TO CORE · CLEAR ALL FIVE WAVES`;
   playUi.append(readout);
 }
 
 function renderOverlay(): void {
+  if (guideOpen) {
+    overlay.hidden = false;
+    if (overlay.dataset.overlayKey !== "guide") {
+      overlay.dataset.overlayKey = "guide";
+      overlay.innerHTML = `<div class="overlay-cover"><section class="overlay-panel expansion-guide" role="dialog" aria-modal="true" aria-labelledby="expansion-guide-title"><h2 id="expansion-guide-title" class="overlay-title">Field guide</h2><p>Connect Source to Core through Relays and Firewalls. Spend bandwidth to build, then launch each of the five waves. ICE fires automatically within ${state.config.turretRange} tiles.</p><p>Latency Traps delay enemies that step onto them. Each trap has three charges. Keep ICE close enough to cover the delayed enemies.</p>${getExpansionLevelArtRoster(level).includes("sapper") ? "<p><strong>Sapper:</strong> prioritizes reachable Firewalls, then other reachable hardware, then Core. Its dashed line marks its current target. On destruction, its pulse damages hardware in up to four orthogonal neighboring tiles; diagonals are safe. Keep important units out of that cross.</p>" : ""}${level.requiredMechanic === "shieldNetwork" ? "<p><strong>Shield Drone:</strong> blue links protect nearby enemies within two tiles, reducing each normal ICE hit by two damage (minimum one). Drones do not protect themselves or other drones. Eliminate the drone to remove its links.</p><p><strong>Arc ICE:</strong> seeks a Shield Drone within three tiles first, then chains to up to two more enemies within two tiles per jump. Hits deal 3, 2, then 1 damage and ignore shields. Normal ICE remains stronger against an isolated target. Hover or focus a tile to see placement range.</p>" : ""}<p>Build phases have no timer. You can also build during combat. Build-phase sales give a full refund; combat sales return part of the cost.</p><div class="expansion-guide-roster" data-guide-roster aria-label="Units and enemies in this level"></div><button class="neon-button neon-button-primary" type="button" data-close-guide>BACK TO GAME</button></section></div>`;
+      const roster = overlay.querySelector<HTMLElement>("[data-guide-roster]");
+      for (const id of getExpansionLevelArtRoster(level).filter((id) => !id.startsWith("floor"))) {
+        const figure = document.createElement("figure");
+        const label = assetLabel(id);
+        const caption = document.createElement("figcaption");
+        caption.textContent = label;
+        figure.append(createArtBadge(id, label), caption);
+        roster?.append(figure);
+      }
+      const close = overlay.querySelector<HTMLButtonElement>("[data-close-guide]");
+      close?.addEventListener("click", closeGuide);
+      close?.focus();
+    }
+    return;
+  }
   if (paused) {
     overlay.hidden = false;
     if (overlay.dataset.overlayKey !== "paused") {
@@ -212,11 +303,25 @@ function renderOverlay(): void {
   const score = calculateExpansionScore(state);
   const panel = document.createElement("section");
   panel.className = "overlay-panel terminal-panel";
-  panel.innerHTML = `<h2 class="overlay-title">${state.phase === "won" ? "LEVEL CLEARED" : "DEADLINE MISSED"}</h2><strong class="operator-rating">${score.rating}</strong><p class="terminal-detail">${state.phase === "won" ? "Local progress saved. No score was submitted." : "Rebuild the route and layer more delay."}</p><dl class="score-breakdown"><dt>Core integrity</dt><dd>${score.integrity}</dd><dt>Neutralized</dt><dd>${state.neutralizedCount}</dd><dt>Signal uptime</dt><dd>${score.uptimePercent}%</dd><dt>Local score</dt><dd>${score.total}</dd></dl>`;
+  panel.innerHTML = `<h2 class="overlay-title">${state.phase === "won" ? "LEVEL CLEARED" : "CORE LOST"}</h2><strong class="operator-rating">${score.rating}</strong><p class="terminal-detail">${state.phase === "won" ? "Progress saved on this browser." : level.requiredMechanic === "sapperSpacing" ? "Keep key hardware spaced apart and cover the Sapper approach with ICE." : "Reconnect the route and cover enemy approaches with ICE and delay."}</p><dl class="score-breakdown"><dt>Core integrity</dt><dd>${score.integrity}</dd><dt>Neutralized</dt><dd>${state.neutralizedCount}</dd><dt>Signal uptime</dt><dd>${score.uptimePercent}%</dd><dt>Local score</dt><dd>${score.total}</dd></dl>`;
   const actions = document.createElement("div"); actions.className = "terminal-actions";
   if (state.phase === "won" && getExpansionLevelDefinition(levelId + 1)) actions.append(action("NEXT LEVEL ▸", () => openLevel(levelId + 1), true));
   actions.append(action("RETRY LEVEL", restart, true), action("LEVEL SELECT", openLevelSelect, false));
   panel.append(actions); overlay.innerHTML = ""; overlay.append(panel);
+}
+
+function openGuide(): void {
+  pausedBeforeGuide = paused;
+  guideReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  guideOpen = true;
+  paused = true;
+}
+
+function closeGuide(): void {
+  guideOpen = false;
+  paused = pausedBeforeGuide;
+  overlay.dataset.overlayKey = "";
+  guideReturnFocus?.focus();
 }
 
 function action(label: string, onClick: () => void, primary: boolean): HTMLButtonElement {
@@ -224,11 +329,54 @@ function action(label: string, onClick: () => void, primary: boolean): HTMLButto
 }
 
 function openLevel(levelToOpen: number): void {
-  const url = new URL(window.location.href); url.search = ""; url.searchParams.set("expansion-play", "1"); url.searchParams.set("level", String(levelToOpen)); window.location.assign(url.toString());
+  const url = navigationUrl(); url.searchParams.set("expansion-play", "1"); url.searchParams.set("level", String(levelToOpen)); window.location.assign(url.toString());
 }
 
 function openLevelSelect(): void {
-  const url = new URL(window.location.href); url.search = ""; url.searchParams.set("expansion-nav", "1"); window.location.assign(url.toString());
+  const url = navigationUrl(); url.searchParams.set("expansion-nav", "1"); url.searchParams.set("chapter", String(level.chapterId)); window.location.assign(url.toString());
+}
+
+function navigationUrl(): URL {
+  const url = new URL(window.location.href);
+  url.search = "";
+  if (artMode !== "blender-v2") url.searchParams.set("art", artMode);
+  if (lowQuality) url.searchParams.set("quality", "low");
+  return url;
+}
+
+function defaultTool(): ExpansionPlayerTool {
+  return level.requiredMechanic === "shieldNetwork" ? "arcIce" : level.requiredMechanic === "sapperSpacing" ? "firewall" : "latencyTrap";
+}
+
+function createArtBadge(id: ExpansionVisualAssetId, label: string): HTMLSpanElement {
+  const badge = document.createElement("span");
+  badge.className = "expansion-tool-glyph";
+  badge.setAttribute("aria-hidden", "true");
+  const fallback = document.createElement("span");
+  fallback.textContent = label.slice(0, 3).toUpperCase();
+  badge.append(fallback);
+  const url = getExpansionArtUrl(id, artMode);
+  if (url) {
+    const image = document.createElement("img");
+    image.alt = "";
+    image.width = 64;
+    image.height = 64;
+    image.decoding = "async";
+    image.hidden = true;
+    image.addEventListener("load", () => { image.hidden = false; fallback.hidden = true; }, { once: true });
+    image.addEventListener("error", () => { image.hidden = true; fallback.hidden = false; }, { once: true });
+    image.src = url;
+    badge.append(image);
+  }
+  return badge;
+}
+
+function assetLabel(id: ExpansionVisualAssetId): string {
+  if (id === "turret") return "ICE";
+  if (id === "arcIce") return "Arc ICE";
+  if (id === "shieldDrone") return "Shield Drone";
+  if (id === "latencyTrap") return "Latency Trap";
+  return id[0]!.toUpperCase() + id.slice(1);
 }
 
 function getRequestedLevelId(): number {

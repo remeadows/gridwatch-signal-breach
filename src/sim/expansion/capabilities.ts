@@ -34,6 +34,14 @@ const CAPABILITIES: Readonly<Record<ExpansionHardwareKind, ExpansionHardwareCapa
     corruptible: true,
     traversable: false,
   },
+  arcIce: {
+    carriesSignal: false,
+    blocksMovement: true,
+    targetable: true,
+    chewable: true,
+    corruptible: true,
+    traversable: false,
+  },
   scrubber: {
     carriesSignal: false,
     blocksMovement: true,

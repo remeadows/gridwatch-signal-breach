@@ -195,6 +195,10 @@ function renderTitleScreen(options: ScreenOptions): void {
 
   logo.append(title, subtitle, scanline);
   actions.append(startButton, briefingButton, leaderboardButton);
+  if (options.expansionNavigationEnabled) {
+    const expansionButton = createNavigationButton("EXPANSION CAMPAIGN", "secondary", () => options.onSelectCampaign("expansion-1"));
+    actions.append(expansionButton);
+  }
   screen.append(kicker, logo, tagline, actions, footer);
   root.append(screen);
 }
@@ -296,7 +300,7 @@ function renderCampaignSelectScreen(options: ScreenOptions): void {
   const header = createNavigationHeader(
     "CAMPAIGN ROUTER",
     "Select campaign",
-    "Signal Breach remains production-active. Expansion 1 Chapter 1 is available here only for localhost acceptance testing.",
+    "Signal Breach remains production-active. Expansion 1 Chapters 1 and 2 are available here only for localhost acceptance testing.",
   );
   const grid = document.createElement("div");
   const backButton = createNavigationButton("BACK", "secondary", onBackToTitle);
@@ -312,11 +316,11 @@ function renderCampaignSelectScreen(options: ScreenOptions): void {
     const button = createNavigationCard({
       index: isExpansion ? "EXPANSION 01" : "CURRENT CAMPAIGN",
       title: isExpansion ? "EXPANSION UPLINK" : "SIGNAL BREACH",
-      name: isExpansion ? "CHAPTER 1 LOCAL PLAYTEST" : "THREE SECTORS // TWELVE WAVES",
+      name: isExpansion ? "TWO-CHAPTER LOCAL PLAYTEST" : "THREE SECTORS // TWELVE WAVES",
       detail: isExpansion
-        ? "Five authored levels and 25 waves. Progress stays isolated; leaderboard submission remains disabled."
+        ? "Ten authored levels and 50 waves. Progress stays isolated; leaderboard submission remains disabled."
         : "The frozen V2 campaign continues using its original sector progress and replay identity.",
-      meta: isExpansion ? "LEVELS 01–05" : "SECTORS 01–03",
+      meta: isExpansion ? "LEVELS 01–10" : "SECTORS 01–03",
       status: isExpansion ? "LOCAL ONLY" : "ACTIVE",
       disabled: false,
       onSelect: () => onSelectCampaign(campaign.id),
@@ -344,7 +348,7 @@ function renderChapterSelectScreen(options: ScreenOptions): void {
   const header = createNavigationHeader(
     "EXPANSION ROUTER",
     "Select chapter",
-    "Six chapter slots are reserved. Latency Front is the only authored batch; Chapters 2–6 remain locked and spoiler-safe.",
+    "Six chapter slots are reserved. Latency Front and Demolition Front are authored; later chapters remain locked and spoiler-safe.",
   );
   const grid = document.createElement("div");
   const backButton = createNavigationButton("BACK", "secondary", onBackToCampaignSelect);
@@ -365,7 +369,9 @@ function renderChapterSelectScreen(options: ScreenOptions): void {
       title: isUnlocked ? chapter.codename : "ENCRYPTED CHAPTER",
       name: isUnlocked ? "FIVE LEVELS // 25 WAVES" : "SIGNAL LOCKED",
       detail: isUnlocked
-        ? "Local acceptance build with Latency Trap, Rusher, and fresh starting conditions per level."
+        ? chapter.id === 2
+          ? "Local acceptance build with Sapper target locks, death pulses, and fresh starting conditions per level."
+          : "Local acceptance build with Latency Trap, Rusher, and fresh starting conditions per level."
         : "This chapter stays spoiler-safe until an earlier chapter is cleared.",
       meta: isUnlocked ? `LEVELS ${formatChapterLevels(chapter)}` : "LEVELS LOCKED",
       status: isUnlocked ? "LOCAL PLAYTEST" : "LOCKED",
@@ -397,7 +403,7 @@ function renderLevelSelectScreen(options: ScreenOptions): void {
   const header = createNavigationHeader(
     "EXPANSION ROUTER",
     `${chapter.codename} // Levels`,
-    chapter.id === 1
+    chapter.id <= 2
       ? "Five local-review levels. Each starts fresh and contains five waves; no score leaves this browser."
       : "This chapter is reserved for a later reviewed content batch.",
   );

@@ -363,6 +363,9 @@
       "camera": "orthographic-70deg",
       "light": "upper-left",
       "semanticAccent": "hostile-magenta",
+      "sourceArtApproved": true,
+      "integrationAuthorized": true,
+      "contextualApproval": { "desktop": false, "mobile": false },
       "ownerApproved": false,
       "sourceSha256": "38fd659e369fc433be1eb45480b6093812f42b3dcda4890f7915ecc678b3de68",
       "runtimeSha256": "dcd40d369809e45ba73676d54efba98224a2bf5d54014e71829d37e14de4a2d0"

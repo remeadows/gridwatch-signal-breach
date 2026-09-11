@@ -1,6 +1,6 @@
 # GridWatch Skill Guide
 
-Last reviewed: 2026-09-09
+Last reviewed: 2026-09-10
 
 Use this file to select the right Codex skill and verification path for work in
 GridWatch: Signal Breach. `AGENTS.md` remains the highest-priority project guide.
@@ -20,6 +20,13 @@ There is currently no project-root `CLAUDE.md` or `MEMORY.md`. Treat
 `CONTEXT.md` as the available project memory unless one of those files is added.
 Its opening static-only description predates the optional leaderboard; use
 `AGENTS.md` and `HANDOFF.md` as the authority for the sanctioned Supabase exception.
+
+Current local milestone: the owner approved Chapters 1–3 total (15 levels/75
+waves), a consistent Blender-authored grid/roster, local verification/commits,
+and sending this game's diff to CodeRabbit. Follow
+`docs/THREE_CHAPTER_BLENDER_GOAL_PLAN.md`; Chapters 4–6 and GitHub publication
+are outside this milestone. Final contextual acceptance remains pending even
+where source art or implementation was approved.
 
 ## Skill Routing
 
@@ -98,8 +105,8 @@ In addition to the UI lane:
 
 - Run `npm run verify:progress` to cover V1-to-V2 migration, malformed-storage
   recovery, storage unavailability, and campaign namespace isolation.
-- Run `npm run verify:content` to prove Chapter 1 contains exactly Levels 1–5
-  and 25 waves while Chapters 2–6 remain unauthored. Run
+- Run `npm run verify:content` to prove each authored chapter contains exactly
+  five levels and twenty-five waves, with all remaining chapters unauthored. Run
   `npm run expansion:content-report` to verify the literal immutable hashes.
 - Verify the normal title flow with no flag, then use `?expansion-nav=1` only
   on localhost for acceptance QA. Check the campaign screen, six spoiler-safe
@@ -122,7 +129,7 @@ In addition to the UI lane:
   until a separate server-first expansion validator/category release is
   approved and reviewed.
 
-### Expansion Chapter 2 mechanic prototypes
+### Historical Chapter 2 mechanic-prototype lane
 
 - Keep an unapproved prototype absent from playable expansion types, content,
   `src/sim/index.ts`, and the server validator bundle.
@@ -139,7 +146,9 @@ In addition to the UI lane:
 ### Blender expansion-asset intake
 
 - The owner approved Blender as a local source-authoring tool on 2026-09-08.
-  This does not authorize runtime 3D, WebGL, Three.js, or bulk asset generation.
+  The three-chapter milestone additionally authorizes the consistent expansion
+  grid and roster, built as related local batches. It does not authorize runtime
+  3D, WebGL or Three.js.
 - Keep the editable `.blend`, deterministic Blender Python build script,
   transparent source master, optimized runtime sprite, modeling brief, and
   SHA-256 provenance together. The playable game consumes only the raster.

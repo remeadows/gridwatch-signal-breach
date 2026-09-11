@@ -95,5 +95,5 @@ function isSpecialPosition(
 }
 
 function isSellableHardwareKind(value: string): value is ExpansionHardwareKind {
-  return value === "relay" || value === "firewall" || value === "turret" || value === "overclock" || value === "latencyTrap";
+  return value === "relay" || value === "firewall" || value === "turret" || value === "arcIce" || value === "overclock" || value === "latencyTrap";
 }

@@ -1,23 +1,14 @@
 import type { UnitKind, GridPosition } from "../types";
 import { bfs } from "../pathing";
-import { EXPANSION_1_R1_TUNING } from "../../data/campaigns/expansion/tuning";
+import { EXPANSION_1_R1_TUNING, SAPPER_TUNING } from "../../data/campaigns/expansion/tuning";
 
 /**
- * Expansion-only mechanic proof. This module is intentionally absent from the
- * playable expansion configuration, src/sim/index.ts, and validator bundle.
+ * Expansion-only mechanic laboratory retained as a focused regression harness.
+ * The production simulator consumes the same approved tuning constants.
  */
 export const SAPPER_PROTOTYPE = {
   id: "sapper",
-  maxHp: 16,
-  moveEveryTicks: 2,
-  corruptionTicks: 4,
-  spawnBatchSize: 1,
-  chewDamage: 8,
-  coreContactDamage: 2,
-  deathPulseDamage: 6,
-  deathPulseRange: 1,
-  targeting: "firewallThenHardware",
-  onDeathSpawn: null,
+  ...SAPPER_TUNING,
   specialMovement: null,
 } as const;
 

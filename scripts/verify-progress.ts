@@ -141,8 +141,8 @@ expectEqual(
 );
 expectEqual(
   isExpansionChapterAvailable(2, chapterOneCleared.campaigns["expansion-1"].highestUnlockedLevel),
-  false,
-  "Clearing Level 5 must not expose unauthored Chapter 2.",
+  true,
+  "Clearing Level 5 must expose authored Chapter 2.",
 );
 const storedBeforeInvalidExpansionClear = legacyStorage.getItem(PROGRESS_STORAGE_KEY);
 for (const invalidLevelId of [Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY]) {

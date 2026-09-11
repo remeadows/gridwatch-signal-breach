@@ -1,5 +1,5 @@
 import { getExpansionLevelDefinition } from "../../data/campaigns/expansion";
-import { EXPANSION_1_R1_TUNING } from "../../data/campaigns/expansion/tuning";
+import { EXPANSION_1_R1_TUNING, SAPPER_TUNING } from "../../data/campaigns/expansion/tuning";
 import { ENEMY_TUNING } from "../../data/enemies";
 import { CORE_TUNING } from "../../data/levels";
 import { UNIT_TUNING } from "../../data/units";
@@ -8,10 +8,12 @@ import { LATENCY_TRAP_PROTOTYPE } from "./latencyTrapPrototype";
 import { createExpansionGrid, expansionPositionKey, setExpansionTile } from "./grid";
 import { computeExpansionSignalRoute } from "./routing";
 import { RUSHER_PROTOTYPE } from "./rusherPrototype";
+import { ARC_ICE_RULES, SHIELD_DRONE_RULES } from "./shieldNetwork";
 import {
   EXPANSION_CAMPAIGN_ID,
   EXPANSION_CONTENT_REVISION,
   EXPANSION_RULESET_ID,
+  type ExpansionContentRevision,
   type ExpansionGameState,
   type ExpansionHardwareKind,
   type ExpansionLevelDefinition,
@@ -24,6 +26,7 @@ import { startExpansionPrepPhase } from "./waves";
 export type CreateExpansionGameStateOptions = Readonly<{
   levelId: number;
   contentHash: string;
+  contentRevision?: ExpansionContentRevision;
   seed?: string | number;
 }>;
 
@@ -31,7 +34,7 @@ export function createExpansionGameState(
   options: CreateExpansionGameStateOptions,
 ): ExpansionGameState {
   const level = getRequiredExpansionLevel(options.levelId);
-  const config = createExpansionSimConfig(level, options.contentHash);
+  const config = createExpansionSimConfig(level, options.contentHash, options.contentRevision ?? EXPANSION_CONTENT_REVISION);
   let grid = createExpansionGrid(config.gridSize);
 
   for (const position of level.voidTiles) {
@@ -107,6 +110,7 @@ export function deriveExpansionSignalState(
 function createExpansionSimConfig(
   level: ExpansionLevelDefinition,
   contentHash: string,
+  contentRevision: ExpansionContentRevision,
 ): ExpansionSimConfig {
   if (contentHash.trim().length < 8) {
     throw new Error("Expansion content hash is required.");
@@ -115,7 +119,7 @@ function createExpansionSimConfig(
   return {
     campaignId: EXPANSION_CAMPAIGN_ID,
     ruleset: EXPANSION_RULESET_ID,
-    contentRevision: EXPANSION_CONTENT_REVISION,
+    contentRevision,
     contentHash,
     levelId: level.id,
     chapterId: level.chapterId,
@@ -136,7 +140,7 @@ function createExpansionSimConfig(
     coreIntegrityDrainPerSeveredTick: EXPANSION_1_R1_TUNING.coreIntegrityDrainPerSeveredTick,
     coreIntegrityRegenPerLiveTick: EXPANSION_1_R1_TUNING.coreIntegrityRegenPerLiveTick,
     simulationTickMs: CORE_TUNING.simulationTickMs,
-    defaultSeed: `${EXPANSION_CAMPAIGN_ID}-chapter-1-level-${level.id}`,
+    defaultSeed: `${EXPANSION_CAMPAIGN_ID}-chapter-${level.chapterId}-level-${level.id}`,
     enemies: {
       probe: { ...ENEMY_TUNING.probe },
       crawler: { ...ENEMY_TUNING.crawler },
@@ -145,11 +149,14 @@ function createExpansionSimConfig(
       splitter: { ...ENEMY_TUNING.splitter },
       goliath: { ...ENEMY_TUNING.goliath },
       rusher: { ...RUSHER_PROTOTYPE },
+      sapper: { ...SAPPER_TUNING },
+      shieldDrone: { ...SHIELD_DRONE_RULES },
     },
     units: {
       relay: unit(UNIT_TUNING.relay),
       firewall: unit(UNIT_TUNING.firewall),
       turret: unit(UNIT_TUNING.turret),
+      arcIce: unit(ARC_ICE_RULES),
       scrubber: unit(UNIT_TUNING.scrubber),
       overclock: unit(UNIT_TUNING.overclock),
       latencyTrap: {

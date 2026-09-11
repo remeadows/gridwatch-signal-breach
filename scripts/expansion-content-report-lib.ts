@@ -1,5 +1,6 @@
 import { getExpansionLevelContentHash } from "../src/data/campaigns/expansion/contentManifest";
 import { createExpansionGameState } from "../src/sim/expansion/state";
+import { EXPANSION_CAMPAIGN_ID, EXPANSION_CONTENT_REVISION, EXPANSION_RULESET_ID } from "../src/sim/expansion/types";
 import type {
   ExpansionEnemyDefinition,
   ExpansionEnemyKind,
@@ -21,6 +22,7 @@ const ENEMY_KINDS: readonly ExpansionEnemyKind[] = [
   "splitter",
   "goliath",
   "rusher",
+  "sapper",
 ];
 const HARDWARE_KINDS: readonly ExpansionHardwareKind[] = [
   "relay",
@@ -92,14 +94,14 @@ export function buildExpansionContentReport(
 
   return {
     schema: 2,
-    campaign: "expansion-1",
-    ruleset: "expansion-v1",
-    contentRevision: "expansion-1-r1",
-    chapter: 1,
+    campaign: EXPANSION_CAMPAIGN_ID,
+    ruleset: EXPANSION_RULESET_ID,
+    contentRevision: EXPANSION_CONTENT_REVISION,
+    chapters: [...new Set(levels.map((level) => level.chapterId))],
     levelCount: levels.length,
     waveCount: levels.reduce((total, level) => total + level.waves.length, 0),
     dockToolLimit: EXPANSION_DOCK_TOOL_LIMIT,
-    threatBudgetModel: "v1-weighted-enemy-pressure-concurrency-edges-cadence-scripts-minus-economy",
+    threatBudgetModel: "v2-weighted-enemy-pressure-targeting-pulse-concurrency-edges-cadence-scripts-minus-economy",
     campaignHash,
     levelHashes,
     levels: reportLevels,
@@ -115,7 +117,7 @@ export function validateExpansionContent(levels: readonly ExpansionLevelDefiniti
     assert(Number.isInteger(level.id) && level.id > 0, `Level ${level.id} has an invalid ID.`);
     assert(level.gridSize === 8, `Level ${level.id} must use an 8x8 grid.`);
     assert(level.waves.length === 5, `Level ${level.id} must contain exactly five waves.`);
-    assert(level.requiredMechanic === "latencyTrap", `Level ${level.id} references an unknown required mechanic.`);
+    assert(["latencyTrap", "sapperSpacing"].includes(level.requiredMechanic), `Level ${level.id} references an unknown required mechanic.`);
     assert(level.difficultyIndex > previousDifficulty, `Level ${level.id} difficultyIndex is not strictly increasing.`);
     previousDifficulty = level.difficultyIndex;
 
@@ -162,9 +164,9 @@ export function calculateWaveThreatBudget(
   wave: ExpansionWaveDefinition,
   enemies: Readonly<Record<ExpansionEnemyKind, ExpansionEnemyDefinition>>,
 ): number {
-  const totalWeight = ENEMY_KINDS.reduce((total, kind) => total + wave.enemyWeights[kind], 0);
+  const totalWeight = ENEMY_KINDS.reduce((total, kind) => total + (wave.enemyWeights[kind] ?? 0), 0);
   const weightedEnemyPressure = ENEMY_KINDS.reduce(
-    (total, kind) => total + wave.enemyWeights[kind] * calculateEnemyPressure(enemies[kind]),
+    (total, kind) => total + (wave.enemyWeights[kind] ?? 0) * calculateEnemyPressure(enemies[kind]),
     0,
   );
   const averageEnemyPressure = totalWeight === 0 ? 0 : Math.ceil(weightedEnemyPressure / totalWeight);
@@ -217,9 +219,9 @@ function validateWave(
   assert(Number.isInteger(wave.bandwidthTrickleEveryTicks) && wave.bandwidthTrickleEveryTicks > 0, `${identity} has an invalid trickle cadence.`);
 
   const weightKeys = Object.keys(wave.enemyWeights);
-  assert(weightKeys.length === ENEMY_KINDS.length && weightKeys.every((key) => ENEMY_KINDS.includes(key as ExpansionEnemyKind)), `${identity} has invalid enemy references.`);
-  assert(ENEMY_KINDS.every((kind) => Number.isInteger(wave.enemyWeights[kind]) && wave.enemyWeights[kind] >= 0), `${identity} has invalid enemy weights.`);
-  assert(ENEMY_KINDS.some((kind) => wave.enemyWeights[kind] > 0), `${identity} has no weighted enemy.`);
+  assert(weightKeys.every((key) => ENEMY_KINDS.includes(key as ExpansionEnemyKind)), `${identity} has invalid enemy references.`);
+  assert(ENEMY_KINDS.every((kind) => wave.enemyWeights[kind] === undefined || (Number.isInteger(wave.enemyWeights[kind]) && (wave.enemyWeights[kind] ?? 0) >= 0)), `${identity} has invalid enemy weights.`);
+  assert(ENEMY_KINDS.some((kind) => (wave.enemyWeights[kind] ?? 0) > 0), `${identity} has no weighted enemy.`);
 
   const scripts = wave.scriptedSpawns ?? [];
   assert(scripts.length <= wave.maxSpawnedIntrusions, `${identity} scripts exceed the spawn limit.`);
@@ -236,9 +238,10 @@ function validateWave(
 function calculateEnemyPressure(enemy: ExpansionEnemyDefinition): number {
   const movementPressure = Math.ceil(12 / enemy.moveEveryTicks) * 5;
   const corruptionPressure = Math.ceil(12 / enemy.corruptionTicks) * 4;
-  const targetingPressure = enemy.targeting === "units" ? 8 : 0;
+  const targetingPressure = enemy.targeting === "units" ? 8 : enemy.targeting === "firewallThenHardware" ? 14 : 0;
   const splitPressure = enemy.onDeathSpawn ? enemy.onDeathSpawn.count * 6 : 0;
-  return enemy.maxHp + movementPressure + corruptionPressure + enemy.spawnBatchSize * 2 + enemy.chewDamage * 2 + enemy.coreContactDamage * 8 + targetingPressure + splitPressure;
+  const pulsePressure = (enemy.deathPulseDamage ?? 0) * (enemy.deathPulseRange ?? 0) * 2;
+  return enemy.maxHp + movementPressure + corruptionPressure + enemy.spawnBatchSize * 2 + enemy.chewDamage * 2 + enemy.coreContactDamage * 8 + targetingPressure + splitPressure + pulsePressure;
 }
 
 function validatePosition(position: GridPosition, gridSize: number, label: string): void {

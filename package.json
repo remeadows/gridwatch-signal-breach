@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:phone": "vite --mode lan-preview --host 0.0.0.0 --port 4185 --strictPort",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "build:validator": "esbuild src/sim/index.ts --bundle --format=esm --platform=neutral --target=es2022 --legal-comments=none --outfile=supabase/functions/submit-gridwatch-score/sim.bundle.js",
@@ -12,6 +13,7 @@
     "balance:search": "node scripts/run-typescript.mjs scripts/search-balance.ts",
     "expansion:content-report": "node scripts/run-typescript.mjs scripts/expansion-content-report.ts",
     "expansion:balance": "node scripts/run-typescript.mjs scripts/expansion-balance-report.ts",
+    "expansion:human-balance": "node scripts/run-typescript.mjs scripts/expansion-human-balance.ts",
     "typecheck:tools": "tsc -p tsconfig.tools.json",
     "verify:content": "node scripts/run-typescript.mjs scripts/verify-content.ts",
     "verify:latency-trap": "node scripts/run-typescript.mjs scripts/verify-latency-trap.ts",
@@ -20,7 +22,13 @@
     "verify:rusher": "node scripts/run-typescript.mjs scripts/verify-rusher.ts",
     "verify:sapper": "node scripts/run-typescript.mjs scripts/verify-sapper.ts",
     "verify:expansion-sim": "node scripts/run-typescript.mjs scripts/verify-expansion-sim.ts",
-    "verify:assets": "node scripts/verify-assets.mjs"
+    "verify:expansion-revisions": "node scripts/run-typescript.mjs scripts/verify-expansion-revisions.ts",
+    "verify:expansion-visuals": "node scripts/run-typescript.mjs scripts/verify-expansion-visuals.ts",
+    "verify:shield-network": "node scripts/run-typescript.mjs scripts/verify-shield-network.ts",
+    "verify:shield-combat": "node scripts/run-typescript.mjs scripts/verify-shield-combat.ts",
+    "verify:preview-policy": "node scripts/run-typescript.mjs scripts/verify-preview-policy.ts",
+    "verify:assets": "node scripts/verify-assets.mjs",
+    "verify:expansion-art": "node scripts/verify-expansion-art.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.28.0",

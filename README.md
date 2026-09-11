@@ -33,23 +33,24 @@ npm run preview
 
 The Vite base path is `/` so the app is served from the root of its host.
 
-### Expansion 1 Chapter 1 local acceptance
+### Expansion 1 Chapters 1-2 local acceptance
 
-Chapter 1 is intentionally available only on `localhost`/`127.0.0.1` while its
+The expansion is intentionally available only on `localhost`/`127.0.0.1` while its
 separate server validator and leaderboard categories remain unpublished:
 
 ```sh
 npm run build
-npm run preview -- --host 127.0.0.1 --port 4175 --strictPort
+npm run preview -- --host 127.0.0.1 --port 4177 --strictPort
 ```
 
-Open `http://127.0.0.1:4175/?expansion-nav=1`. The five authored levels contain
-five waves each and use isolated `expansion-v1` state, replay, content hashes,
-and progress. Local results never submit to Supabase. These query flags are
-hostname-gated and cannot enable expansion play on the public site.
+Open `http://127.0.0.1:4177/?expansion-nav=1`. The ten authored levels contain
+five waves each and use isolated `expansion-v1` state, additive content hashes,
+and progress. Chapter 2 introduces the approved Sapper and its spacing counter.
+Local results never submit to Supabase. These query flags are hostname-gated
+and cannot enable expansion play on the public site.
 
 Use `npm run verify:expansion-sim`, `npm run expansion:balance`, and
-`npm run expansion:content-report` for the Chapter 1 deterministic gates.
+`npm run expansion:content-report` for the Chapter 1-2 deterministic gates.
 
 ## Deploy
 

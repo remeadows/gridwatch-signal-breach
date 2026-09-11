@@ -4,7 +4,7 @@ import { applyExpansionCommand } from "./commands";
 import { calculateExpansionScore } from "./scoring";
 import { createExpansionGameState } from "./state";
 import { tickExpansion } from "./tick";
-import { EXPANSION_CAMPAIGN_ID, EXPANSION_CONTENT_REVISION, EXPANSION_RULESET_ID, type ExpansionRecordedCommand, type ExpansionReplayInput, type ExpansionReplayResult, type ExpansionSimCommand } from "./types";
+import { EXPANSION_CAMPAIGN_ID, EXPANSION_RULESET_ID, type ExpansionRecordedCommand, type ExpansionReplayInput, type ExpansionReplayResult, type ExpansionSimCommand } from "./types";
 
 export const MAX_EXPANSION_REPLAY_TICKS = 12000;
 export const MAX_EXPANSION_REPLAY_COMMANDS = 5000;
@@ -14,17 +14,17 @@ export class ExpansionReplayError extends Error {
 }
 
 export function replayExpansionRun(input: ExpansionReplayInput): ExpansionReplayResult {
-  if (input.schema !== 2 || input.ruleset !== EXPANSION_RULESET_ID || input.campaign !== EXPANSION_CAMPAIGN_ID || input.contentRevision !== EXPANSION_CONTENT_REVISION) throw new ExpansionReplayError("Expansion replay identity mismatch.");
+  if (!input || typeof input !== "object" || "sector" in input || input.schema !== 2 || input.ruleset !== EXPANSION_RULESET_ID || input.campaign !== EXPANSION_CAMPAIGN_ID || typeof input.contentRevision !== "string") throw new ExpansionReplayError("Expansion replay identity mismatch.");
   if (typeof input.seed !== "string") throw new ExpansionReplayError("Expansion replay seed must be a string.");
   let expectedContentHash: string;
   try {
-    expectedContentHash = getExpansionLevelContentHash(input.level);
+    expectedContentHash = getExpansionLevelContentHash(input.level, input.contentRevision);
   } catch {
-    throw new ExpansionReplayError("Expansion replay level is not authored.");
+    throw new ExpansionReplayError("Expansion replay revision or level is not authored.");
   }
   if (input.contentHash !== expectedContentHash) throw new ExpansionReplayError("Expansion content hash mismatch.");
   const commands = validateExpansionCommands(input.commands as unknown);
-  let state = createExpansionGameState({ levelId: input.level, contentHash: input.contentHash, seed: input.seed });
+  let state = createExpansionGameState({ levelId: input.level, contentHash: input.contentHash, contentRevision: input.contentRevision, seed: input.seed });
   let index = 0;
   let ticks = 0;
   while (state.phase !== "won" && state.phase !== "lost") {
