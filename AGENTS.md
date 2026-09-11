@@ -22,12 +22,12 @@ payloads.
 **Current owner override (2026-09-11):** the local end state is exactly three
 chapters / 25 levels split 8 / 8 / 9, five waves each. Follow
 `docs/EXPANSION_25_LOCAL_PLAN.md`; retain r1/r2/r3 identities and use r4 for the
-new layout. Deliver chapter-sized local checkpoints; no push or deploy. The
-30-level/six-chapter text below is historical scope, not the current target.
+new layout. Deliver chapter-sized local checkpoints; no push or deploy. This
+supersedes the historical 30-level/six-chapter roadmap.
 
 The owner has additionally authorized exactly one separate `expansion-1`
-campaign. It contains 30 standalone 8x8 levels arranged as six chapters of five
-levels, with five authored waves per level (150 expansion waves total). Each
+campaign. Its r4 layout contains 25 standalone 8x8 levels arranged as three
+chapters of 8 / 8 / 9 levels, with five waves per level (125 total). Each
 level has fresh fixed starting conditions; units, bandwidth, damage, and stat
 upgrades do not persist between levels. The original V2 campaign remains three
 sectors and twelve waves.
@@ -38,11 +38,11 @@ the existing `sector` identity, reuse `phase4-v1` score categories, rewrite or
 delete historical leaderboard rows, or change behavior for `grid-drift` or
 `gridwatch-match` in the shared GridWatchGamesDB.
 
-Implement the expansion in reviewed batches: architecture first, then one
-five-level chapter at a time. Do not put all 30 levels in one branch or pull
-request. This authorization does not approve expansion asset families, new
-mechanics, Supabase migrations, or Edge Function deployment by itself; each
-requires the compatibility and owner-approval gates in
+Implement the expansion in reviewed local checkpoints: architecture first,
+then one chapter at a time. The owner approved the existing 21-family Blender
+CLI grid/roster rebuild and local CodeRabbit diff review for this milestone.
+New mechanics, Supabase migrations, Edge Function deployment and publication
+remain separately gated. Preserve the compatibility and owner-approval gates in
 `docs/PHASE5_ASSET_AND_30_LEVEL_EXPANSION_PLAN.md`.
 
 Use vanilla TypeScript, Vite, and HTML5 Canvas2D only. Do not add React, Phaser, or another game framework.

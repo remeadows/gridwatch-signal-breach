@@ -42,9 +42,10 @@ categories remain unpublished. Dedicated ports avoid the other GridWatch games:
 npm run dev:local
 ```
 
-Open `http://127.0.0.1:4391/` and choose **Expansion Campaign**. Fifteen authored
-levels contain five waves each and use isolated `expansion-v1` state, additive
-content hashes, and progress. Chapter 2 introduces Sapper spacing; Chapter 3
+Open `http://127.0.0.1:4391/` and choose **Expansion Campaign**. Twenty-five authored
+levels span three chapters (8 / 8 / 9) with five waves each. The current local
+`expansion-1-r4` revision uses isolated progress and keeps historical r1/r2/r3
+replays intact. Chapter 2 introduces Sapper spacing; Chapter 3
 introduces Shield Drones and shield-piercing Arc ICE. Blender CLI produces the
 three themed grids and consistent hardware/enemy roster; Canvas2D remains the
 runtime renderer. Source scenes and raster provenance are versioned in the repo.
@@ -57,6 +58,8 @@ without checking ownership: several other games are being tested concurrently.
 
 Run `npm run verify:expansion-sim`, `npm run verify:expansion-revisions`,
 `npm run verify:expansion-retained-evidence`,
+`npm run verify:expansion-r4-evidence`, `npm run verify:expansion-progress-r4`,
+`npm run verify:expansion-canvas`,
 `npm run expansion:human-balance`, `npm run verify:chapter03-human`,
 `npm run verify:expansion-art`, `npm run verify:expansion-art-fallback`, and
 `npm run expansion:content-report`.

@@ -23,14 +23,16 @@ each hostname/port have independent local progress namespaces.
 
 Acceptance checklist (record browser/device and date):
 
-- Start the expansion from the chapter menu; see Chapters 1–3 and later locked
-  roadmap chapters without them being represented as finished content.
+- Start the expansion from the chapter menu; see exactly three chapters with
+  8 / 8 / 9 levels (25 total, five waves each), and no future chapter placeholders.
 - Place and sell the intended cell at 320px, 390px, landscape and desktop sizes.
 - Read Source/Core, Relay, Firewall, ICE, Arc ICE, threat shapes and signal lines.
 - Check Field Guide/picker art against the board; pause, resume, reset and reload.
 - In Chapter 2 see the Sapper's target and finite orthogonal pulse, not a ring
   implying diagonal damage. In Chapter 3 distinguish shields and chain attacks.
 - Finish or lose a level, read its reason/results, retry and continue normally.
+- Verify chapter transitions at 8→9 and 16→17; Level 25 must finish without
+  offering a nonexistent Level 26. Reload and check earned local progress.
 - Repeat with reduced motion and low effects. Note stutter, heat, unreadable
   sprites, blocked controls, accidental placement or unexpected scrolling.
 

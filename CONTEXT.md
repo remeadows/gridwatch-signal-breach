@@ -33,8 +33,10 @@ the app is served from the root of its host (Cloudflare Pages).
 
 ## Approved Expansion Envelope
 
-- `expansion-1` is a separate, owner-approved campaign: 30 standalone 8x8
-  levels in six chapters of five, each with five authored waves (150 total).
+- `expansion-1-r4` is the current owner-approved layout: 25 standalone 8x8
+  levels in three chapters of 8 / 8 / 9, each with five waves (125 total).
+  Retain r1/r2/r3 level meanings and hashes; the old six-chapter/30-level
+  roadmap is superseded by `docs/EXPANSION_25_LOCAL_PLAN.md`.
   Levels reset hardware, bandwidth, integrity, and any temporary state; there
   are no persistent stat upgrades.
 - Expansion code must identify a run by campaign and level, never by a new
@@ -57,6 +59,7 @@ the app is served from the root of its host (Cloudflare Pages).
   compatible server-first order recorded in `HANDOFF.md`.
 - The `phase4-v1` client must not reach production before its additive migration
   and backward-compatible Edge Function have been deployed and verified.
+
 # Current local target — 2026-09-11
 
 Owner-approved expansion r4 is three chapters / 25 total levels, split 8/8/9,

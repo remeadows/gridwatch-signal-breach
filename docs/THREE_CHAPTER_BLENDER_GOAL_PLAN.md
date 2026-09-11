@@ -278,3 +278,9 @@ playable URL, content/art hashes, actual acceptance status, and next package.
 Do not set a goal complete because a build passes or the token budget ends.
 Do not skip defects to add more levels. Review can run in parallel, but edits to
 shared simulation/renderer/manifests have a single owner per package.
+
+# Superseded local milestone
+
+The 15-level milestone above is historical and complete. The owner's 2026-09-11
+override is three chapters / 25 levels split 8/8/9. The current execution and
+acceptance contract is [EXPANSION_25_LOCAL_PLAN.md](EXPANSION_25_LOCAL_PLAN.md).

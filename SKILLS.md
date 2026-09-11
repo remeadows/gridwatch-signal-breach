@@ -1,6 +1,6 @@
 # GridWatch Skill Guide
 
-Last reviewed: 2026-09-10
+Last reviewed: 2026-09-11
 
 Use this file to select the right Codex skill and verification path for work in
 GridWatch: Signal Breach. `AGENTS.md` remains the highest-priority project guide.
@@ -21,10 +21,10 @@ There is currently no project-root `CLAUDE.md` or `MEMORY.md`. Treat
 Its opening static-only description predates the optional leaderboard; use
 `AGENTS.md` and `HANDOFF.md` as the authority for the sanctioned Supabase exception.
 
-Current local milestone: the owner approved Chapters 1–3 total (15 levels/75
-waves), a consistent Blender-authored grid/roster, local verification/commits,
+Current local milestone: the owner approved three chapters (25 levels/125
+waves, split 8 / 8 / 9), a consistent Blender-authored grid/roster, local verification/commits,
 and sending this game's diff to CodeRabbit. Follow
-`docs/THREE_CHAPTER_BLENDER_GOAL_PLAN.md`; Chapters 4–6 and GitHub publication
+`docs/EXPANSION_25_LOCAL_PLAN.md`; Chapters 4–6 and GitHub publication
 are outside this milestone. Final contextual acceptance remains pending even
 where source art or implementation was approved.
 
@@ -187,6 +187,7 @@ Use the commands in `AGENTS.md` and `HANDOFF.md` as the canonical checklist.
 For current leaderboard-enabled builds, network/env searches must distinguish
 the sanctioned code under `src/leaderboard/` and Supabase from accidental new
 network dependencies elsewhere.
+
 # Current execution contract — 2026-09-11
 
 Use `docs/EXPANSION_25_LOCAL_PLAN.md` for the approved 25-level (8/8/9) local

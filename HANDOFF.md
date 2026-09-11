@@ -1,8 +1,11 @@
 # GridWatch Handoff
 
-## Expansion r4 / 25-level local revision — in progress — 2026-09-11
+## Expansion r4 / 25-level local revision — complete locally — 2026-09-11
 
 - Working on `codex/expansion-25-local`, based on completed local `b77203f`.
+  Local checkpoints: foundation `0352d10`, Chapter 1 `5308629`, Chapter 2
+  `231c14d`, Chapter 3 `2857e95`, full Blender rerender `27c9a03`, tested
+  campaign integration `f452bd3`.
 - Owner confirmed exactly three chapters with 8 / 8 / 9 levels (125 waves),
   consistent Blender CLI grid/assets, and a tested local playable finish.
 - Follow `docs/EXPANSION_25_LOCAL_PLAN.md`. Preserve historical r1/r2/r3 content
@@ -11,6 +14,34 @@
 - CodeRabbit diff upload and local commits are authorized. No GitHub push,
   deployment or shared database changes. Previous 15-level evidence below is a
   historical baseline, not evidence that the new 25-level milestone is complete.
+- Implemented current `expansion-1-r4`: three chapters, 8 / 8 / 9 levels,
+  five authored waves per level, new geometry and legal build plans. Retained
+  r1/r2/r3 lookup is revision-scoped; the r4 progress key imports old earned
+  access without rewriting the historical key or auto-clearing inserted boards.
+- Current evidence: 100/100 normal wins, 98/100 stress wins, 198 exact winning
+  replays and 100 no-action losses. Stress losses: Level 2 and Level 13, charlie,
+  six-tick input delay, wave five. Original/retained checks remain green.
+- All 21 Blender families were genuinely rerendered and provenance-verified.
+  Runtime sprites total 1,058,037 bytes. The original validator and shared
+  leaderboard/backend files are unchanged. Release art approval remains false.
+- All 28 local verification commands pass. The compiled preview passed twelve
+  viewport cases including 390×700/701, 390×820/821 and wide landscape. Browser
+  input covered range inspection, place/sell, pause/guide, low effects, loss and
+  retry. A real five-wave Level 25 browser win persisted CLEARED and offered no
+  Level 26. That run exposed a results overlay defect, now corrected locally.
+- See `docs/EXPANSION_R4_LOCAL_ACCEPTANCE.md` for exact evidence and limits,
+  and `docs/reviews/EXPANSION_R4_LOCAL_REVIEW.md` for review dispositions.
+- Use `http://127.0.0.1:4391/?expansion-nav=1` (dev) or
+  `http://127.0.0.1:4393/?expansion-nav=1` (compiled preview). Ports 4175, 4176,
+  4177 and 4185 belong to other games. Physical phone testing is still pending;
+  follow `docs/LOCAL_PHONE_ACCEPTANCE.md` for optional trusted-LAN port 4392.
+- Final CodeRabbit UI review completed; its hidden-overlay precedence finding
+  is fixed. All actionable findings are addressed, with scope-conflicting and
+  false-positive findings documented. Compiled result overlays were checked at
+  five desktop/phone sizes; shortest landscape scrolls to working controls.
+- Next owner step: play the local build and assess the art, fun and difficulty.
+  Physical-phone performance/touch acceptance remains pending. GitHub push,
+  publication, database changes and deployment require separate authorization.
 
 ## Chapters 1–3 local milestone — implemented and reviewed — 2026-09-10
 

@@ -72,3 +72,12 @@ counter at gentler traffic. No persistent units, bandwidth or damage across leve
   desktop/portrait/landscape breakpoint matrix with no hidden critical controls.
 - No GitHub push or deployment. Preview uses 4391; reserve 4392/4393 for this
   game's phone/built previews. Never take ports 4175/4176/4177/4185 from other games.
+
+## Local delivery checkpoint
+
+Completed 2026-09-11 through local integration `f452bd3`, after separate
+foundation/chapter checkpoints and full Blender rebuild `27c9a03`. See
+`EXPANSION_R4_LOCAL_ACCEPTANCE.md` for measured results and
+`reviews/EXPANSION_R4_LOCAL_REVIEW.md` for all review dispositions. Owner
+gameplay-scale art/fun and physical-device acceptance remain explicit next
+steps, not assumed consequences of the engineering checks.
