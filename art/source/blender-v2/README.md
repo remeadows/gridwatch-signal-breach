@@ -24,9 +24,13 @@ Run from the project root using a separate Blender background process:
 `tactical-rig-v2.py` contains reusable material, geometry, lighting, framing,
 rendering, and export helpers. `build-tactical-slice-v2.py` contains separate
 models for each family. `--assets relay` or `--assets turret` permits focused
-candidate iteration; `provenance.json` merges each invocation's new asset records
-with the previously generated records. Render at most four related families per
-invocation during review. Omit `--assets` only for an intentional full rebuild.
+candidate iteration only while generator, rig, Blender version and render
+settings match the previous manifest. A partial rebuild with different lineage
+is rejected before rendering or writing artifacts; retained records must never
+be stamped with a newer generator hash. `provenance.json` merges only compatible
+invocations. Render at most four related families per invocation during review.
+After changing a generator or render setting, omit `--assets` for an intentional
+full rebuild, preserving the previous artifacts until verification succeeds.
 
 The complete 21-family roster is:
 
@@ -40,7 +44,7 @@ The complete 21-family roster is:
 All runtime candidates together must fit the 1.5 MiB roster budget. Each source
 scene is independently editable; common materials and framing live in the rig.
 
-The completed 21-family render on 2026-09-10 totals 1,058,144 runtime bytes
+The completed 21-family render on 2026-09-10 totals 1,058,094 runtime bytes
 (1.009 MiB). The independent Blender verifier passed all model/master/runtime
 hashes, 1024/256 dimensions, transparent object corners, at least 29 pixels of
 object margin, and fully opaque floor borders. These checks establish asset

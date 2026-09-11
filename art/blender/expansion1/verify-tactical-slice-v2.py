@@ -8,7 +8,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 from pathlib import Path
+import sys
 
 import bpy
 import numpy as np
@@ -21,7 +23,26 @@ def sha(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def has_clear_margin(bounds, size=256, fraction=.11):
+    # A visible pixel at x=28 leaves only 28/256=10.9375% empty columns.
+    # ceil(256*.11)=29, so inclusive visible bounds must be within 29..226.
+    clear_pixels = math.ceil(size * fraction)
+    return min(bounds[:2]) >= clear_pixels and max(bounds[2:]) <= size - 1 - clear_pixels
+
+
+def test_clear_margin():
+    assert has_clear_margin([29, 29, 226, 226]), "Exact 29-pixel margin should pass."
+    assert has_clear_margin([50, 60, 200, 210]), "Larger margins should pass."
+    for bounds in ([28, 29, 226, 226], [29, 28, 226, 226],
+                   [29, 29, 227, 226], [29, 29, 226, 227]):
+        assert not has_clear_margin(bounds), f"Sub-11% margin accepted: {bounds}."
+    print("CLEAR_MARGIN_BOUNDARY_TESTS_PASS", flush=True)
+
+
 def main():
+    test_clear_margin()
+    if "--self-test" in sys.argv:
+        return
     manifest = json.loads((ROOT / "art/source/blender-v2/provenance.json").read_text())
     assert sha(ROOT / manifest["sourceScript"]) == manifest["sourceScriptSha256"], "Builder hash changed. Rebuild the candidate slice."
     assert sha(ROOT / manifest["rigScript"]) == manifest["rigScriptSha256"], "Rig hash changed. Rebuild the candidate slice."
@@ -45,7 +66,7 @@ def main():
             assert float(alpha.min()) == 1.0, "Square floor must fully cover each tile without seams."
             assert bounds == [0, 0, 255, 255], "Floor alignment is not edge-to-edge."
         else:
-            assert min(bounds[:2]) >= 28 and max(bounds[2:]) <= 227, f"{record['id']} has less than 11% clear margin."
+            assert has_clear_margin(bounds), f"{record['id']} has less than 11% clear margin."
             assert all(float(alpha[y, x]) == 0 for x, y in [(0, 0), (255, 0), (0, 255), (255, 255)]), "Object corners are not transparent."
         bpy.data.images.remove(image)
         master = bpy.data.images.load(str(ROOT / record["master"]))

@@ -2,7 +2,7 @@
   "version": "blender-v2-slice",
   "blenderVersion": "5.1.0",
   "sourceScript": "art/blender/expansion1/build-tactical-slice-v2.py",
-  "sourceScriptSha256": "9ede7766080ca385e8d948603f232fcd70c3ac166f6de187c44b96071bc67d3f",
+  "sourceScriptSha256": "24e9e0f1373f99c374aa52e1ee09457bf7c58033732e3688093ecf0c9af31814",
   "rigScript": "art/blender/expansion1/tactical-rig-v2.py",
   "rigScriptSha256": "a1d3d8db8453de4c06781145be898a732862eec71f96cff978b0bb6b5fc5cd4c",
   "renderEngine": "CYCLES",
@@ -27,11 +27,11 @@
         256
       ],
       "model": "art/source/blender-v2/gw-blender-v2-floor-chapter1-source.blend",
-      "modelSha256": "7e189c2f9a37c822c7688fe913111875004e8089e4f38cbe8aa579adce930aac",
+      "modelSha256": "10eee4d129066ecf4c526f44082c8e6fd9d2b9e336fee83bc026f47c364b62a7",
       "master": "art/source/blender-v2/gw-blender-v2-floor-chapter1-master.png",
-      "masterSha256": "a9512032b3392f6704d8ee28c9f971f2eb34121e701d9a43bfcf055e3ed2544c",
+      "masterSha256": "478779693ba0985908d611f9a925fecfe29176ef2131654f0abdce08998d4d5b",
       "runtime": "src/assets/board/blender-v2/gw-blender-v2-floor-chapter1-board.png",
-      "runtimeSha256": "a6a95f9f97fc9d7dd6c07040946301c5ccfacb07b8bbfca13cc70dac16b86884",
+      "runtimeSha256": "3deb25611bd64b0a76489ca3d3a9479bbf3e0055d4161ed89a6fea6cfa249aa2",
       "runtimeBytes": 53629
     },
     {
@@ -49,11 +49,11 @@
         256
       ],
       "model": "art/source/blender-v2/gw-blender-v2-floor-chapter2-source.blend",
-      "modelSha256": "5ed74703e33251c290e7e8f24203f23ed7f403b07ecf97b4309cb941c5afe9df",
+      "modelSha256": "f87fcf78a9352eb3e549dd9184464d663b8afcd46694ff39fd5d189c5355d888",
       "master": "art/source/blender-v2/gw-blender-v2-floor-chapter2-master.png",
-      "masterSha256": "68fac8f40e289765d7826f61bb6c46c3a147d4a3e299b51c8d22396fe9e2b5ed",
+      "masterSha256": "d5ced097f5f0094c597ca9c499396277c106c4730c1c561aa2b2f32686c21af4",
       "runtime": "src/assets/board/blender-v2/gw-blender-v2-floor-chapter2-board.png",
-      "runtimeSha256": "73dddccea54b99091a96dc2d3ce9bfca5869deed06df45739970df19fd1a956c",
+      "runtimeSha256": "67eddd4989ef40e176c32803e12dd68e4c10b2d4e43999c3f8e04d69d9f50a71",
       "runtimeBytes": 56119
     },
     {
@@ -71,11 +71,11 @@
         256
       ],
       "model": "art/source/blender-v2/gw-blender-v2-floor-chapter3-source.blend",
-      "modelSha256": "9aafeb0076b3ed9ba7184cd4e48cb979a3e5bb0e3c1fdfd2b7369a6aafd30002",
+      "modelSha256": "a2db25901b1432bcf03ea319bce02f69ce2d20c0f52b4abaa395f63ffe7b7190",
       "master": "art/source/blender-v2/gw-blender-v2-floor-chapter3-master.png",
-      "masterSha256": "85ff0b7e21187cd544cce9ac87c329c1bc18d3111aee21f6db08d3df4eb8896c",
+      "masterSha256": "6b61e067828c302440acf18c518f54026a55040c0d8c92ee9a0bdad78e1f4562",
       "runtime": "src/assets/board/blender-v2/gw-blender-v2-floor-chapter3-board.png",
-      "runtimeSha256": "262df394e2c4cf17fb99ccc5e69005c046a4d36970059d695adf73279dc82eef",
+      "runtimeSha256": "4ddbfbd60059b77495d4984af91822b9d6448679f0eb58ada6c7eaca1161e5d4",
       "runtimeBytes": 55725
     },
     {
@@ -93,11 +93,11 @@
         256
       ],
       "model": "art/source/blender-v2/gw-blender-v2-relay-source.blend",
-      "modelSha256": "6180d7ad756645703ccc7eb99de847bc35f1c262bb894215841466d81ed997b2",
+      "modelSha256": "f1553bfa39dc8917e3f3da461dbc137937e0b5d730b33283c423b3f3e4200ad7",
       "master": "art/source/blender-v2/gw-blender-v2-relay-master.png",
-      "masterSha256": "bfe3d896fda096f6dcc5ce6ca5be31e27c97452c26a5940fc8f9bf07b82b22e2",
+      "masterSha256": "9c86477008266c4c2f84ffa42568a58c6a670e482355c4b68e1c74e18283723b",
       "runtime": "src/assets/board/blender-v2/gw-blender-v2-relay-board.png",
-      "runtimeSha256": "5f20b5f942c3ef739aea729ed94bde178c55ce597455221c1ab7ba0eab7a78af",
+      "runtimeSha256": "21287a64cc6dbd9830927130dd5955c253997ed3ef3cc4cc83918833a46c0359",
       "runtimeBytes": 62187
     },
     {
@@ -115,11 +115,11 @@
         256
       ],
       "model": "art/source/blender-v2/gw-blender-v2-turret-source.blend",
-      "modelSha256": "8b3736c00195e55e303daa3f22063006b128d1534b55b15c46f7b044e9fb7ea6",
+      "modelSha256": "3898429b2d44c9032e7e1fecde1bee2edc4f2eec48b29515697f7018f8cc4388",
       "master": "art/source/blender-v2/gw-blender-v2-turret-master.png",
-      "masterSha256": "8b3f2833ea19807bcdfb3885a7270fec976763ab1fd9011515e9c7877795f153",
+      "masterSha256": "73ad58f27db12fa52de9be3c97aa45c71c278a3b49dccdc2b46680b8ce54a5e9",
       "runtime": "src/assets/board/blender-v2/gw-blender-v2-turret-board.png",
-      "runtimeSha256": "fc59d7990466d1cd87923c6cccd9b26c567492064ab944753fd5b4790707d394",
+      "runtimeSha256": "50834a4c5b30b177f2fbeab05e689b0af2e9af56e7fb7fab1b097c3abc25a87e",
       "runtimeBytes": 62502
     },
     {
@@ -137,11 +137,11 @@
         256
       ],
       "model": "art/source/blender-v2/gw-blender-v2-source-source.blend",
-      "modelSha256": "47c8699323998edbe2dadcec37193af2d0c7d902fb2175cedb782b818389eb16",
+      "modelSha256": "fff8cea32334f9b146373a63d4c6ab82896a5e0f032d233c8546e8466c986eaa",
       "master": "art/source/blender-v2/gw-blender-v2-source-master.png",
-      "masterSha256": "78238fc469a236ac4d7e7ad0537e077980777822fbb72db2bc3ce89d1412b938",
+      "masterSha256": "b166f573514654f0237a75ecd39b19a3e9cd1f42331872c6f6bc79f5d8d4d9ad",
       "runtime": "src/assets/board/blender-v2/gw-blender-v2-source-board.png",
-      "runtimeSha256": "9c6c1dbd2af6c23dfd1681fb591629415a8f619fdd37d8c51ba4eefe46e36e77",
+      "runtimeSha256": "7cdffb4200cb48173fdccb023ea8487725bfd6562c5f230d0e6f1e2e66a0a0e4",
       "runtimeBytes": 60026
     },
     {
@@ -159,12 +159,12 @@
         256
       ],
       "model": "art/source/blender-v2/gw-blender-v2-core-source.blend",
-      "modelSha256": "22efabaceeca80d120a49d3ce0d66bb41b16c20df6351aa81796495c0afb184b",
+      "modelSha256": "acb8c4e2ea6d160e54f5aa4094dce39817bde0617418ce98c2219197d0ddaeea",
       "master": "art/source/blender-v2/gw-blender-v2-core-master.png",
-      "masterSha256": "a3321b8f2c7d31548ed40017365b01a410e80d84586bec10cde2fc0b5b3d5fdd",
+      "masterSha256": "8ac1a25b27bc3d7fc5928ed03e5774f26463b1f24da496a501d048e69153ce3a",
       "runtime": "src/assets/board/blender-v2/gw-blender-v2-core-board.png",
-      "runtimeSha256": "32c18c0bf1fb29dd4f1e43d6b413132acff7accfddcba6288fdd54c4bab2ad92",
-      "runtimeBytes": 63604
+      "runtimeSha256": "efcab315120f606c0fb8a82a4345073174787d83823434641d951e0e05e1158c",
+      "runtimeBytes": 63545
     },
     {
       "id": "firewall",
@@ -181,11 +181,11 @@
         256
       ],
       "model": "art/source/blender-v2/gw-blender-v2-firewall-source.blend",
-      "modelSha256": "6ba43b5eb9408b7f3d3072c25dd0696f02a69dda16ac63de664ef839400fa507",
+      "modelSha256": "ec80fa9ae03a2f8cc680b02571d1b8a7a4438171927c31ef80e7d36176874ed2",
       "master": "art/source/blender-v2/gw-blender-v2-firewall-master.png",
-      "masterSha256": "7e000ca25cf187cc748fc5c2088855fb807fb70e2b9fbc693c6da71a6468fe6b",
+      "masterSha256": "37bd7b0e64a5e55fdfbefb5dd5d2d038cc64947f30de50312f1ea7c7e783cedd",
       "runtime": "src/assets/board/blender-v2/gw-blender-v2-firewall-board.png",
-      "runtimeSha256": "f22cb6bbc230642d78ba3cf7cdea966e484b68b1c729f1fc9e88de587162414b",
+      "runtimeSha256": "a8b09dba9ab00ef96bb53dddaf273f3f18300f09e9a3dfb3f118e524c7a8c365",
       "runtimeBytes": 37189
     },
     {
@@ -203,11 +203,11 @@
         256
       ],
       "model": "art/source/blender-v2/gw-blender-v2-scrubber-source.blend",
-      "modelSha256": "f21864d8e5f70eadb0315d7f4c0f3169592bdaf83277896d81b3dd6f5852cc77",
+      "modelSha256": "233f4ebbaf2b9085486cad1c041cdc991ac3ac5bf503bf56b834227bd7572281",
       "master": "art/source/blender-v2/gw-blender-v2-scrubber-master.png",
-      "masterSha256": "554f33f7b875116e00d6093a8a521805bc43a02c455724eef5d562e969aa3d5a",
+      "masterSha256": "aa6e7b785371a9c4aef67a155709f247e346e979ee63861d8e3ee1a8ef7cb3a6",
       "runtime": "src/assets/board/blender-v2/gw-blender-v2-scrubber-board.png",
-      "runtimeSha256": "c3976134a73fabd867e799172aa69e5fc4db0dc9b2c6254d9440386b2514a677",
+      "runtimeSha256": "1952e608256e2eeee9e77d1503f83250e0a6f0404fcf9b53c15d53d5b144bee6",
       "runtimeBytes": 59820
     },
     {
@@ -225,11 +225,11 @@
         256
       ],
       "model": "art/source/blender-v2/gw-blender-v2-overclock-source.blend",
-      "modelSha256": "6a3ff49a04fe0e7540e4203fdf6614a51e976981d5bce42283967d4dfd981296",
+      "modelSha256": "845132e3d1e8564a82d57225c5c8da66168286fff8e6eae6eee6c75c0af36809",
       "master": "art/source/blender-v2/gw-blender-v2-overclock-master.png",
-      "masterSha256": "acbef0fe2ba6e25303023e0c111b9589401890fe6cf4443172c8625f4754524d",
+      "masterSha256": "1f64ae9ca413b4051a24307f03dfa4caf82e62d7c9cb3f0d3a6dab5b97ce7bdf",
       "runtime": "src/assets/board/blender-v2/gw-blender-v2-overclock-board.png",
-      "runtimeSha256": "5d7921bb57ccd5291653f667b45dab5d985916443ca13e8ad5d6ef7cacd5fe64",
+      "runtimeSha256": "64c3792eda08c6bd9783ca921fe7fecbaef51cdfd36d66ed6f7442af4d46e64a",
       "runtimeBytes": 59724
     },
     {
@@ -247,11 +247,11 @@
         256
       ],
       "model": "art/source/blender-v2/gw-blender-v2-latency-trap-source.blend",
-      "modelSha256": "ab4337cc949069778321a8bf0a74097d5ebbb0b7e399b74a4a0b0d3ad01131cf",
+      "modelSha256": "6cd1c18d57c18c7cc0daa39b2b2ff64f2a2055936d250734f6d3d251c266f94f",
       "master": "art/source/blender-v2/gw-blender-v2-latency-trap-master.png",
-      "masterSha256": "bc0ef48cfb60de55f7e899a537d2e6384457e820c2c53cff21f83c29af878cae",
+      "masterSha256": "23b53b00be0ba15d01ab223ff3b3ea5367c6e699b986efd3fef65fa514bc6d89",
       "runtime": "src/assets/board/blender-v2/gw-blender-v2-latency-trap-board.png",
-      "runtimeSha256": "0afe83d48a5142327b775267f519f71cbf80e4557f13a2a7ab8231cbbed0607a",
+      "runtimeSha256": "12632255079e340e8f80e801ec178441b2eb5141e6896a70459929be9cae9e7b",
       "runtimeBytes": 63768
     },
     {
@@ -269,11 +269,11 @@
         256
       ],
       "model": "art/source/blender-v2/gw-blender-v2-probe-source.blend",
-      "modelSha256": "c2e8fc8a99635a41c79e2420ec047953076207198efaf83d95d416c28b4f17d8",
+      "modelSha256": "2136d531a30220afd1c44246d44b8f256e65a76cb43b629432b61d6b5614254f",
       "master": "art/source/blender-v2/gw-blender-v2-probe-master.png",
-      "masterSha256": "503b907f7b29e409f75ce19485ec189b25646141f744faf1c5287eaae8ca2ae7",
+      "masterSha256": "3497ea486ff09485e43f14089542f4b2ae71c84af85d0c5678889f3d0b713711",
       "runtime": "src/assets/board/blender-v2/gw-blender-v2-probe-board.png",
-      "runtimeSha256": "86c3b0e0fce948c814233e22d9d0dc2bb2703bd9d21858e95b1bd95b69caae8d",
+      "runtimeSha256": "f5546727d0450ca9b1b402180a47f23b4a148a7abbe536cc02602683753027dc",
       "runtimeBytes": 29612
     },
     {
@@ -291,12 +291,12 @@
         256
       ],
       "model": "art/source/blender-v2/gw-blender-v2-crawler-source.blend",
-      "modelSha256": "0e42ae2f3435a3f2f57ccd2d1ada3dc4cbc0aa362445e1302178733131249fae",
+      "modelSha256": "961bd7513ade34198075faebd8702b5da01585790f0f03eed36e88441cf61392",
       "master": "art/source/blender-v2/gw-blender-v2-crawler-master.png",
-      "masterSha256": "d5a2b6b9d6a6819975817c8621aa72af75a20630ef4201cfab870fff6d94dfde",
+      "masterSha256": "b6a43a0d5753ddaf208af9c808034f1cab3dbcb2d8db5a205cae69e66eac268c",
       "runtime": "src/assets/board/blender-v2/gw-blender-v2-crawler-board.png",
-      "runtimeSha256": "2bee93c1bc7579d07aa07d560eaa9880625b3384a3a531f688532e30bf1bf35c",
-      "runtimeBytes": 46274
+      "runtimeSha256": "41871fe74f12112a76c887a79535fdea5e69c1d52869e55241f0ccedc8e82346",
+      "runtimeBytes": 46280
     },
     {
       "id": "spoof",
@@ -313,12 +313,12 @@
         256
       ],
       "model": "art/source/blender-v2/gw-blender-v2-spoof-source.blend",
-      "modelSha256": "93be9d9e46c61cd7cc37c32ebd263f165a7c547147f129154c860f227c3d59c0",
+      "modelSha256": "26c3e21a30f8dbcac66a1907cb34e66913dafe96163b12ade223ec0a5cabc018",
       "master": "art/source/blender-v2/gw-blender-v2-spoof-master.png",
-      "masterSha256": "40a328345b6f0aeab7c18500022d9977cc8402d861ad06f9771fb7e5a5d96df5",
+      "masterSha256": "9bed81a19c844bfc8f52de91f5b553a9cc48bc687c7446e3e4cbccda679f8096",
       "runtime": "src/assets/board/blender-v2/gw-blender-v2-spoof-board.png",
-      "runtimeSha256": "344fb25dda472ffb54e6bb3f03afc0938f1bf35708faec4589b2d35a6b0c1b54",
-      "runtimeBytes": 37597
+      "runtimeSha256": "bc1d4f69e14149f391cd15b3844fed047becb7b40cd43c7d0911388a708f5c1f",
+      "runtimeBytes": 37616
     },
     {
       "id": "hunter",
@@ -335,11 +335,11 @@
         256
       ],
       "model": "art/source/blender-v2/gw-blender-v2-hunter-source.blend",
-      "modelSha256": "e2216472afae7cc92f6f07dac649651e33528b2aa5274c092dd60a6cf3e6c8c0",
+      "modelSha256": "2e249b90eeba928c766e5b21047b07f966c3570c9acafcf1acca860ef5e23087",
       "master": "art/source/blender-v2/gw-blender-v2-hunter-master.png",
-      "masterSha256": "99b212e52f4ab58397d09decf284ea91d197c404d1d050c10bba81c82170a988",
+      "masterSha256": "15ab891d1ccadb08e0d256f6da5a646da0aa59a0e8527f106959ffbc48442f7f",
       "runtime": "src/assets/board/blender-v2/gw-blender-v2-hunter-board.png",
-      "runtimeSha256": "26d63bcc3cf91d2f17f2ed609da2a1785a467c362f7b73657924fe85a2359829",
+      "runtimeSha256": "626aa06b97af265c525ef8e110b9d40bf5a8f9b4ddd38716f7acad12da0197ad",
       "runtimeBytes": 42186
     },
     {
@@ -357,12 +357,12 @@
         256
       ],
       "model": "art/source/blender-v2/gw-blender-v2-splitter-source.blend",
-      "modelSha256": "77a91c65c8db0996e1242008439f51159cefbf65ff9fa231e9293435dbfb1a71",
+      "modelSha256": "ac907a7c24ec71edca672db9ab06bd2482eee7f804b1dea40b93370c7bd2f5d6",
       "master": "art/source/blender-v2/gw-blender-v2-splitter-master.png",
-      "masterSha256": "63f5e122b859ac757d46531dbd1f34b032d9365115c830a9bdd9b6a211d0dd0b",
+      "masterSha256": "ec5b98dd016671ec1620c3bc6556d6f0da1205f0150b8a250431c7bed0a939c7",
       "runtime": "src/assets/board/blender-v2/gw-blender-v2-splitter-board.png",
-      "runtimeSha256": "b447b871aa57ae8f044e1d45fd113750859b0f401e3c58a1aba5164ad4095d26",
-      "runtimeBytes": 38266
+      "runtimeSha256": "62e2208976ae229ec050a04ab29dbbc447f6b13bba28a5567156b578015ad40c",
+      "runtimeBytes": 38256
     },
     {
       "id": "goliath",
@@ -379,11 +379,11 @@
         256
       ],
       "model": "art/source/blender-v2/gw-blender-v2-goliath-source.blend",
-      "modelSha256": "5f381a7a7c42d8b64c2aa00cc6a0931c2817347bb2a861fbf766ae0fa23de7e6",
+      "modelSha256": "d7580304bdacd4f6f2619eae43894e057c29b12e2ad48c3e90f3bcdb503fd771",
       "master": "art/source/blender-v2/gw-blender-v2-goliath-master.png",
-      "masterSha256": "588ceb9933572a8becdecd4142809a77a5c003a15be6e0f34309b717daf0e81a",
+      "masterSha256": "734d8f58fc881142a137578f771779c7c1b5a318516d3158f3e9728b6d8f81e5",
       "runtime": "src/assets/board/blender-v2/gw-blender-v2-goliath-board.png",
-      "runtimeSha256": "516cd0463524dbd757d39da498673cfaad5e79f6f1d5360c0cf4427beed3a351",
+      "runtimeSha256": "6cb91b2fddf6f2cdd760ebb2014c44ef9e02551631957f2a1fde4455660c1637",
       "runtimeBytes": 55198
     },
     {
@@ -401,11 +401,11 @@
         256
       ],
       "model": "art/source/blender-v2/gw-blender-v2-rusher-source.blend",
-      "modelSha256": "07d8fe4c9e2ae6c41b2fc67bf8751974ec7d873dc96b9b2bbcdcbeffd701d728",
+      "modelSha256": "9cecb2c7a0bf1100e3654ff7f1f5611c0f8b33d106a394afeaa431a9a4dbab46",
       "master": "art/source/blender-v2/gw-blender-v2-rusher-master.png",
-      "masterSha256": "f69db7f903a74a29d200ccf2e96cbcbccb0f991b22d4fe6e33f77be649b84670",
+      "masterSha256": "70d4c89f44fe13fff940f837c23fe3b73a3a512b6a3b2d0bf0093862262e714b",
       "runtime": "src/assets/board/blender-v2/gw-blender-v2-rusher-board.png",
-      "runtimeSha256": "361738532a3a194c628ed84286009a80e680f1e9f1b54a61a74d061a1f72eb47",
+      "runtimeSha256": "7e831a139b4c378ce1d0ab36ce2ec0ad876064a5d247d4f622e22c9ca6c80744",
       "runtimeBytes": 32372
     },
     {
@@ -423,12 +423,12 @@
         256
       ],
       "model": "art/source/blender-v2/gw-blender-v2-sapper-source.blend",
-      "modelSha256": "e23c7e25c726d45692a44407471158678a84bbd1dc412d297d733777fe3d39c4",
+      "modelSha256": "ea8a5d10056ae53ae9873232cf5325e415c21833f0dddd0d5392d1230ac0dac8",
       "master": "art/source/blender-v2/gw-blender-v2-sapper-master.png",
-      "masterSha256": "ddf281c730bd5161e4c85f7f3cf6e24f4c2266936b2f380b06099dacfcdfcd66",
+      "masterSha256": "9c58a594a5eefed1ad7c12fc0793174340260023a06ffd2dcfb16dc6fff69fa2",
       "runtime": "src/assets/board/blender-v2/gw-blender-v2-sapper-board.png",
-      "runtimeSha256": "0c5b8c68e90b4daca625c5f64ea39a6642b5c34da736d9402c1d6327ab3b585c",
-      "runtimeBytes": 45427
+      "runtimeSha256": "802d521db71a39d82f7565efc046db03c51240f82a54e601b6d58b3b867cc892",
+      "runtimeBytes": 45422
     },
     {
       "id": "arc-turret",
@@ -445,12 +445,12 @@
         256
       ],
       "model": "art/source/blender-v2/gw-blender-v2-arc-turret-source.blend",
-      "modelSha256": "0fc95962afd63e667eacb6375e37aa8549a076f1e250520bce2aed2acc1795ec",
+      "modelSha256": "2a1aa4e9175772fa6604c281da599ecbf9731e845833418d89c146871ece6ab5",
       "master": "art/source/blender-v2/gw-blender-v2-arc-turret-master.png",
-      "masterSha256": "b1b60cc836524b47960f4da3c4ad5d46884aa8b240a22a90f4c6a0ee763f313a",
+      "masterSha256": "1f88928f5ce8a4b90969a928629f9b74141d6e438f3dbfdb866c5db5cf73980f",
       "runtime": "src/assets/board/blender-v2/gw-blender-v2-arc-turret-board.png",
-      "runtimeSha256": "d263e7f971ae3bc53877243141b1d2d8b4603239d08405487bbe15a9cd35b835",
-      "runtimeBytes": 59765
+      "runtimeSha256": "4ae0007e5750615b37fdf9a140a2dc87c816a50d90d678f794de6ba4e28d3dbb",
+      "runtimeBytes": 59770
     },
     {
       "id": "shield-drone",
@@ -467,12 +467,12 @@
         256
       ],
       "model": "art/source/blender-v2/gw-blender-v2-shield-drone-source.blend",
-      "modelSha256": "a432ceb77299277d1dbb4d067946abdd0c27ecc1ea81b6aa67010302b07e687f",
+      "modelSha256": "c2f7d3506d1be5efb8ac6378c0e9afadebf1cce35c52d817af11050e3483d3ba",
       "master": "art/source/blender-v2/gw-blender-v2-shield-drone-master.png",
-      "masterSha256": "4045f6b958f73d1834bacd9d91234c55febe7dc2b538a2939a7dac6e29231898",
+      "masterSha256": "dd72da50b6c8ff5a00218d6b32ae0b80e28108d663cd0bdd045c1b144a93521d",
       "runtime": "src/assets/board/blender-v2/gw-blender-v2-shield-drone-board.png",
-      "runtimeSha256": "291b7f9332414d5207689f4fc271d4b485847c85442a160a8f3a97ff9f25343e",
-      "runtimeBytes": 37154
+      "runtimeSha256": "a7b28bfd54460aed33777dc7960205846dc29b7ea94d2eccba15490c5afc712a",
+      "runtimeBytes": 37148
     }
   ]
 }

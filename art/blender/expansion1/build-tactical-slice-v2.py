@@ -447,6 +447,65 @@ def sha(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def generator_metadata(samples):
+    return {
+        "version": "blender-v2-slice", "blenderVersion": bpy.app.version_string,
+        "sourceScript": str(Path(__file__).resolve().relative_to(ROOT)),
+        "sourceScriptSha256": sha(Path(__file__)),
+        "rigScript": str((HERE / "tactical-rig-v2.py").relative_to(ROOT)),
+        "rigScriptSha256": sha(HERE / "tactical-rig-v2.py"),
+        "renderEngine": "CYCLES", "renderDevice": "CPU", "renderThreads": 4,
+        "renderSeed": 17, "masterSamples": samples,
+        "runtimeSamples": max(64, samples),
+    }
+
+
+def retained_records(previous, selected_assets, metadata):
+    """Fail before rendering if retained assets would gain false provenance."""
+    if len(set(selected_assets)) != len(selected_assets):
+        raise ValueError("Duplicate --assets entries are not allowed.")
+    old_records = previous.get("assets", [])
+    old_ids = [record["id"] for record in old_records]
+    if len(set(old_ids)) != len(old_ids) or any(asset_id not in BUILDERS for asset_id in old_ids):
+        raise ValueError("Previous provenance contains duplicate or unknown asset IDs.")
+    retained = [record for record in old_records if record["id"] not in selected_assets]
+    if retained:
+        changed = [key for key, value in metadata.items() if previous.get(key) != value]
+        if changed:
+            raise ValueError(
+                "Partial rebuild cannot retain assets from different generator/render inputs: "
+                + ", ".join(changed)
+                + ". Perform an intentional full rebuild (omit --assets)."
+            )
+    return retained
+
+
+def test_partial_rebuild_guard():
+    metadata = generator_metadata(40)
+    previous = {**metadata, "assets": [{"id": "relay"}, {"id": "turret"}]}
+    snapshot = json.dumps(previous, sort_keys=True)
+    assert retained_records(previous, ["relay"], metadata) == [{"id": "turret"}]
+    assert retained_records({}, ["relay"], metadata) == []
+    for key in metadata:
+        changed = {**metadata, key: "different-input"}
+        try:
+            retained_records(previous, ["relay"], changed)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError(f"Partial rebuild accepted changed {key}.")
+        assert retained_records(previous, ["relay", "turret"], changed) == []
+    for invalid in (["relay", "relay"],):
+        try:
+            retained_records(previous, invalid, metadata)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("Duplicate render selection was accepted.")
+    assert json.dumps(previous, sort_keys=True) == snapshot, "Guard mutated old provenance."
+    print("PARTIAL_REBUILD_GUARD_TESTS_PASS", flush=True)
+
+
 def make_context_sheet(records):
     """A render-derived8x8 board context, not a production sprite atlas."""
     import numpy as np
@@ -491,12 +550,20 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--assets", nargs="+", choices=BUILDERS, default=list(BUILDERS))
     parser.add_argument("--samples", type=int, default=40)
+    parser.add_argument("--self-test", action="store_true", help="Run provenance guard checks without rendering or writing assets.")
     args = parser.parse_args(sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else [])
+    if args.self_test:
+        test_partial_rebuild_guard()
+        return
     if args.samples < 16 or args.samples > 256:
         parser.error("--samples must be between 16 and 256")
     output = ROOT / "art/source/blender-v2/provenance.json"
-    previous = json.loads(output.read_text()).get("assets", []) if output.exists() else []
-    records = [record for record in previous if record["id"] not in args.assets]
+    previous = json.loads(output.read_text()) if output.exists() else {}
+    metadata = generator_metadata(args.samples)
+    try:
+        records = retained_records(previous, args.assets, metadata)
+    except ValueError as error:
+        parser.error(str(error))
     for asset_id in args.assets:
         rig.reset_scene()
         BUILDERS[asset_id]()
@@ -518,11 +585,7 @@ def main():
         print(f"TACTICAL_ASSET_COMPLETE {asset_id} {runtime.stat().st_size} bytes", flush=True)
     make_context_sheet(records)
     records.sort(key=lambda item: list(BUILDERS).index(item["id"]))
-    data = {"version": "blender-v2-slice", "blenderVersion": bpy.app.version_string,
-            "sourceScript": str(Path(__file__).resolve().relative_to(ROOT)), "sourceScriptSha256": sha(Path(__file__)),
-            "rigScript": str((HERE / "tactical-rig-v2.py").relative_to(ROOT)), "rigScriptSha256": sha(HERE / "tactical-rig-v2.py"),
-            "renderEngine": "CYCLES", "renderDevice": "CPU", "renderThreads": 4,
-            "renderSeed": 17, "masterSamples": args.samples, "runtimeSamples": max(64, args.samples), "assets": records}
+    data = {**metadata, "assets": records}
     output.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
     print(f"TACTICAL_SLICE_COMPLETE {output}", flush=True)
 

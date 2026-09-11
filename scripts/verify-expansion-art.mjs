@@ -47,7 +47,7 @@ for (const record of provenance.assets) {
         if (floor) assert(value === 255, `${record.id} floor has a transparent seam.`);
         else if (value > 2) {
           visible += 1;
-          assert(x >= 28 && y >= 28 && x <= 227 && y <= 227, `${record.id} violates its 11% clear margin.`);
+          assert(x >= 29 && y >= 29 && x <= 226 && y <= 226, `${record.id} violates its 11% clear margin.`);
         }
       }
       if (!floor) assert(visible > 0, `${record.id} contains no visible sprite.`);
