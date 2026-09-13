@@ -1,7 +1,7 @@
 {
   "version": "expansion-blender-v2-candidate",
   "status": "candidate",
-  "ownerApproved": false,
+  "ownerApproved": true,
   "sourceProvenance": "art/source/blender-v2/provenance.json",
   "maxActiveRosterBytes": 1572864,
   "maxAssetBytes": 92160,

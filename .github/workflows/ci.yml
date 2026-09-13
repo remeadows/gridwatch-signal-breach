@@ -16,6 +16,18 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: isolated-ci-test-only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -38,6 +50,18 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Verify expansion save database isolation
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: 5432
+          PGUSER: postgres
+          PGDATABASE: postgres
+          PGPASSWORD: isolated-ci-test-only
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y postgresql-client
+          psql -v ON_ERROR_STOP=1 -f scripts/verify-expansion-save-database.sql
+
       - name: Verify deterministic replay fixtures
         run: |
           npm run typecheck:tools
@@ -52,6 +76,9 @@ jobs:
           npm run verify:expansion-revisions
           npm run verify:expansion-revision-lookup
           npm run verify:expansion-progress-r4
+          npm run verify:expansion-checkpoints
+          npm run verify:expansion-save-sync
+          npm run verify:expansion-save-api
           npm run verify:expansion-r4-drafts
           npm run verify:expansion-canvas
           npm run verify:expansion-r4-evidence

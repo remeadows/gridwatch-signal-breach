@@ -1,6 +1,13 @@
 # GridWatch Skill Guide
 
-Last reviewed: 2026-09-11
+Last reviewed: 2026-09-13
+
+Release override: the owner now requests public expansion with cloud saves and
+leaderboards, permits GitHub review/publication, and accepts current Blender art.
+Follow `docs/EXPANSION_PUBLIC_RELEASE_PLAN.md` for the new release scope; older
+local-only passages below describe the completed milestone. Cloud saves are now
+an authorized optional network capability, with offline play preserved. Physical
+phone performance remains an evidence gap, not inferred from art acceptance.
 
 Use this file to select the right Codex skill and verification path for work in
 GridWatch: Signal Breach. `AGENTS.md` remains the highest-priority project guide.

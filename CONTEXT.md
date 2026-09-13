@@ -66,3 +66,12 @@ Owner-approved expansion r4 is three chapters / 25 total levels, split 8/8/9,
 five waves per level. See `docs/EXPANSION_25_LOCAL_PLAN.md`. Preserve original V2,
 historical expansion revisions, old progress and shared leaderboard behavior.
 Local commits and CodeRabbit diff review only; no push or deployment.
+
+## Public-release override — 2026-09-13
+
+The owner now authorizes GitHub publication and requests cloud saves plus
+validated expansion leaderboards. The current Blender roster is accepted.
+Wave-boundary resume (not mid-wave) and synced unlocks/settings are approved.
+See `docs/EXPANSION_PUBLIC_RELEASE_PLAN.md`; this supersedes the local-only
+restriction above. Supabase cloud saves are now an optional sanctioned network
+feature; the game must remain offline-playable and other games isolated.

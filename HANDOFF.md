@@ -1,5 +1,51 @@
 # GridWatch Handoff
 
+## Public expansion release requested — 2026-09-13
+
+- Working on release readiness on `codex/expansion-25-local`. The owner now
+  requests public availability with full saves and leaderboards, authorizes
+  GitHub publication/review, and explicitly accepts the current Blender art.
+  This supersedes the earlier local-only delivery restriction. Record the art
+  approval in the manifest/provenance; it is not evidence of a physical-phone
+  performance test.
+- The owner permits resetting their Signal Breach saves if necessary. No reset
+  has been performed or is currently necessary. Do not delete shared scores,
+  accounts, other games' data, or historical replay evidence.
+- Backend work is required: expansion progress currently persists only browser
+  clears/unlocks; the Edge Function explicitly rejects all expansion submissions
+  as unpublished. Public activation remains disabled. This is not a flag-only
+  release. See `docs/EXPANSION_PUBLIC_RELEASE_PLAN.md`.
+- Owner approved wave-checkpoint saves: cross-device clears/unlocks/settings
+  and resume at the build phase after the last completed wave, not mid-wave.
+  Save/checkpoint foundation implemented locally in `checkpoint.ts`,
+  `expansionSave.ts`, `expansionSaveSync.ts`, and `expansionSaveApi.ts`.
+- 100 boundaries across 25 levels reconstruct exactly and continue to wins.
+  Sync tests cover conflicts, lost acknowledgments, concurrent local edits,
+  account disposal, remote rollback/reset, storage errors and offline mode.
+  Mocked API tests prove exact RPC/auth boundaries and fail-closed responses.
+- Read-only inspection confirms shared `game_saves` exists, restricted to
+  service-role access, and four games are registered. New additive Signal
+  Breach-only RPC migration is local and UNAPPLIED. Disposable PostgreSQL tests
+  pass for grants, account/game isolation, invalid data and optimistic revision
+  checks. Two simultaneous writes yielded one saved and one conflict.
+- This foundation is NOT connected to gameplay/navigation yet. Next: auth-aware
+  save UI, checkpoint capture/resume, conflict choices and cross-device browser
+  QA; then expansion score validation/client integration and server-first release.
+- CodeRabbit CLI 0.7.6 is signed out; owner was asked to run
+  `coderabbit auth login`. Required local review cannot complete until sign-in.
+  Original/retained replay and r4 progress checks remain green. No production
+  migration, save reset, leaderboard write, public activation or push occurred.
+- Final foundation checks: production build, tools typecheck, three new save
+  verification commands, art release gate, original replay checks, 116 retained
+  r3 wins/115 historical equivalents, r4 progress and unchanged original validator
+  all pass. Dependency audit reports zero vulnerabilities. Local Codex inspection
+  added an explicit remote-revision rollback conflict guard; its regression test
+  passes. No independent/GitHub reviewer approval is claimed. The disposable
+  PostgreSQL server was stopped after verification.
+- Codex and CodeRabbit review remain required; do not bypass protected-main
+  checks. No remote write, migration, deployment, reset or push has occurred in
+  this approval-recording step.
+
 ## Expansion r4 / 25-level local revision — complete locally — 2026-09-11
 
 - Working on `codex/expansion-25-local`, based on completed local `b77203f`.

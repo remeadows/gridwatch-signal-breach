@@ -41,7 +41,7 @@ export function replayExpansionRun(input: ExpansionReplayInput): ExpansionReplay
   return { state, score: calculateExpansionScore(state) };
 }
 
-function validateExpansionCommands(value: unknown, revision: ExpansionContentRevision): readonly ExpansionRecordedCommand[] {
+export function validateExpansionCommands(value: unknown, revision: ExpansionContentRevision): readonly ExpansionRecordedCommand[] {
   if (!Array.isArray(value)) throw new ExpansionReplayError("Expansion command log must be an array.");
   if (value.length > MAX_EXPANSION_REPLAY_COMMANDS) throw new ExpansionReplayError("Expansion command log exceeds the maximum command count.");
   return value.map((entry) => validateExpansionRecordedCommand(entry, revision));

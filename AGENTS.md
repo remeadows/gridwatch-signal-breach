@@ -19,6 +19,16 @@ payloads.
 
 ## Approved Expansion Scope
 
+**Release override (2026-09-13):** the owner now authorizes finishing public
+expansion with optional authenticated cloud saves and replay-validated per-level
+leaderboards, GitHub publication, and Codex/CodeRabbit review. Current Blender
+art is accepted. Saves sync unlocks/settings and an unfinished level at completed
+wave boundaries, not exact mid-wave state. Follow
+`docs/EXPANSION_PUBLIC_RELEASE_PLAN.md`. This supersedes the earlier local-only
+restriction and adds cloud saves to the sanctioned Supabase boundary. Preserve
+offline play, original scoring, shared-game isolation and server-first rollout;
+do not bypass review gates or reset/delete shared data.
+
 **Current owner override (2026-09-11):** the local end state is exactly three
 chapters / 25 levels split 8 / 8 / 9, five waves each. Follow
 `docs/EXPANSION_25_LOCAL_PLAN.md`; retain r1/r2/r3 identities and use r4 for the

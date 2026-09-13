@@ -15,7 +15,7 @@
     {
       "id": "floor-chapter1",
       "status": "candidate",
-      "ownerApproved": false,
+      "ownerApproved": true,
       "camera": "orthographic-90deg-square",
       "light": "upper-left-studio-key",
       "masterSize": [
@@ -37,7 +37,7 @@
     {
       "id": "floor-chapter2",
       "status": "candidate",
-      "ownerApproved": false,
+      "ownerApproved": true,
       "camera": "orthographic-90deg-square",
       "light": "upper-left-studio-key",
       "masterSize": [
@@ -59,7 +59,7 @@
     {
       "id": "floor-chapter3",
       "status": "candidate",
-      "ownerApproved": false,
+      "ownerApproved": true,
       "camera": "orthographic-90deg-square",
       "light": "upper-left-studio-key",
       "masterSize": [
@@ -81,7 +81,7 @@
     {
       "id": "relay",
       "status": "candidate",
-      "ownerApproved": false,
+      "ownerApproved": true,
       "camera": "orthographic-70deg",
       "light": "upper-left-studio-key",
       "masterSize": [
@@ -103,7 +103,7 @@
     {
       "id": "turret",
       "status": "candidate",
-      "ownerApproved": false,
+      "ownerApproved": true,
       "camera": "orthographic-70deg",
       "light": "upper-left-studio-key",
       "masterSize": [
@@ -125,7 +125,7 @@
     {
       "id": "source",
       "status": "candidate",
-      "ownerApproved": false,
+      "ownerApproved": true,
       "camera": "orthographic-70deg",
       "light": "upper-left-studio-key",
       "masterSize": [
@@ -147,7 +147,7 @@
     {
       "id": "core",
       "status": "candidate",
-      "ownerApproved": false,
+      "ownerApproved": true,
       "camera": "orthographic-70deg",
       "light": "upper-left-studio-key",
       "masterSize": [
@@ -169,7 +169,7 @@
     {
       "id": "firewall",
       "status": "candidate",
-      "ownerApproved": false,
+      "ownerApproved": true,
       "camera": "orthographic-70deg",
       "light": "upper-left-studio-key",
       "masterSize": [
@@ -191,7 +191,7 @@
     {
       "id": "scrubber",
       "status": "candidate",
-      "ownerApproved": false,
+      "ownerApproved": true,
       "camera": "orthographic-70deg",
       "light": "upper-left-studio-key",
       "masterSize": [
@@ -213,7 +213,7 @@
     {
       "id": "overclock",
       "status": "candidate",
-      "ownerApproved": false,
+      "ownerApproved": true,
       "camera": "orthographic-70deg",
       "light": "upper-left-studio-key",
       "masterSize": [
@@ -235,7 +235,7 @@
     {
       "id": "latency-trap",
       "status": "candidate",
-      "ownerApproved": false,
+      "ownerApproved": true,
       "camera": "orthographic-70deg",
       "light": "upper-left-studio-key",
       "masterSize": [
@@ -257,7 +257,7 @@
     {
       "id": "probe",
       "status": "candidate",
-      "ownerApproved": false,
+      "ownerApproved": true,
       "camera": "orthographic-70deg",
       "light": "upper-left-studio-key",
       "masterSize": [
@@ -279,7 +279,7 @@
     {
       "id": "crawler",
       "status": "candidate",
-      "ownerApproved": false,
+      "ownerApproved": true,
       "camera": "orthographic-70deg",
       "light": "upper-left-studio-key",
       "masterSize": [
@@ -301,7 +301,7 @@
     {
       "id": "spoof",
       "status": "candidate",
-      "ownerApproved": false,
+      "ownerApproved": true,
       "camera": "orthographic-70deg",
       "light": "upper-left-studio-key",
       "masterSize": [
@@ -323,7 +323,7 @@
     {
       "id": "hunter",
       "status": "candidate",
-      "ownerApproved": false,
+      "ownerApproved": true,
       "camera": "orthographic-70deg",
       "light": "upper-left-studio-key",
       "masterSize": [
@@ -345,7 +345,7 @@
     {
       "id": "splitter",
       "status": "candidate",
-      "ownerApproved": false,
+      "ownerApproved": true,
       "camera": "orthographic-70deg",
       "light": "upper-left-studio-key",
       "masterSize": [
@@ -367,7 +367,7 @@
     {
       "id": "goliath",
       "status": "candidate",
-      "ownerApproved": false,
+      "ownerApproved": true,
       "camera": "orthographic-70deg",
       "light": "upper-left-studio-key",
       "masterSize": [
@@ -389,7 +389,7 @@
     {
       "id": "rusher",
       "status": "candidate",
-      "ownerApproved": false,
+      "ownerApproved": true,
       "camera": "orthographic-70deg",
       "light": "upper-left-studio-key",
       "masterSize": [
@@ -411,7 +411,7 @@
     {
       "id": "sapper",
       "status": "candidate",
-      "ownerApproved": false,
+      "ownerApproved": true,
       "camera": "orthographic-70deg",
       "light": "upper-left-studio-key",
       "masterSize": [
@@ -433,7 +433,7 @@
     {
       "id": "arc-turret",
       "status": "candidate",
-      "ownerApproved": false,
+      "ownerApproved": true,
       "camera": "orthographic-70deg",
       "light": "upper-left-studio-key",
       "masterSize": [
@@ -455,7 +455,7 @@
     {
       "id": "shield-drone",
       "status": "candidate",
-      "ownerApproved": false,
+      "ownerApproved": true,
       "camera": "orthographic-70deg",
       "light": "upper-left-studio-key",
       "masterSize": [
