@@ -16,18 +16,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_PASSWORD: isolated-ci-test-only
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
     steps:
       - name: Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -51,16 +39,20 @@ jobs:
         run: npm run build
 
       - name: Verify expansion save database isolation
-        env:
-          PGHOST: 127.0.0.1
-          PGPORT: 5432
-          PGUSER: postgres
-          PGDATABASE: postgres
-          PGPASSWORD: isolated-ci-test-only
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y postgresql-client
-          psql -v ON_ERROR_STOP=1 -f scripts/verify-expansion-save-database.sql
+          docker build --tag signal-breach-save-test .github/ci
+          docker run --detach --name signal-breach-save-test \
+            --env POSTGRES_PASSWORD=isolated-ci-test-only \
+            --mount "type=bind,source=$PWD,target=/workspace,readonly" \
+            signal-breach-save-test
+          trap 'docker rm --force signal-breach-save-test' EXIT
+          for attempt in $(seq 1 30); do
+            if docker exec signal-breach-save-test pg_isready -h 127.0.0.1 -U postgres; then break; fi
+            sleep 1
+          done
+          docker exec signal-breach-save-test pg_isready -h 127.0.0.1 -U postgres
+          docker exec signal-breach-save-test psql -U postgres -d postgres \
+            -v ON_ERROR_STOP=1 -f /workspace/scripts/verify-expansion-save-database.sql
 
       - name: Verify deterministic replay fixtures
         run: |

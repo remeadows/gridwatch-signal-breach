@@ -27,8 +27,9 @@ become the next signed-in user's save. No destructive reset is required.
 ## Verified implementation gaps
 
 1. `src/ui/featureFlags.ts` restricts expansion navigation/play to preview hosts.
-2. `src/ui/expansionProgressR4.ts` stores cleared levels/unlocks in localStorage;
-   no expansion cloud-save path exists in this checkout.
+2. The local cloud-save model, sync controller, transport, RPC migration and
+   verification scripts exist. Gameplay/navigation integration and two-device
+   production-auth QA remain incomplete; the current game still uses localStorage.
 3. `assertExpansionContentPublished` in the server's expansion validation module
    rejects every submission. A canonical immutable r4 registry, expansion replay
    bundle, server-derived score path and client submission UI are required.
@@ -93,4 +94,7 @@ and accepted expansion scores are substantive implementation/testing work.
 - Disposable PostgreSQL checks pass; simultaneous CAS writers produce exactly
   one success and one conflict. CI includes the isolated SQL test lane.
 - Gameplay/UI integration and actual two-device cloud-save QA remain next.
-  Required pre-push CodeRabbit review is blocked by signed-out CLI credentials.
+  CodeRabbit authentication is verified with normal-host credential access.
+  The foundation review completed; its five findings (one duplicate) are fixed
+  locally, and follow-up review completed with zero findings. See
+  `reviews/EXPANSION_SAVE_FOUNDATION_REVIEW.md` for dispositions and test limits.

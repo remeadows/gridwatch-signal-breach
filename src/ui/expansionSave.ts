@@ -11,6 +11,10 @@ export type ExpansionSave = Readonly<{
   checkpoint: ExpansionCheckpoint | null;
 }>;
 export type LocalExpansionSave = Readonly<{ revision: number; dirty: boolean; save: ExpansionSave }>;
+// Only canonical, deeply frozen outputs enter these sets. Unknown/deserialized
+// objects always cross the complete validation boundary; mutable input is never cached.
+const validatedSaves = new WeakSet<object>();
+const validatedCheckpoints = new WeakSet<object>();
 
 export function emptyExpansionSave(): ExpansionSave {
   return { schema: 1, contentRevision: "expansion-1-r4", clearedLevels: [], settings: { lowEffects: false }, checkpoint: null };
@@ -18,11 +22,18 @@ export function emptyExpansionSave(): ExpansionSave {
 
 /** Return a canonical copy. Cloud progress is unranked; scores require a full replay. */
 export function parseExpansionSave(value: unknown): ExpansionSave {
+  if (record(value) && validatedSaves.has(value)) return value as ExpansionSave;
   if (new TextEncoder().encode(JSON.stringify(value) ?? "").length > MAX_EXPANSION_SAVE_BYTES) throw new Error("Expansion save exceeds the size limit.");
   if (!record(value) || value.schema !== 1 || value.contentRevision !== EXPANSION_SAVE_SLOT || !Array.isArray(value.clearedLevels) || value.clearedLevels.length > 25 || !record(value.settings) || typeof value.settings.lowEffects !== "boolean") throw new Error("Invalid expansion save.");
   if (!value.clearedLevels.every((id) => typeof id === "number" && Number.isInteger(id) && id >= 1 && id <= 25)) throw new Error("Invalid saved level.");
-  const checkpoint = value.checkpoint === null ? null : restoreExpansionCheckpoint(value.checkpoint).checkpoint;
-  return { schema: 1, contentRevision: EXPANSION_SAVE_SLOT, clearedLevels: [...new Set(value.clearedLevels as number[])].sort((a, b) => a - b), settings: { lowEffects: value.settings.lowEffects }, checkpoint };
+  const checkpoint = value.checkpoint === null ? null
+    : record(value.checkpoint) && validatedCheckpoints.has(value.checkpoint)
+      ? value.checkpoint as ExpansionCheckpoint
+      : freeze(restoreExpansionCheckpoint(value.checkpoint).checkpoint);
+  if (checkpoint) validatedCheckpoints.add(checkpoint);
+  const save: ExpansionSave = freeze({ schema: 1, contentRevision: EXPANSION_SAVE_SLOT, clearedLevels: [...new Set(value.clearedLevels as number[])].sort((a, b) => a - b), settings: { lowEffects: value.settings.lowEffects }, checkpoint });
+  validatedSaves.add(save);
+  return save;
 }
 
 /** Each account has its own cache. Guest saves are never silently attached to an account. */
@@ -51,3 +62,10 @@ export function writeLocalExpansionSave(storage: ProgressStorage | null, owner: 
 }
 
 function record(value: unknown): value is Record<string, unknown> { return value !== null && typeof value === "object" && !Array.isArray(value); }
+function freeze<T>(value: T): T {
+  if (value !== null && typeof value === "object" && !Object.isFrozen(value)) {
+    Object.freeze(value);
+    for (const child of Object.values(value)) freeze(child);
+  }
+  return value;
+}

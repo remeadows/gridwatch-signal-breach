@@ -1,7 +1,7 @@
 -- Additive Signal Breach-only access to the existing shared save store.
 -- No grants/policies/rows on game_saves or other games are changed.
 -- Prerequisite: the shared game_saves schema owned by the account/save rollout.
-begin;
+-- Transaction ownership belongs to the migration runner.
 
 create function public.get_signal_breach_expansion_save()
 returns jsonb
@@ -85,4 +85,3 @@ revoke all on function public.get_signal_breach_expansion_save() from public, an
 revoke all on function public.put_signal_breach_expansion_save(bigint, jsonb) from public, anon;
 grant execute on function public.get_signal_breach_expansion_save() to authenticated;
 grant execute on function public.put_signal_breach_expansion_save(bigint, jsonb) to authenticated;
-commit;

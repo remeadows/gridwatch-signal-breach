@@ -4,6 +4,7 @@ import chapter3 from "../docs/fixtures/expansion-1-r4-chapter-3-human-evidence.j
 import { applyExpansionCommand, createExpansionGameState, tickExpansion, type ExpansionRecordedCommand, type ExpansionReplayInput } from "../src/sim/expansion";
 import { createExpansionCheckpoint, restoreExpansionCheckpoint } from "../src/sim/expansion/checkpoint";
 import assert from "./assert";
+import { emptyExpansionSave, parseExpansionSave } from "../src/ui/expansionSave";
 
 let checkpoints = 0;
 for (const report of [chapter1, chapter2, chapter3]) {
@@ -25,6 +26,19 @@ for (const report of [chapter1, chapter2, chapter3]) {
         const restored = restoreExpansionCheckpoint(JSON.parse(JSON.stringify(checkpoint)));
         assert.deepEqual(restored.state, state, `L${replay.level} W${state.waveIndex + 1}: checkpoint state differs`);
         assert.deepEqual(restored.checkpoint.replay.commands, commands);
+        const save = parseExpansionSave({ ...emptyExpansionSave(), checkpoint });
+        assert.equal(parseExpansionSave(save), save, "Validated saves must be reused without replaying again");
+        const settingsChange = parseExpansionSave({ ...save, settings: { lowEffects: true } });
+        assert.equal(settingsChange.checkpoint, save.checkpoint, "Validated checkpoint must survive settings updates without replay");
+        assert.equal(Object.isFrozen(save), true);
+        assert.equal(Object.isFrozen(save.checkpoint!.replay.commands), true);
+        const first = save.checkpoint!.replay.commands[0]!;
+        assert.equal(Object.isFrozen(first.c), true);
+        assert.throws(() => { (first as { t: number }).t += 1; }, /read only|readonly|assign/i);
+        const external = JSON.parse(JSON.stringify(save));
+        parseExpansionSave(external);
+        external.checkpoint.completedWaves = 0;
+        assert.throws(() => parseExpansionSave(external), /checkpoint/i);
         assert.throws(() => restoreExpansionCheckpoint({ ...checkpoint, completedWaves: 0 }), /checkpoint/i);
         assert.throws(() => restoreExpansionCheckpoint({ ...checkpoint, tick: checkpoint.tick + 1 }), /checkpoint/i);
         assert.throws(() => restoreExpansionCheckpoint({ ...checkpoint, replay: { ...checkpoint.replay, contentHash: "a".repeat(64) } }), /hash/i);

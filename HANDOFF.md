@@ -31,8 +31,16 @@
 - This foundation is NOT connected to gameplay/navigation yet. Next: auth-aware
   save UI, checkpoint capture/resume, conflict choices and cross-device browser
   QA; then expansion score validation/client integration and server-first release.
-- CodeRabbit CLI 0.7.6 is signed out; owner was asked to run
-  `coderabbit auth login`. Required local review cannot complete until sign-in.
+- CodeRabbit CLI 0.7.6 authentication is verified outside the sandbox. The
+  sandbox falsely reported signed-out because it could not access Mac credentials;
+  retry auth/review with approved normal-host access before asking for sign-in.
+  Review of `b72235e..67e75b8` completed with five findings (one duplicate).
+  Fixes: immutable validated-save/checkpoint reuse, pinned PostgreSQL image with
+  Docker Dependabot updates, corrected scope wording and runner-owned migration
+  transactions. The affected local tests pass; the follow-up review completed
+  with zero findings across all ten corrective files. See
+  `docs/reviews/EXPANSION_SAVE_FOUNDATION_REVIEW.md`. This is local review,
+  not a green GitHub PR or a verified production deployment.
   Original/retained replay and r4 progress checks remain green. No production
   migration, save reset, leaderboard write, public activation or push occurred.
 - Final foundation checks: production build, tools typecheck, three new save

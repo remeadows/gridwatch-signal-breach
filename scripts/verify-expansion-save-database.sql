@@ -16,7 +16,9 @@ insert into public.games values
   ('00000000-0000-0000-0000-000000000002','gridwatch-zero');
 insert into public.game_saves values
   ('11111111-1111-1111-1111-111111111111','00000000-0000-0000-0000-000000000002','main',1,1,'{"sentinel":"unchanged"}',null,now());
+begin;
 \ir ../supabase/migrations/20260913000100_signal_breach_expansion_saves.sql
+commit;
 set role authenticated;
 set request.jwt.claim.sub = '11111111-1111-1111-1111-111111111111';
 do $$declare v jsonb; payload jsonb := '{"schema":1,"contentRevision":"expansion-1-r4","clearedLevels":[1],"settings":{"lowEffects":false},"checkpoint":null}';
