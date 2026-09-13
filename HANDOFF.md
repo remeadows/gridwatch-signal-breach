@@ -1,5 +1,18 @@
 # GridWatch Handoff
 
+## Dependency reconciliation — 2026-09-13
+
+- The five dependency PRs are merged on upstream `main` (`a5a8dcf`). Merged
+  upstream into `codex/expansion-25-local` without conflicts; local expansion
+  scripts and the isolated database CI lane are retained.
+- TypeScript 7.0.2 / Vite 8.3.0: production build, tools typecheck and all 27
+  `verify:*` scripts pass. Rebuilding with esbuild 0.28.2 leaves the original
+  score-validator bundle byte-for-byte unchanged. No push or deployment.
+- Continuing the next local package: gameplay command capture, completed-wave
+  checkpoint persistence and explicit reload/resume UI. Cloud wiring and
+  production activation remain unfinished; do not mistake this dependency
+  merge for the expansion release.
+
 ## Public expansion release requested — 2026-09-13
 
 - Working on release readiness on `codex/expansion-25-local`. The owner now
