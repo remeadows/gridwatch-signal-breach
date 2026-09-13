@@ -28,8 +28,9 @@ become the next signed-in user's save. No destructive reset is required.
 
 1. `src/ui/featureFlags.ts` restricts expansion navigation/play to preview hosts.
 2. The local cloud-save model, sync controller, transport, RPC migration and
-   verification scripts exist. Gameplay/navigation integration and two-device
-   production-auth QA remain incomplete; the current game still uses localStorage.
+   verification scripts exist. Gameplay now captures replay-backed checkpoints
+   and offers browser-only guest resume. Auth-aware sync/navigation integration
+   and two-device production-auth QA remain incomplete.
 3. `assertExpansionContentPublished` in the server's expansion validation module
    rejects every submission. A canonical immutable r4 registry, expansion replay
    bundle, server-derived score path and client submission UI are required.
@@ -93,7 +94,9 @@ and accepted expansion scores are substantive implementation/testing work.
   not touch existing rows. It has NOT been applied to production.
 - Disposable PostgreSQL checks pass; simultaneous CAS writers produce exactly
   one success and one conflict. CI includes the isolated SQL test lane.
-- Gameplay/UI integration and actual two-device cloud-save QA remain next.
+- Browser-only gameplay checkpoint/resume UI is now integrated and tested at
+  desktop/phone viewports. Auth-aware cloud sync/navigation and actual two-device
+  cloud-save QA remain next; guest data is not automatically assigned to an account.
   CodeRabbit authentication is verified with normal-host credential access.
   The foundation review completed; its five findings (one duplicate) are fixed
   locally, and follow-up review completed with zero findings. See

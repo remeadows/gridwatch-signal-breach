@@ -1,6 +1,5 @@
 import "./expansion.css";
 import { getExpansionLevelDefinition } from "./data/campaigns/expansion";
-import { getExpansionLevelContentHash } from "./data/campaigns/expansion/contentManifest";
 import { installExpansionKeyboardInput } from "./input/expansionKeyboard";
 import { installExpansionPointerInput } from "./input/expansionPointer";
 import { canPreviewExpansionTool, ExpansionRangePreview } from "./input/expansionRangePreview";
@@ -8,10 +7,14 @@ import { getExpansionArtMode, getExpansionArtUrl, preloadExpansionLevelArt } fro
 import { getExpansionLevelArtRoster, type ExpansionVisualAssetId } from "./render/expansionArtCatalog";
 import { drawExpansionGrid } from "./render/expansionRenderer";
 import { ExpansionVisualTimeline } from "./render/expansionVisualTimeline";
-import { applyExpansionCommand, calculateExpansionScore, createExpansionGameState, tickExpansion, type ExpansionPlayerTool, type ExpansionSimCommand } from "./sim/expansion";
+import { calculateExpansionScore, type ExpansionPlayerTool, type ExpansionSimCommand } from "./sim/expansion";
 import { getCurrentExpansionWave } from "./sim/expansion/waves";
 import type { GridPosition } from "./sim/types";
-import { loadExpansionR4Progress, markExpansionR4LevelCleared } from "./ui/expansionProgressR4";
+import { loadExpansionR4Progress } from "./ui/expansionProgressR4";
+import { ExpansionRunSession } from "./ui/expansionRunSession";
+import { ExpansionLocalSave } from "./ui/expansionLocalSave";
+import { ExpansionSaveUi } from "./ui/expansionSaveUi";
+import type { ProgressStorage } from "./ui/progress";
 
 const canvas = required<HTMLCanvasElement>("#game-canvas");
 const context = canvas.getContext("2d");
@@ -25,9 +28,12 @@ const screen = required<HTMLElement>("#screen-root");
 
 const levelId = getRequestedLevelId();
 const level = getRequiredLevel(levelId);
-const contentHash = getExpansionLevelContentHash(levelId);
-let seed = createSeed();
-let state = createExpansionGameState({ levelId, contentHash, seed });
+let run = new ExpansionRunSession(levelId, createSeed());
+let state = run.state;
+// This local package deliberately stays guest-only. Auth/cloud integration must
+// replace this adapter with an owner-scoped session, never upload the guest cache.
+const saves = new ExpansionLocalSave(browserStorage(), "guest", loadExpansionR4Progress().clearedLevels);
+let checkpointError = false;
 let selectedTool: ExpansionPlayerTool = defaultTool();
 const artMode = getExpansionArtMode();
 let hover: GridPosition | null = null;
@@ -37,8 +43,8 @@ let running = false;
 let paused = false;
 let lastTime = performance.now();
 let previousPhase = state.phase;
-let clearRecorded = false;
-let lowQuality = new URLSearchParams(window.location.search).get("quality") === "low";
+let clearAttempted = false;
+let lowQuality = new URLSearchParams(window.location.search).get("quality") === "low" || saves.save.settings.lowEffects;
 const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 let reducedMotion = reducedMotionQuery.matches;
 const visualTimeline = new ExpansionVisualTimeline();
@@ -63,12 +69,21 @@ screen.setAttribute("aria-hidden", "true");
 preloadExpansionLevelArt(level, artMode);
 buildHud();
 buildPicker();
+const saveUi = new ExpansionSaveUi({
+  saves, levelId, hud, overlay, canvas, background: [hud, picker, playUi, canvas],
+  onResume: resumeSavedRun, onLevelSelect: openLevelSelect,
+  onStartNew: () => {
+    if (saves.status === "invalid") saves.discardUnreadable();
+    else saves.update({ ...saves.save, checkpoint: null });
+    saveUi.closeChoice();
+  },
+});
 
 installExpansionPointerInput({
   canvas,
   getState: () => state,
   getSelectedTool: () => selectedTool,
-  isEnabled: () => !paused && (state.phase === "prep" || state.phase === "active"),
+  isEnabled: () => !saveUi.choiceOpen && !paused && (state.phase === "prep" || state.phase === "active"),
   onHover: (position) => { hover = position; if (position) rangePreview.inspect(position); },
   isRangePreviewEnabled: () => rangePreview.enabled,
   onRangePreview: inspectRange,
@@ -78,12 +93,13 @@ installExpansionKeyboardInput({
   canvas,
   getState: () => state,
   getSelectedTool: () => selectedTool,
-  isEnabled: () => !paused && (state.phase === "prep" || state.phase === "active"),
+  isEnabled: () => !saveUi.choiceOpen && !paused && (state.phase === "prep" || state.phase === "active"),
   onFocus: (position) => { keyboardFocus = position; if (position) rangePreview.inspect(position); },
   dispatch,
 });
 
 window.addEventListener("keydown", (event) => {
+  if (saveUi.handleKey(event)) return;
   if (guideOpen) {
     if (event.key === "Escape") { event.preventDefault(); closeGuide(); }
     if (event.key === "Tab") { event.preventDefault(); overlay.querySelector<HTMLButtonElement>("[data-close-guide]")?.focus(); }
@@ -103,7 +119,8 @@ function frame(now: number): void {
   if (!paused && running && state.phase === "active") {
     let steps = 0;
     while (now - lastTime >= state.config.simulationTickMs && steps < 5 && state.phase === "active") {
-      state = tickExpansion(state);
+      run.step();
+      state = run.state;
       visualTimeline.observe(state);
       lastTime += state.config.simulationTickMs;
       steps += 1;
@@ -112,12 +129,16 @@ function frame(now: number): void {
     lastTime = now;
   }
 
-  if (previousPhase === "active" && state.phase === "prep") running = false;
-  if (state.phase === "won" && !clearRecorded) {
-    // The immutable updater persists through its default browser-storage
-    // argument; the reload-driven level-select flow reads that stored result.
-    markExpansionR4LevelCleared(loadExpansionR4Progress(), levelId);
-    clearRecorded = true;
+  if (previousPhase === "active" && state.phase === "prep") {
+    running = false;
+    try {
+      checkpointError = !saves.update({ ...saves.save, checkpoint: run.checkpoint() });
+    } catch { checkpointError = true; }
+  }
+  if (state.phase === "won" && !clearAttempted) {
+    // Navigation reads this canonical save. Never persist a second clear via
+    // the legacy progress key when this write is rejected or conflicts.
+    saveLevelClear();
   }
   previousPhase = state.phase;
   drawExpansionGrid(renderContext, canvas, state, {
@@ -136,6 +157,7 @@ function frame(now: number): void {
 }
 
 function dispatch(command: ExpansionSimCommand): void {
+  if (saveUi.choiceOpen || paused) return;
   // Both pointer taps and keyboard placement/sale commands pass this one gate.
   // Preview never changes the grid, bandwidth, command log, or replay state.
   if (rangePreview.filterCommand(command) === null) {
@@ -143,7 +165,8 @@ function dispatch(command: ExpansionSimCommand): void {
     return;
   }
   const previous = state;
-  state = applyExpansionCommand(state, command);
+  run.dispatch(command);
+  state = run.state;
   if (command.type !== "skipPrep") {
     const cell = `column ${command.position.x + 1}, row ${command.position.y + 1}`;
     toolStatus.textContent = state === previous
@@ -164,7 +187,7 @@ function exitRangePreview(): void {
 }
 
 function launchWave(): void {
-  if (state.phase !== "prep" || running) return;
+  if (saveUi.choiceOpen || paused || state.phase !== "prep" || running) return;
   dispatch({ type: "skipPrep" });
   running = true;
   paused = false;
@@ -172,21 +195,27 @@ function launchWave(): void {
 }
 
 function restart(): void {
-  seed = createSeed();
-  state = createExpansionGameState({ levelId, contentHash, seed });
+  saves.update({ ...saves.save, checkpoint: null });
+  run = new ExpansionRunSession(levelId, createSeed());
+  resetRunPresentation();
+  toolStatus.textContent = "Level restarted. Select a tool and build your route.";
+}
+
+function resetRunPresentation(): void {
+  state = run.state;
+  checkpointError = false;
   selectedTool = defaultTool();
   hover = null;
   keyboardFocus = null;
   rangePreview.exit();
   running = false;
   paused = false;
-  clearRecorded = false;
+  clearAttempted = false;
   guideOpen = false;
   previousPhase = state.phase;
   lastTime = performance.now();
   visualTimeline.reset(lastTime);
   pickerKey = "";
-  toolStatus.textContent = "Level restarted. Select a tool and build your route.";
   playUi.dataset.playUiKey = "";
   overlay.dataset.overlayKey = "";
 }
@@ -213,12 +242,18 @@ function buildHud(): void {
   hud.querySelector("[data-guide]")?.addEventListener("click", openGuide);
   hud.querySelector("[data-quality]")?.addEventListener("click", () => {
     lowQuality = !lowQuality;
+    // An explicit toggle supersedes a preview URL override on subsequent reloads.
+    const url = new URL(window.location.href);
+    url.searchParams.delete("quality");
+    window.history.replaceState(null, "", url);
+    saves.update({ ...saves.save, settings: { lowEffects: lowQuality } });
     hud.querySelector("[data-quality]")?.setAttribute("aria-pressed", String(lowQuality));
     toolStatus.textContent = lowQuality ? "Low effects enabled. All tactical indicators remain visible." : "Full effects enabled.";
   });
 }
 
 function renderHud(): void {
+  saveUi.updateStatus(checkpointError);
   const wave = getCurrentExpansionWave(state);
   setMetric("bandwidth", String(state.bandwidth));
   setMetric("core", String(state.coreIntegrity));
@@ -326,6 +361,7 @@ function renderPlayUi(): void {
 }
 
 function renderOverlay(): void {
+  if (saveUi.renderChoice()) return;
   if (guideOpen) {
     overlay.hidden = false;
     if (overlay.dataset.overlayKey !== "guide") {
@@ -366,11 +402,44 @@ function renderOverlay(): void {
   const score = calculateExpansionScore(state);
   const panel = document.createElement("section");
   panel.className = "overlay-panel terminal-panel";
-  panel.innerHTML = `<h2 class="overlay-title">${state.phase === "won" ? "LEVEL CLEARED" : "CORE LOST"}</h2><strong class="operator-rating">${score.rating}</strong><p class="terminal-detail">${state.phase === "won" ? "Progress saved on this browser." : level.requiredMechanic === "sapperSpacing" ? "Keep key hardware spaced apart and cover the Sapper approach with ICE." : "Reconnect the route and cover enemy approaches with ICE and delay."}</p><dl class="score-breakdown"><dt>Core integrity</dt><dd>${score.integrity}</dd><dt>Neutralized</dt><dd>${state.neutralizedCount}</dd><dt>Signal uptime</dt><dd>${score.uptimePercent}%</dd><dt>Local score</dt><dd>${score.total}</dd></dl>`;
+  panel.innerHTML = `<h2 class="overlay-title">${state.phase === "won" ? "LEVEL CLEARED" : "CORE LOST"}</h2><strong class="operator-rating">${score.rating}</strong><p class="terminal-detail">${state.phase === "won" ? saveUi.message(checkpointError) : level.requiredMechanic === "sapperSpacing" ? "Keep key hardware spaced apart and cover the Sapper approach with ICE." : "Reconnect the route and cover enemy approaches with ICE and delay."}</p><dl class="score-breakdown"><dt>Core integrity</dt><dd>${score.integrity}</dd><dt>Neutralized</dt><dd>${state.neutralizedCount}</dd><dt>Signal uptime</dt><dd>${score.uptimePercent}%</dd><dt>Local score</dt><dd>${score.total}</dd></dl>`;
   const actions = document.createElement("div"); actions.className = "terminal-actions";
+  if (state.phase === "won" && checkpointError && saves.status !== "conflict") {
+    actions.append(action("RETRY SAVE", saveLevelClear, true));
+  }
+  if (saves.status === "conflict") actions.append(action("RELOAD SAVED DATA", () => window.location.reload(), false));
   if (state.phase === "won" && getExpansionLevelDefinition(levelId + 1)) actions.append(action("NEXT LEVEL ▸", () => openLevel(levelId + 1), true));
+  const checkpoint = saves.save.checkpoint;
+  if (state.phase === "lost" && checkpoint?.replay.level === levelId) actions.append(action(`RETRY FROM WAVE ${checkpoint.completedWaves + 1}`, resumeSavedRun, true));
   actions.append(action("RETRY LEVEL", restart, true), action("LEVEL SELECT", openLevelSelect, false));
   panel.append(actions); overlay.innerHTML = ""; overlay.append(panel);
+}
+
+function saveLevelClear(): void {
+  checkpointError = !saves.clearLevel(levelId);
+  // One automatic attempt, then an explicit retry. Never write 60 times/second
+  // while storage is unavailable, or auto-overwrite a conflicting tab's save.
+  clearAttempted = true;
+  overlay.dataset.overlayKey = "";
+}
+
+function resumeSavedRun(): void {
+  const checkpoint = saves.save.checkpoint;
+  if (!checkpoint) return;
+  if (checkpoint.replay.level !== levelId) { openLevel(checkpoint.replay.level); return; }
+  try {
+    run = new ExpansionRunSession(levelId, "resume", checkpoint);
+    resetRunPresentation();
+    saveUi.closeChoice();
+    toolStatus.textContent = `Restored Wave ${state.waveIndex + 1} build. Your route, defenses and command history are restored.`;
+  } catch {
+    checkpointError = true;
+    saveUi.closeChoice();
+  }
+}
+
+function browserStorage(): ProgressStorage | null {
+  try { return window.localStorage; } catch { return null; }
 }
 
 function openGuide(): void {

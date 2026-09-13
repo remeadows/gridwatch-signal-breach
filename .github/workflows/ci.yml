@@ -69,6 +69,7 @@ jobs:
           npm run verify:expansion-revision-lookup
           npm run verify:expansion-progress-r4
           npm run verify:expansion-checkpoints
+          npm run verify:expansion-run-session
           npm run verify:expansion-save-sync
           npm run verify:expansion-save-api
           npm run verify:expansion-r4-drafts

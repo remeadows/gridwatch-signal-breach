@@ -1,11 +1,54 @@
 # GridWatch Handoff
 
+## Playable local checkpoint integration — 2026-09-13
+
+- Implemented the next bounded local package on `codex/expansion-25-local`:
+  `ExpansionRunSession` owns command capture and frozen-build ticking;
+  `ExpansionLocalSave` persists the existing canonical save envelope. The game
+  saves at active-to-build boundaries, offers explicit resume/discard on reload,
+  resumes the original seed/command prefix, and preserves settings and clears.
+- The adapter is deliberately guest/browser-only. It never initializes auth,
+  calls an RPC or uploads guest progress. Account-aware cloud sync, navigation
+  integration and validated expansion leaderboards remain release work.
+- Invalid saves require explicit discard; inaccessible storage is reported as
+  memory-only. Stale-tab byte comparison blocks observed conflicting writes
+  (best effort, not an atomic cross-tab CAS). The tested server CAS remains the
+  intended cloud-write boundary. Replay capture is bounded without stopping play.
+- New `verify:expansion-run-session` exercises all 100 completed-wave reloads
+  across 25 levels, exact continued winning replays, saved settings/clears,
+  owner isolation, invalid data, storage failure and stale-tab protection.
+- Production build, tools typecheck and all 26 current `verify:*` commands pass
+  (including the new run-session lane and `verify:chapter03-human`). The original
+  score-validator bundle remains unchanged; dependency audit is clean.
+- Browser checks: real Level 1 Wave 1 clear, reload/resume at Wave 2, identical
+  23 bandwidth / 180 core / 2 neutralized; low-effects setting survives reload.
+  A post-checkpoint sale changed bandwidth to 37; reload correctly restores 23.
+  Desktop 1280x900, portrait 390x844 and 320x700, landscape 844x390; modal focus
+  stays trapped, background controls inert, no horizontal overflow or console
+  errors observed. These are browser viewport checks, not physical-phone QA.
+- Continued the resumed browser run through Wave 2 to a Wave 3 checkpoint.
+  Opening Level 2 offered the saved Level 1 instead of replacing it; returning
+  to Level 1 still offered Wave 3. Then completed the resumed run: 180 core,
+  25 neutralized, 100% uptime, score 536. Level select shows the clear; reopening
+  starts Wave 1 without an obsolete checkpoint. Preview is now on fresh Level 1.
+- CodeRabbit first pass: two low-severity findings (count clarified, post-write
+  reread suggestion declined with regression evidence). Second pass: two distinct
+  major findings, both fixed: canonical saves are the sole new clear writer and
+  navigation reads them; save presentation/focus lives in `expansionSaveUi.ts`.
+  Third pass: two distinct minor findings, both fixed and regression-tested:
+  reverse tab entry from outside the dialog, and replay after all 25 clears.
+  Fourth pass identified missing victory-save retry: added an explicit Retry save
+  action and transient-storage recovery regression, without per-frame write loops.
+  Fifth pass (lightweight): all 15 changed files, zero findings. Final build,
+  typecheck and all 26 verifiers pass. Review is recorded in
+  `docs/reviews/EXPANSION_RUN_SESSION_REVIEW.md`. No push, DB write or deployment.
+
 ## Dependency reconciliation — 2026-09-13
 
 - The five dependency PRs are merged on upstream `main` (`a5a8dcf`). Merged
   upstream into `codex/expansion-25-local` without conflicts; local expansion
   scripts and the isolated database CI lane are retained.
-- TypeScript 7.0.2 / Vite 8.3.0: production build, tools typecheck and all 27
+- TypeScript 7.0.2 / Vite 8.3.0: production build, tools typecheck and all 25
   `verify:*` scripts pass. Rebuilding with esbuild 0.28.2 leaves the original
   score-validator bundle byte-for-byte unchanged. No push or deployment.
 - Continuing the next local package: gameplay command capture, completed-wave
@@ -24,8 +67,8 @@
 - The owner permits resetting their Signal Breach saves if necessary. No reset
   has been performed or is currently necessary. Do not delete shared scores,
   accounts, other games' data, or historical replay evidence.
-- Backend work is required: expansion progress currently persists only browser
-  clears/unlocks; the Edge Function explicitly rejects all expansion submissions
+- Backend work is required: expansion progress currently persists only in the
+  browser (clears/unlocks and wave checkpoints); the Edge Function rejects expansion submissions
   as unpublished. Public activation remains disabled. This is not a flag-only
   release. See `docs/EXPANSION_PUBLIC_RELEASE_PLAN.md`.
 - Owner approved wave-checkpoint saves: cross-device clears/unlocks/settings
@@ -41,8 +84,9 @@
   Breach-only RPC migration is local and UNAPPLIED. Disposable PostgreSQL tests
   pass for grants, account/game isolation, invalid data and optimistic revision
   checks. Two simultaneous writes yielded one saved and one conflict.
-- This foundation is NOT connected to gameplay/navigation yet. Next: auth-aware
-  save UI, checkpoint capture/resume, conflict choices and cross-device browser
+- The foundation has a browser-only guest gameplay adapter (see above), but no
+  authenticated cloud connection yet. Next: auth-aware save UI/navigation,
+  cloud conflict choices and cross-device browser
   QA; then expansion score validation/client integration and server-first release.
 - CodeRabbit CLI 0.7.6 authentication is verified outside the sandbox. The
   sandbox falsely reported signed-out because it could not access Mac credentials;

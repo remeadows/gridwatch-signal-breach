@@ -4,6 +4,7 @@ html[data-expansion-play="true"] .game-panel { align-self: center; }
 /* Expansion owns its root directly; it does not run the original overlay
    builder that assigns .overlay-root. Anchor its overlays explicitly. */
 html[data-expansion-play="true"] #overlay-root { position: absolute; inset: 0; display: grid; place-items: center; padding: 18px; pointer-events: none; z-index: 4; }
+html[data-expansion-play="true"] #overlay-root[data-overlay-key="save-choice"],
 html[data-expansion-play="true"] #overlay-root[data-overlay-key="won"],
 html[data-expansion-play="true"] #overlay-root[data-overlay-key="lost"] { position: fixed; inset: 0; z-index: 15; display: grid; overflow-y: auto; align-items: safe center; padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); background: rgba(3,7,11,.94); pointer-events: auto; }
 html[data-expansion-play="true"] #overlay-root .terminal-panel { width: min(530px, 100%); }
@@ -36,7 +37,7 @@ html[data-expansion-play="true"] #game-canvas:focus-visible { outline: 2px solid
 }
 @media (max-width: 760px) and (orientation: portrait) {
   /* Reserve the active HUD's three action rows plus the two-row tool dock. */
-  html[data-expansion-play="true"] .game-panel { width: min(100%, calc(100dvh - 412px)); }
+  html[data-expansion-play="true"] .game-panel { width: min(100%, calc(100dvh - 412px - var(--expansion-save-ui-height, 60px))); }
 }
 @media (max-width: 760px) and (max-height: 820px) and (orientation: portrait) {
   /* The wave bar already carries level/phase. Keep resources and signal above
@@ -47,7 +48,7 @@ html[data-expansion-play="true"] #game-canvas:focus-visible { outline: 2px solid
   .expansion-hud [data-metric="neutralized"] { display: none; }
   .expansion-hud .hud-actions { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .expansion-hud .hud-actions .neon-button { min-height: 44px; padding: 4px; font-size: 10px; }
-  html[data-expansion-play="true"] .game-panel { width: min(100%, calc(100dvh - 312px)); }
+  html[data-expansion-play="true"] .game-panel { width: min(100%, calc(100dvh - 312px - var(--expansion-save-ui-height, 60px))); }
 }
 @media (max-width: 760px) and (max-height: 520px) and (orientation: landscape) {
   .expansion-hud .hud-metric { min-height: 34px; padding: 3px 4px; }
@@ -68,7 +69,7 @@ html[data-expansion-play="true"] #game-canvas:focus-visible { outline: 2px solid
   html[data-expansion-play="true"] .control-panel { display: contents; }
   html[data-expansion-play="true"] .control-panel::before { display: none; }
   html[data-expansion-play="true"] .game-panel { grid-column: 2; grid-row: 1; width: 100%; min-width: 0; min-height: 0; max-height: 100%; }
-  .expansion-hud { display: grid; grid-column: 1; grid-row: 1; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 4px; align-content: center; }
+  .expansion-hud { display: grid; grid-column: 1; grid-row: 1; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 4px; align-content: safe center; max-height: 100%; overflow-y: auto; }
   .expansion-hud .hud-hero, .expansion-hud .hud-rail { display: contents; }
   .expansion-hud .hud-metric { display: grid; align-content: center; min-width: 0; min-height: 34px; padding: 3px 4px; gap: 2px; }
   .expansion-hud .hud-metric span { font-size: 8px; }
@@ -81,3 +82,13 @@ html[data-expansion-play="true"] #game-canvas:focus-visible { outline: 2px solid
   .expansion-picker .tool-purpose { display: none; }
   .expansion-picker .tool-name, .expansion-picker .tool-cost { font-size: 10px; white-space: nowrap; }
 }
+/* Honest local-save status remains readable without competing with tactical metrics. */
+.expansion-save-status {
+  grid-column: 1 / -1;
+  margin: 0.7rem 0 0;
+  color: var(--text-secondary, #a6c8c6);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+.expansion-hud [data-reload-save] { grid-column: 1 / -1; }

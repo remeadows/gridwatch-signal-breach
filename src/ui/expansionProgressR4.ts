@@ -1,4 +1,5 @@
 import { PROGRESS_STORAGE_KEY, type ProgressStorage } from "./progress";
+import { readLocalExpansionSave } from "./expansionSave";
 
 export const EXPANSION_R4_PROGRESS_KEY = "gridwatch.expansion-1.r4.progress.v1";
 export const EXPANSION_R4_LEVEL_COUNT = 25;
@@ -18,6 +19,13 @@ function makeProgress(highest: number, cleared: readonly number[]): ExpansionR4P
     highestUnlockedLevel: Math.min(EXPANSION_R4_LEVEL_COUNT, Math.max(1, highest, ...clearedLevels.map((id) => id + 1))),
     clearedLevels,
   };
+}
+
+/** Guest navigation reads canonical clears without dual-writing the legacy key. */
+export function loadPlayableExpansionR4Progress(storage: ProgressStorage | null = browserStorage()): ExpansionR4Progress {
+  const retained = loadExpansionR4Progress(storage);
+  const local = readLocalExpansionSave(storage, "guest");
+  return makeProgress(retained.highestUnlockedLevel, [...retained.clearedLevels, ...(local?.save.clearedLevels ?? [])]);
 }
 
 /** Copy historical earned access once. Never call the legacy writer or mutate old keys. */

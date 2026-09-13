@@ -1,6 +1,6 @@
 import { SECTORS } from "./data/levels";
 import { isExpansionChapterAvailable } from "./data/campaigns/expansion";
-import { loadExpansionR4Progress } from "./ui/expansionProgressR4";
+import { loadPlayableExpansionR4Progress } from "./ui/expansionProgressR4";
 import { installPointerInput } from "./input/pointer";
 import { drawAmbientBackdrop, drawGrid } from "./render/renderer";
 import { getBoardArtMode, preloadPhase6BoardSprites } from "./render/assetRegistry";
@@ -96,7 +96,7 @@ function dispatch(command: SimCommand): void {
 }
 
 let progress: GameProgress = loadGameProgress();
-const expansionProgress = expansionNavigationEnabled ? loadExpansionR4Progress() : loadExpansionR4Progress(null);
+const expansionProgress = expansionNavigationEnabled ? loadPlayableExpansionR4Progress() : loadPlayableExpansionR4Progress(null);
 let currentSector = getInitialSector(getSignalBreachProgress(progress));
 const navigationQuery = new URLSearchParams(window.location.search);
 const requestedChapter = Number(navigationQuery.get("chapter"));

@@ -70,6 +70,16 @@ asset release gates intentionally reject candidate art until it is recorded.
 Use `?art=phase6` or `?art=glyphs` for visual rollback and `?quality=low` for
 reduced effects. These switches do not change the simulation or scores.
 
+The local expansion now saves a guest checkpoint after each completed wave.
+Reloading offers an explicit resume at the next build phase, with the original
+command history preserved. Changes after that boundary are not saved until the
+next wave is cleared. Only one unfinished level is saved; opening another level
+offers a choice to resume the saved level or discard its checkpoint. Settings
+and clears are also stored locally. Storage errors and stale-tab conflicts are
+shown in the HUD. **This is browser-only persistence, not connected cloud saves.**
+Run `npm run verify:expansion-run-session` for all 100 reload boundaries across
+the 25 levels, exact continued replays, storage failure and owner-isolation checks.
+
 ## Deploy
 
 The game is hosted on **Cloudflare Pages** at `https://GridWatch-SignalBreach.warsignallabs.net`, connected to this repository via Cloudflare's Git integration. Every push to `main` triggers a Cloudflare build.
