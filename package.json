@@ -23,7 +23,7 @@
     "verify:assets": "node scripts/verify-assets.mjs"
   },
   "devDependencies": {
-    "esbuild": "^0.28.0",
+    "esbuild": "^0.28.2",
     "typescript": "^6.0.3",
     "vite": "^8.1.4"
   },
