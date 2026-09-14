@@ -81,8 +81,9 @@ CodeRabbit's native App identity.
 ### UI, input, rendering, copy, or local asset changes
 
 Run the build, dev, preview, offline, mobile viewport, keyboard, pointer, and
-performance checks relevant to the change. Confirm the game still works with no
-`VITE_SUPABASE_*` values configured.
+performance checks relevant to the change. Confirm the game still runs fully
+offline and signed out (the leaderboard and sign-in are the only network
+features).
 
 ### Simulation, economy, balance, scoring, or wave changes
 

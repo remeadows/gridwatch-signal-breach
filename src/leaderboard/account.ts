@@ -61,6 +61,9 @@ export function signInHref(): string {
 
 // Loads the current session + profile handle, then keeps them in sync with auth
 // state changes (sign-in completed on Nexus, sign-out from any game, token refresh).
+// Note: the shared account kit's own header bar does the same `profiles` select for
+// every auth event, so each event costs two reads (bar + this module). Known and
+// accepted duplication, not a bug.
 export async function initAccount(): Promise<void> {
   // Registered BEFORE the initial load so an auth event that arrives while that load is
   // still in flight (e.g. a fast round-trip back from Nexus sign-in) is never missed. The

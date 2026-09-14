@@ -211,6 +211,7 @@ import { readFileSync } from "node:fs";
 const accountUi = readFileSync("src/ui/account.ts", "utf8");
 if (/github|signIn\(/i.test(accountUi)) throw new Error("src/ui/account.ts must not start OAuth or mention GitHub; sign-in is a link to Nexus.");
 if (!accountUi.includes("signInHref()")) throw new Error("src/ui/account.ts must build the sign-in link from signInHref().");
+if (!accountUi.includes("auxclick")) throw new Error("src/ui/account.ts must also stash the pending run on auxclick (middle-click) so it isn't lost.");
 const bootstrap = readFileSync("src/bootstrap.ts", "utf8");
 if (!bootstrap.includes("mountAccountHeader(")) throw new Error("src/bootstrap.ts must mount the shared account bar.");
 

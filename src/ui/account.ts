@@ -16,9 +16,9 @@ export type AccountPanelOptions =
   | Readonly<{ mode: "submit"; onSubmit: () => Promise<SubmitResult>; onBeforeSignIn?: () => void }>
   | Readonly<{ mode: "manage"; onSubmit?: never; onBeforeSignIn?: never }>;
 
-// Builds an auth-aware control that renders the right state — signed out (OAuth
-// buttons), needs a handle (picker), or ready — and refreshes itself when the
-// account changes. Self-unsubscribes once detached from the DOM.
+// Builds an auth-aware control that renders the right state — signed out (link
+// to the Nexus sign-in page), needs a handle (picker), or ready — and refreshes
+// itself when the account changes. Self-unsubscribes once detached from the DOM.
 export function createAccountPanel(options: AccountPanelOptions): HTMLElement {
   const root = document.createElement("div");
   root.className = "account-panel";
@@ -66,8 +66,12 @@ export function createAccountPanel(options: AccountPanelOptions): HTMLElement {
     link.href = signInHref();
     link.textContent = "Sign in via Nexus";
     // Full-page navigation to Nexus: persist the finished run first so it can be
-    // auto-submitted when the player returns signed in.
-    link.addEventListener("click", () => options.onBeforeSignIn?.());
+    // auto-submitted when the player returns signed in. Registered for both
+    // click and auxclick so a middle-click (opens in a new tab/window) also
+    // stashes the run — stashing twice is harmless, it's the same run.
+    for (const type of ["click", "auxclick"] as const) {
+      link.addEventListener(type, () => options.onBeforeSignIn?.());
+    }
     actions.append(link);
     root.append(actions);
   }

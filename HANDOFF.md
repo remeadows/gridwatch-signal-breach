@@ -14,6 +14,12 @@
   upstream → deploy Nexus → `https://nexus.warsignallabs.net/play/breach/` with the
   enforcing games CSP → Mac + iPhone acceptance (sign in on Nexus, open Breach signed in,
   play, submit a score, sign out propagates).
+- **Old-host degradation**: the old hostname `gridwatch-signalbreach.warsignallabs.net`
+  serves the game only; accounts, leaderboard submission and the pending-run stash live on
+  the Nexus origin (`https://nexus.warsignallabs.net/play/breach/`) — signing in from the
+  old host lands the player there, and a run stashed on the old host is not carried over
+  (localStorage is per origin). Accepted behaviour: the old host is a compatibility shim
+  until step 5 retires it into a redirect.
 
 ## CodeRabbit Merge Gate Repair - In Progress - 2026-09-09
 

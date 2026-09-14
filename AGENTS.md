@@ -73,7 +73,7 @@ rg -n "fetch|XMLHttpRequest|process\\.env|import\\.meta\\.env" src index.html pa
 find . -name '.env*' -print
 ```
 
-Expected: install/build/dev/preview succeed, the app renders at `/play/breach/` (and still at `/` on the old host via the `_redirects` rewrite), the `rg` command has no matches, and `find` prints no `.env*` files.
+Expected: install/build/dev/preview succeed, the app renders at `/play/breach/` (and still at `/` on the old host via the `_redirects` rewrite), the `rg` command matches only the sanctioned leaderboard path (`src/leaderboard/api.ts`, plus the `fetchLeaderboard` identifier in `src/ui/screens.ts` and bundled copies under `dist`), and `find` prints no `.env*` files.
 
 For public-repo security checks, also run:
 

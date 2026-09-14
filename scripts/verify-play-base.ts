@@ -32,4 +32,12 @@ const redirects = readFileSync(redirectsPath, "utf8").split("\n").map((l) => l.t
 if (!redirects.includes("/play/breach/* /:splat 200")) {
   throw new Error(`dist/_redirects lacks the prefix rewrite. Found: ${JSON.stringify(redirects)}`);
 }
+const bareIndex = redirects.indexOf("/play/breach/ /index.html 200");
+const splatIndex = redirects.indexOf("/play/breach/* /:splat 200");
+if (bareIndex === -1) {
+  throw new Error(`dist/_redirects lacks the explicit bare-prefix rule. Found: ${JSON.stringify(redirects)}`);
+}
+if (bareIndex >= splatIndex) {
+  throw new Error("dist/_redirects must list the bare-prefix rule above the splat rule.");
+}
 console.log(`verify-play-base: ${scriptSrcs.length} script(s), ${cssHrefs.length} stylesheet(s) base-aware; _redirects rewrite present.`);

@@ -107,4 +107,8 @@ the active promotion gate.
 The leaderboard and sign-in use the shared GridWatch account kit (`@gridwatch/account-kit`),
 which owns the Supabase project coordinates; no environment variables are needed. Sign-in
 happens on Nexus (`https://nexus.warsignallabs.net/account/sign-in`) and returns the player
-to the game.
+to the game. The old hostname `gridwatch-signalbreach.warsignallabs.net` serves the game
+only; accounts, leaderboard submission and the pending-run stash live on the Nexus origin
+(`https://nexus.warsignallabs.net/play/breach/`) — signing in from the old host lands the
+player there, and a run stashed on the old host is not carried over (localStorage is per
+origin).
