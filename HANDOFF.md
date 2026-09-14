@@ -2,6 +2,16 @@
 
 ## 2026-09-14: One origin — served at /play/breach/ with the shared account kit
 
+- **Live since 2026-09-14** (PR #81 @ `7751e05`, Cloudflare Pages auto-deploy; Nexus PR #21
+  @ `fc7762c` deployed the same day). Post-deploy checks: old host `/` serves the new build
+  with `/play/breach/assets/…` URLs (200 via the `_redirects` rewrite), bare `/play/breach/`
+  200 on the old host, `https://nexus.warsignallabs.net/play/breach/` 200 with the enforcing
+  games CSP, account bar present in the proxied bundle.
+- **Player acceptance**: Russ, 2026-09-14, Mac + iPhone — signed in on Nexus, opened Signal
+  Breach already signed in with the shared bar, played and submitted a score, sign-out
+  propagated. Follow-up in the kit (v0.1.3): `saveHandle` must accept/verify the initiating
+  user id; this repo's local guard stays until then.
+
 - **Implementation**: Vite `base` is `/play/breach/`; `public/_redirects` rewrites the prefix
   so the same build serves at the old host root. `@gridwatch/account-kit` v0.1.2 owns the
   Supabase client and session; `src/leaderboard/account.ts` keeps its API but delegates to
