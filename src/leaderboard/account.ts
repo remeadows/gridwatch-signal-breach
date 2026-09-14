@@ -1,6 +1,11 @@
 import type { Session } from "@supabase/supabase-js";
+import { createAccountKit, type AccountKit } from "@gridwatch/account-kit";
 import { MAX_HANDLE_LENGTH } from "./config";
-import { supabase } from "./supabaseClient";
+
+// Where this game lives on the Nexus origin; sign-in on Nexus returns the player here.
+export const PLAY_RETURN_PATH = "/play/breach/";
+
+export const accountKit: AccountKit = createAccountKit({ returnPath: PLAY_RETURN_PATH });
 
 // Cached auth/profile state. The render loop reads these synchronously every
 // frame; mutations notify listeners so open UI can refresh in place.
@@ -9,6 +14,15 @@ let handle: string | null = null;
 let ready = false;
 const listeners = new Set<() => void>();
 
+// Each profile read gets a generation number; a slower, older read must never overwrite a
+// newer one's result (mirrors the kit's own header bar — see dist/header.js `refresh`).
+let generation = 0;
+// The last successfully-read handle, keyed to the user it belongs to. A failed read falls
+// back to this ONLY when it still matches the current user, so a transient error right after
+// an account switch can never surface another player's handle.
+let lastKnownProfile: { userId: string; handle: string | null } | null = null;
+
+// "disabled" is kept for API compatibility; the kit is always configured so it is never returned.
 export type AccountState = "disabled" | "loading" | "signed-out" | "needs-handle" | "ready";
 
 function notify(): void {
@@ -22,7 +36,6 @@ export function onAccountChange(listener: () => void): () => void {
 }
 
 export function accountState(): AccountState {
-  if (!supabase) return "disabled";
   if (!ready) return "loading";
   if (!session) return "signed-out";
   if (!handle) return "needs-handle";
@@ -41,55 +54,77 @@ export function accessToken(): string | null {
   return session?.access_token ?? null;
 }
 
-// Loads the current session + profile handle, then keeps them in sync with auth
-// state changes (sign-in, sign-out, token refresh, OAuth redirect completion).
-export async function initAccount(): Promise<void> {
-  if (!supabase) {
-    ready = true;
-    notify();
-    return;
-  }
+// The Nexus sign-in page, which returns the player to /play/breach/ afterwards.
+export function signInHref(): string {
+  return accountKit.signInUrl();
+}
 
-  const { data } = await supabase.auth.getSession();
-  session = data.session;
-  await loadHandle();
+// Loads the current session + profile handle, then keeps them in sync with auth
+// state changes (sign-in completed on Nexus, sign-out from any game, token refresh).
+// Note: the shared account kit's own header bar does the same `profiles` select for
+// every auth event, so each event costs two reads (bar + this module). Known and
+// accepted duplication, not a bug.
+export async function initAccount(): Promise<void> {
+  // Registered BEFORE the initial load so an auth event that arrives while that load is
+  // still in flight (e.g. a fast round-trip back from Nexus sign-in) is never missed. The
+  // generation guard in loadHandle() below keeps the two reads' results correctly ordered.
+  accountKit.onChange((nextSession) => {
+    generation += 1; // any later-resolving read of an older snapshot (incl. the initial one) is now stale
+    // Clear the handle immediately on a user switch so a reader between this event and the
+    // deferred profile read settling never sees the new session paired with the old user's
+    // handle (same-user token refreshes are not a switch, so they keep the handle as-is).
+    if (nextSession?.user.id !== session?.user.id) handle = null;
+    session = nextSession;
+    // Never await a Supabase call inside the auth callback (kit contract); defer the read.
+    setTimeout(() => {
+      void loadHandle().then(notify);
+    }, 0);
+  });
+
+  // Guard the initial read the same way: if an onChange event installs a newer session while
+  // this is still in flight (a fast Nexus sign-in redirect racing a slow/refreshing initial
+  // read), the stale result here must not overwrite it.
+  const mine = ++generation;
+  const initial = await accountKit.getSession(); // never rejects
+  if (mine === generation) {
+    session = initial; // no change event arrived while we waited
+  } // else: onChange already installed the newer session; keep it
+  await loadHandle(); // loadHandle takes its own generation and reads `session` now
   ready = true;
   notify();
-
-  supabase.auth.onAuthStateChange(async (_event, nextSession) => {
-    session = nextSession;
-    handle = null;
-    await loadHandle();
-    notify();
-  });
 }
 
 async function loadHandle(): Promise<void> {
-  if (!supabase || !session) {
+  const mine = ++generation;
+  const current = session;
+  if (!current) {
     handle = null;
     return;
   }
-  const { data } = await supabase
-    .from("profiles")
-    .select("handle")
-    .eq("user_id", session.user.id)
-    .maybeSingle();
-  handle = data?.handle ?? null;
-}
-
-export async function signIn(provider: "google" | "github"): Promise<void> {
-  if (!supabase) return;
-  await supabase.auth.signInWithOAuth({
-    provider,
-    options: { redirectTo: window.location.origin },
-  });
+  const userId = current.user.id;
+  try {
+    const profile = await accountKit.getProfile();
+    if (mine !== generation) return; // a newer read already superseded this one
+    handle = profile.handle;
+    lastKnownProfile = { userId, handle };
+  } catch (error) {
+    if (mine !== generation) return;
+    // A failed read keeps the last known handle for THIS user only (matches the shared bar).
+    handle = lastKnownProfile?.userId === userId ? lastKnownProfile.handle : null;
+    console.warn("[signal-breach] profile read failed:", error instanceof Error ? error.message : String(error));
+  }
 }
 
 export async function signOut(): Promise<void> {
-  if (!supabase) return;
-  await supabase.auth.signOut();
+  try {
+    await accountKit.signOut();
+  } catch (error) {
+    console.warn("[signal-breach] sign-out failed:", error instanceof Error ? error.message : String(error));
+    return;
+  }
   session = null;
   handle = null;
+  lastKnownProfile = null;
   notify();
 }
 
@@ -97,30 +132,34 @@ export type SaveHandleResult =
   | Readonly<{ ok: true; handle: string }>
   | Readonly<{ ok: false; error: string }>;
 
-// Creates or updates the signed-in player's display handle. Uniqueness is
-// enforced case-insensitively by the database; a collision returns a friendly
-// "taken" error.
+// Creates or updates the signed-in player's display handle through the kit, which enforces
+// the shared handle rule and maps the database's uniqueness violation to a friendly error.
 export async function saveHandle(raw: string): Promise<SaveHandleResult> {
-  if (!supabase || !session) {
+  if (!session) {
     return { ok: false, error: "Sign in first." };
   }
-  const cleaned = raw.replace(/\s+/g, " ").trim().slice(0, MAX_HANDLE_LENGTH);
+  const cleaned = raw.trim().slice(0, MAX_HANDLE_LENGTH);
   if (cleaned.length < 1) {
     return { ok: false, error: "Enter a handle." };
   }
-
-  const { error } = await supabase.from("profiles").upsert(
-    { user_id: session.user.id, handle: cleaned, updated_at: new Date().toISOString() },
-    { onConflict: "user_id" },
-  );
+  // Bind this save to the user who initiated it. The kit resolves the current user internally
+  // when it performs the upsert, so the write itself always lands on the right row even if the
+  // account changes mid-flight -- but the LOCAL cache below must not adopt it under whoever
+  // happens to be signed in once the await resolves.
+  const userId = session.user.id;
+  const error = await accountKit.saveHandle(cleaned);
   if (error) {
-    if (error.code === "23505") {
-      return { ok: false, error: "That handle is already taken." };
-    }
-    return { ok: false, error: "Could not save handle." };
+    return { ok: false, error };
   }
-
+  if (session?.user.id !== userId) {
+    // The account changed while saving; the kit saved under whoever was current when it read
+    // the session, not necessarily this user. Do not touch local state for either user.
+    return { ok: false, error: "Account changed while saving — try again." };
+  }
+  generation += 1; // supersede any in-flight profile read so it cannot clobber the saved handle
   handle = cleaned;
+  // Keep the fallback in sync so a later failed read still surfaces the handle we just saved.
+  lastKnownProfile = { userId, handle: cleaned };
   notify();
   return { ok: true, handle: cleaned };
 }

@@ -6,9 +6,10 @@ A static browser-playable cyberpunk signal-routing defense game built with Vite,
 
 GridWatch: Signal Breach is a three-sector signal-routing defense campaign. Place relays, firewalls, ICE turrets, scrubbers, and overclock nodes on 8x8 grids to keep the Source connected to the Core while probes, crawlers, spoofs, hunters, splitters, and a goliath corrupt the board over twelve deterministic waves.
 
-The game itself is a static client (no game logic on a server). The only network
-feature is an optional **high-score leaderboard** (see below); with no leaderboard
-env vars configured, the game runs fully offline with no network calls.
+The game itself is a static client (no game logic on a server). The **high-score
+leaderboard** and sign-in (see below) are always configured through the shared
+account kit; they are the only network features — the game itself still runs
+fully offline.
 
 ## How Codex Helped
 
@@ -31,7 +32,10 @@ npm run build
 npm run preview
 ```
 
-The Vite base path is `/` so the app is served from the root of its host.
+The Vite base path is `/play/breach/` — the path Nexus proxies this game behind.
+Serving from the old host's root (`/`) is a compatibility route only, handled
+by `public/_redirects` rewriting `/play/breach/*` requests back onto the same
+built assets; it is not a second base-path configuration.
 
 ### Expansion 1 Chapter 1 local acceptance
 
@@ -67,12 +71,13 @@ Pull requests get automatic Cloudflare preview deployments. A lightweight GitHub
 
 A global + per-sector **Top 20** leaderboard, backed by Supabase (`GridWatchGamesDB`,
 a shared multi-game database). Players view rankings from the title or game-over
-screen. Submitting a score requires signing in with **Google or GitHub**; each
-player picks a unique handle and the board keeps only their **personal best** per
-sector (and a single best-across-sectors row on the global board).
+screen. Submitting a score requires signing in — sign-in starts on Nexus and
+returns you to the game; each player picks a unique handle and the board keeps
+only their **personal best** per sector (and a single best-across-sectors row
+on the global board).
 
-**Identity & best-per-player.** Auth is handled by Supabase Auth (Google/GitHub
-OAuth). A `profiles` row maps each user to their handle, `scores` are owned by
+**Identity & best-per-player.** Auth is handled by the shared GridWatch account
+kit via Supabase Auth on Nexus. A `profiles` row maps each user to their handle, `scores` are owned by
 `user_id` with a unique `(game, category, user_id)`, and the Edge Function does a
 keep-best upsert (`record_score`) so replaying a sector only ever updates your own
 top score.
@@ -103,23 +108,11 @@ the active promotion gate.
 
 ### Configuration
 
-Set two build-time env vars in the **Cloudflare Pages** project (and `.env.local`
-for local dev — see `.env.example`). Both are publishable; protection comes from RLS
-plus replay validation, not secrecy:
-
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_ANON_KEY`
-
-These are **build-time** variables: Vite inlines them when the site is built, so
-after adding or changing them in the Cloudflare Pages project you must trigger a
-fresh production build (push to `main` or retry the latest deployment) for the
-values to take effect.
-
-The Supabase **service-role** key is never in the repo or frontend — it lives only in
-the Edge Function's runtime environment. If the env vars are absent, the leaderboard
-UI degrades gracefully and the game stays fully offline.
-
-**Auth providers.** Sign-in needs Google and GitHub enabled in **Supabase →
-Authentication → Sign In / Providers** (each provider's OAuth app uses the callback
-`https://<project-ref>.supabase.co/auth/v1/callback`), and the site origin plus
-`http://localhost:5173` listed under **Authentication → URL Configuration**.
+The leaderboard and sign-in use the shared GridWatch account kit (`@gridwatch/account-kit`),
+which owns the Supabase project coordinates; no environment variables are needed. Sign-in
+happens on Nexus (`https://nexus.warsignallabs.net/account/sign-in`) and returns the player
+to the game. The old hostname `gridwatch-signalbreach.warsignallabs.net` serves the game
+only; accounts, leaderboard submission and the pending-run stash live on the Nexus origin
+(`https://nexus.warsignallabs.net/play/breach/`) — signing in from the old host lands the
+player there, and a run stashed on the old host is not carried over (localStorage is per
+origin).

@@ -2,7 +2,7 @@ import type { RecordedCommand } from "../sim";
 
 const LEGACY_RULESET_ID = "legacy-v1";
 
-// Holds a finished run across an OAuth sign-in redirect (a full page reload),
+// Holds a finished run across the Nexus sign-in navigation (a full page reload),
 // so a signed-out player who signs in from the game-over screen doesn't lose the
 // run they just completed. The run is auto-submitted once they're signed in with
 // a handle.

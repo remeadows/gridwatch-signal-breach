@@ -54,7 +54,7 @@ body {
 
 .app-shell {
   width: 100vw;
-  min-height: 100vh;
+  min-height: calc(100vh - var(--gw-account-bar-height, 0px));
   display: grid;
   align-content: center;
   justify-content: center;
@@ -329,6 +329,12 @@ body {
   font-family: var(--font-display);
   font-size: 12px;
   text-transform: uppercase;
+}
+
+a.neon-button {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
 }
 
 .neon-button {
@@ -691,12 +697,12 @@ body {
 
 .screen-root {
   position: fixed;
-  inset: 0;
+  inset: var(--gw-account-bar-height, 0px) 0 0 0;
   z-index: 20;
 }
 
 .screen {
-  min-height: 100dvh;
+  min-height: calc(100dvh - var(--gw-account-bar-height, 0px));
   display: grid;
   place-items: center;
   padding: 28px;

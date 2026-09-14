@@ -455,8 +455,8 @@ Only after Step 5 passes:
 4. wait for the production Pages deployment;
 5. verify title, briefing, Build/full-refund, live/partial-refund, one sector
    playthrough, current Top 20 reads, sign-in/handle, and score submission;
-6. load once with `VITE_SUPABASE_*` absent or the browser offline and confirm no
-   Supabase request and uninterrupted offline play.
+6. load once signed out / offline and confirm no Supabase request and
+   uninterrupted offline play.
 
 Do not update Command Nexus to read Phase 4 aggregate/period rows in this
 promotion. Its legacy board remains intact until a separate reviewed change

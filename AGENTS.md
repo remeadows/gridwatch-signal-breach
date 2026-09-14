@@ -4,13 +4,14 @@
 
 GridWatch: Signal Breach is a static-first browser game and must remain fully
 playable offline. The **one sanctioned exception** is the optional online
-leaderboard (Supabase): OAuth sign-in (Google/GitHub) and authenticated score
-submission with server-side replay validation. This adds a build-time
-dependency (`@supabase/supabase-js`), `VITE_SUPABASE_*` env vars, and network
-calls — but only when those vars are configured. With them absent the game runs
-with no backend, no accounts, and no network traffic. Outside the leaderboard,
-keep it static: no other backends, API calls, secrets, runtime dependencies, or
-multiplayer. The core simulation stays pure and deterministic.
+leaderboard (Supabase): OAuth sign-in and authenticated score submission with
+server-side replay validation. The leaderboard and sign-in use the shared
+GridWatch account kit (`@gridwatch/account-kit`), which owns the Supabase
+project coordinates; no environment variables are needed. Sign-in happens on
+Nexus (`https://nexus.warsignallabs.net/account/sign-in`) and returns the
+player to the game. Outside the leaderboard, keep it static: no other
+backends, API calls, secrets, runtime dependencies, or multiplayer. The core
+simulation stays pure and deterministic.
 
 The current V2 product scope is a three-sector campaign with twelve total waves.
 Keep that campaign immutable: do not add sectors or waves to it, and do not
@@ -57,7 +58,7 @@ The canonical public repository is `https://github.com/remeadows/gridwatch-signa
 - Read `CONTEXT.md` before structural work.
 - Read `HANDOFF.md` before deployment, verification, or tuning work.
 - `src/main.ts` wires the app together and owns the requestAnimationFrame loop.
-- `vite.config.ts` sets `base: "/"` (served from the host root on Cloudflare Pages) and disables the modulepreload polyfill to avoid generated `fetch()`.
+- `vite.config.ts` sets `base: "/play/breach/"` because the game is served through the Nexus proxy at `https://nexus.warsignallabs.net/play/breach/`; `public/_redirects` rewrites `/play/breach/*` to the dist root so the same build also serves at the old host root. It still disables the modulepreload polyfill to avoid generated `fetch()`.
 
 ## Verification
 
@@ -72,7 +73,7 @@ rg -n "fetch|XMLHttpRequest|process\\.env|import\\.meta\\.env" src index.html pa
 find . -name '.env*' -print
 ```
 
-Expected: install/build/dev/preview succeed, the app renders at the host root (`/`), the `rg` command has no matches, and `find` prints no `.env*` files.
+Expected: install/build/dev/preview succeed, the app renders at `/play/breach/` (and still at `/` on the old host via the `_redirects` rewrite), the `rg` command matches only the sanctioned leaderboard path (`src/leaderboard/api.ts`, plus the `fetchLeaderboard` identifier in `src/ui/screens.ts` and bundled copies under `dist`), and `find` prints no `.env*` files.
 
 For public-repo security checks, also run:
 

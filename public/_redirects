@@ -1,0 +1,7 @@
+# Cloudflare Pages rewrite (status 200 = serve, not redirect): one build serves at the
+# host root AND behind the Nexus proxy at /play/breach/ (Nexus spec §1). Vite emits
+# asset URLs under /play/breach/assets/, which this maps back onto dist/assets/.
+# The bare prefix is listed explicitly above the splat rule so it never depends on
+# Pages' empty-splat behaviour.
+/play/breach/ /index.html 200
+/play/breach/* /:splat 200

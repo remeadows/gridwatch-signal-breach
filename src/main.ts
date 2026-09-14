@@ -324,7 +324,7 @@ function closeLeaderboard(): void {
   audio.playUi("select");
 }
 
-// Persists the just-finished run before an OAuth sign-in redirect so it can be
+// Persists the just-finished run before the Nexus sign-in navigation so it can be
 // auto-submitted when the player returns signed in.
 function stashPendingRunForSignIn(): void {
   pendingRunHandled = false;
@@ -581,8 +581,8 @@ function drawFrame(now: number): void {
   requestAnimationFrame(drawFrame);
 }
 
-// Restore any existing session and complete a pending OAuth redirect so the
-// leaderboard knows who the player is. No-op when the leaderboard is offline.
+// Restore any existing session and complete a pending Nexus sign-in navigation
+// so the leaderboard knows who the player is. No-op when the leaderboard is offline.
 // When the player becomes signed-in with a handle, auto-submit a run that was
 // stashed before the redirect.
 onAccountChange(() => {

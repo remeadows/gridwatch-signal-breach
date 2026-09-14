@@ -1,18 +1,10 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { leaderboardConfig } from "./config";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { getSupabase } from "@gridwatch/account-kit";
 
-// A single Supabase client for auth (OAuth sign-in + session) and reading the
-// player's own profile. Null when the leaderboard is unconfigured, so the game
-// still runs fully offline with no auth dependency.
-export const supabase: SupabaseClient | null = leaderboardConfig.enabled
-  ? createClient(leaderboardConfig.url, leaderboardConfig.anonKey, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        // Completes the OAuth redirect (?code=…) when the provider sends the
-        // player back to the app, then cleans the URL.
-        detectSessionInUrl: true,
-        flowType: "pkce",
-      },
-    })
-  : null;
+// The ONE Supabase client for the page, owned by the account kit so the game shares the
+// Nexus session (one origin ⇒ one browser-stored session). Sign-in happens on Nexus; this
+// client only reads the session and the player's own profile / leaderboard rows.
+//
+// No in-repo importer today; kept as the sanctioned way to reach the kit's client (the
+// expansion branch's save sync may use it).
+export const supabase: SupabaseClient = getSupabase();
