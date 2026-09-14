@@ -86,9 +86,14 @@ export function createAccountPanel(options: AccountPanelOptions): HTMLElement {
     // Full-page navigation to Nexus: persist the finished run first so it can be
     // auto-submitted when the player returns signed in. Registered for both
     // click and auxclick so a middle-click (opens in a new tab/window) also
-    // stashes the run — stashing twice is harmless, it's the same run.
+    // stashes the run — stashing twice is harmless, it's the same run. A
+    // right-click also emits auxclick but navigates nowhere, so only the
+    // middle button (1) counts there.
     for (const type of ["click", "auxclick"] as const) {
-      link.addEventListener(type, () => options.onBeforeSignIn?.());
+      link.addEventListener(type, (event) => {
+        if (type === "auxclick" && event.button !== 1) return;
+        options.onBeforeSignIn?.();
+      });
     }
     actions.append(link);
     root.append(actions);
