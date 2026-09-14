@@ -1,4 +1,5 @@
 import {
+  accountKit,
   accountState,
   currentEmail,
   currentHandle,
@@ -52,6 +53,23 @@ export function createAccountPanel(options: AccountPanelOptions): HTMLElement {
   };
 
   function renderSignedOut(): void {
+    // The old host is a compatibility shim: origin-scoped localStorage means a run stashed
+    // here cannot be read after sign-in redirects to Nexus. Say so plainly instead of
+    // silently dropping it, and send the player straight to Nexus to play there instead
+    // (no onBeforeSignIn, no stash — there is no run here that could carry over).
+    if (window.location.origin !== accountKit.config.nexusOrigin) {
+      root.append(line("Sign-in and score logging live on Nexus. Play there to log this run."));
+      const actions = document.createElement("div");
+      actions.className = "account-actions";
+      const link = document.createElement("a");
+      link.className = "neon-button neon-button-primary account-button";
+      link.href = accountKit.config.nexusOrigin + "/play/breach/";
+      link.textContent = "Play on Nexus";
+      actions.append(link);
+      root.append(actions);
+      return;
+    }
+
     root.append(
       line(
         options.mode === "submit"

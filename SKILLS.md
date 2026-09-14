@@ -40,8 +40,8 @@ Its opening static-only description predates the optional leaderboard; use
 - Keep drawing and animation in `src/render/`, input translation in `src/input/`,
   UI and WebAudio in `src/ui/`, and tuning in `src/data/`.
 - Stay on vanilla TypeScript, Vite, HTML, CSS, and Canvas2D.
-- Keep the core game fully playable offline. The optional Supabase leaderboard is
-  the only sanctioned network feature.
+- Keep the core game fully playable offline. The leaderboard and Nexus sign-in
+  (via the shared account kit) are the only sanctioned network features.
 - Do not add sectors beyond the existing three or waves beyond the existing
   twelve without an explicit project-scope change.
 - Preserve routing as the core verb: the player shapes the Source-to-Core signal
@@ -166,7 +166,7 @@ In addition to the UI lane:
 
 In addition to the applicable lanes:
 
-- Verify anonymous/offline play makes no leaderboard request when unconfigured.
+- Verify anonymous/offline play makes no leaderboard request when signed out / offline.
 - Verify Auth, handle selection, leaderboard reads, accepted replay submission,
   rejected invalid replay, and best-score behavior in a safe environment.
 - Verify Cloudflare preview before production, then smoke-test the custom domain.

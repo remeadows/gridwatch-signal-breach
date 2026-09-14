@@ -32,7 +32,10 @@ npm run build
 npm run preview
 ```
 
-The Vite base path is `/` so the app is served from the root of its host.
+The Vite base path is `/play/breach/` — the path Nexus proxies this game behind.
+Serving from the old host's root (`/`) is a compatibility route only, handled
+by `public/_redirects` rewriting `/play/breach/*` requests back onto the same
+built assets; it is not a second base-path configuration.
 
 ### Expansion 1 Chapter 1 local acceptance
 
@@ -68,12 +71,13 @@ Pull requests get automatic Cloudflare preview deployments. A lightweight GitHub
 
 A global + per-sector **Top 20** leaderboard, backed by Supabase (`GridWatchGamesDB`,
 a shared multi-game database). Players view rankings from the title or game-over
-screen. Submitting a score requires signing in with **Google or GitHub**; each
-player picks a unique handle and the board keeps only their **personal best** per
-sector (and a single best-across-sectors row on the global board).
+screen. Submitting a score requires signing in — sign-in starts on Nexus and
+returns you to the game; each player picks a unique handle and the board keeps
+only their **personal best** per sector (and a single best-across-sectors row
+on the global board).
 
-**Identity & best-per-player.** Auth is handled by Supabase Auth (Google/GitHub
-OAuth). A `profiles` row maps each user to their handle, `scores` are owned by
+**Identity & best-per-player.** Auth is handled by the shared GridWatch account
+kit via Supabase Auth on Nexus. A `profiles` row maps each user to their handle, `scores` are owned by
 `user_id` with a unique `(game, category, user_id)`, and the Edge Function does a
 keep-best upsert (`record_score`) so replaying a sector only ever updates your own
 top score.

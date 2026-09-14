@@ -70,6 +70,10 @@ export async function initAccount(): Promise<void> {
   // generation guard in loadHandle() below keeps the two reads' results correctly ordered.
   accountKit.onChange((nextSession) => {
     generation += 1; // any later-resolving read of an older snapshot (incl. the initial one) is now stale
+    // Clear the handle immediately on a user switch so a reader between this event and the
+    // deferred profile read settling never sees the new session paired with the old user's
+    // handle (same-user token refreshes are not a switch, so they keep the handle as-is).
+    if (nextSession?.user.id !== session?.user.id) handle = null;
     session = nextSession;
     // Never await a Supabase call inside the auth callback (kit contract); defer the read.
     setTimeout(() => {
@@ -138,13 +142,24 @@ export async function saveHandle(raw: string): Promise<SaveHandleResult> {
   if (cleaned.length < 1) {
     return { ok: false, error: "Enter a handle." };
   }
+  // Bind this save to the user who initiated it. The kit resolves the current user internally
+  // when it performs the upsert, so the write itself always lands on the right row even if the
+  // account changes mid-flight -- but the LOCAL cache below must not adopt it under whoever
+  // happens to be signed in once the await resolves.
+  const userId = session.user.id;
   const error = await accountKit.saveHandle(cleaned);
   if (error) {
     return { ok: false, error };
   }
+  if (session?.user.id !== userId) {
+    // The account changed while saving; the kit saved under whoever was current when it read
+    // the session, not necessarily this user. Do not touch local state for either user.
+    return { ok: false, error: "Account changed while saving — try again." };
+  }
+  generation += 1; // supersede any in-flight profile read so it cannot clobber the saved handle
   handle = cleaned;
   // Keep the fallback in sync so a later failed read still surfaces the handle we just saved.
-  lastKnownProfile = { userId: session.user.id, handle: cleaned };
+  lastKnownProfile = { userId, handle: cleaned };
   notify();
   return { ok: true, handle: cleaned };
 }
