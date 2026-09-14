@@ -14,6 +14,14 @@ let handle: string | null = null;
 let ready = false;
 const listeners = new Set<() => void>();
 
+// Each profile read gets a generation number; a slower, older read must never overwrite a
+// newer one's result (mirrors the kit's own header bar — see dist/header.js `refresh`).
+let generation = 0;
+// The last successfully-read handle, keyed to the user it belongs to. A failed read falls
+// back to this ONLY when it still matches the current user, so a transient error right after
+// an account switch can never surface another player's handle.
+let lastKnownProfile: { userId: string; handle: string | null } | null = null;
+
 // "disabled" is kept for API compatibility; the kit is always configured so it is never returned.
 export type AccountState = "disabled" | "loading" | "signed-out" | "needs-handle" | "ready";
 
@@ -54,11 +62,9 @@ export function signInHref(): string {
 // Loads the current session + profile handle, then keeps them in sync with auth
 // state changes (sign-in completed on Nexus, sign-out from any game, token refresh).
 export async function initAccount(): Promise<void> {
-  session = await accountKit.getSession();
-  await loadHandle();
-  ready = true;
-  notify();
-
+  // Registered BEFORE the initial load so an auth event that arrives while that load is
+  // still in flight (e.g. a fast round-trip back from Nexus sign-in) is never missed. The
+  // generation guard in loadHandle() below keeps the two reads' results correctly ordered.
   accountKit.onChange((nextSession) => {
     session = nextSession;
     // Never await a Supabase call inside the auth callback (kit contract); defer the read.
@@ -66,17 +72,30 @@ export async function initAccount(): Promise<void> {
       void loadHandle().then(notify);
     }, 0);
   });
+
+  session = await accountKit.getSession();
+  await loadHandle();
+  ready = true;
+  notify();
 }
 
 async function loadHandle(): Promise<void> {
-  if (!session) {
+  const mine = ++generation;
+  const current = session;
+  if (!current) {
     handle = null;
     return;
   }
+  const userId = current.user.id;
   try {
-    handle = (await accountKit.getProfile()).handle;
+    const profile = await accountKit.getProfile();
+    if (mine !== generation) return; // a newer read already superseded this one
+    handle = profile.handle;
+    lastKnownProfile = { userId, handle };
   } catch (error) {
-    // A failed read keeps the last known handle for this session (matches the shared bar).
+    if (mine !== generation) return;
+    // A failed read keeps the last known handle for THIS user only (matches the shared bar).
+    handle = lastKnownProfile?.userId === userId ? lastKnownProfile.handle : null;
     console.warn("[signal-breach] profile read failed:", error instanceof Error ? error.message : String(error));
   }
 }
@@ -90,6 +109,7 @@ export async function signOut(): Promise<void> {
   }
   session = null;
   handle = null;
+  lastKnownProfile = null;
   notify();
 }
 
@@ -112,6 +132,8 @@ export async function saveHandle(raw: string): Promise<SaveHandleResult> {
     return { ok: false, error };
   }
   handle = cleaned;
+  // Keep the fallback in sync so a later failed read still surfaces the handle we just saved.
+  lastKnownProfile = { userId: session.user.id, handle: cleaned };
   notify();
   return { ok: true, handle: cleaned };
 }
