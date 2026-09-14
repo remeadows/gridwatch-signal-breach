@@ -203,3 +203,15 @@ expectEqual(accessToken(), "token-u2", "The stale initial getSession() read must
 console.log(
   "verify-account-kit: a stale initial getSession() read can never clobber a session installed by a concurrent onChange event.",
 );
+
+// --- Task 3: the signed-out panel is a link to Nexus, not an OAuth starter, and the shared ---
+// --- account bar mounts in bootstrap.ts. ---
+
+import { readFileSync } from "node:fs";
+const accountUi = readFileSync("src/ui/account.ts", "utf8");
+if (/github|signIn\(/i.test(accountUi)) throw new Error("src/ui/account.ts must not start OAuth or mention GitHub; sign-in is a link to Nexus.");
+if (!accountUi.includes("signInHref()")) throw new Error("src/ui/account.ts must build the sign-in link from signInHref().");
+const bootstrap = readFileSync("src/bootstrap.ts", "utf8");
+if (!bootstrap.includes("mountAccountHeader(")) throw new Error("src/bootstrap.ts must mount the shared account bar.");
+
+console.log("verify-account-kit: sign-in is a Nexus link and the shared account bar is mounted.");

@@ -145,8 +145,3 @@ export async function saveHandle(raw: string): Promise<SaveHandleResult> {
   notify();
   return { ok: true, handle: cleaned };
 }
-
-/** @deprecated removed in the next commit — sign-in is a link to Nexus (see signInHref). */
-export async function signIn(_provider: "google" | "github"): Promise<void> {
-  window.location.assign(signInHref());
-}

@@ -1,5 +1,20 @@
 # GridWatch Handoff
 
+## 2026-09-14: One origin — served at /play/breach/ with the shared account kit
+
+- **Implementation**: Vite `base` is `/play/breach/`; `public/_redirects` rewrites the prefix
+  so the same build serves at the old host root. `@gridwatch/account-kit` v0.1.2 owns the
+  Supabase client and session; `src/leaderboard/account.ts` keeps its API but delegates to
+  the kit, `signIn()` is gone — the account panel links to the Nexus sign-in page
+  (`signInHref()`), and the shared bar mounts in `bootstrap.ts`. No env vars remain.
+- **Verification**: `verify:play-base` and `verify:account-kit` added to CI; build,
+  `typecheck:tools`, and the existing verify/balance scripts green.
+- **Rollout** (operator): merge → Pages deploys → old host `/` still 200 with
+  `/play/breach/assets/` URLs and `/play/breach/` 200 → Nexus PR adds the `breach`
+  upstream → deploy Nexus → `https://nexus.warsignallabs.net/play/breach/` with the
+  enforcing games CSP → Mac + iPhone acceptance (sign in on Nexus, open Breach signed in,
+  play, submit a score, sign out propagates).
+
 ## CodeRabbit Merge Gate Repair - In Progress - 2026-09-09
 
 - PR #79 merged without a CodeRabbit response because the live `main-protection`
