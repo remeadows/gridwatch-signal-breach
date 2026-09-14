@@ -57,7 +57,7 @@ The canonical public repository is `https://github.com/remeadows/gridwatch-signa
 - Read `CONTEXT.md` before structural work.
 - Read `HANDOFF.md` before deployment, verification, or tuning work.
 - `src/main.ts` wires the app together and owns the requestAnimationFrame loop.
-- `vite.config.ts` sets `base: "/"` (served from the host root on Cloudflare Pages) and disables the modulepreload polyfill to avoid generated `fetch()`.
+- `vite.config.ts` sets `base: "/play/breach/"` because the game is served through the Nexus proxy at `https://nexus.warsignallabs.net/play/breach/`; `public/_redirects` rewrites `/play/breach/*` to the dist root so the same build also serves at the old host root. It still disables the modulepreload polyfill to avoid generated `fetch()`.
 
 ## Verification
 
@@ -72,7 +72,7 @@ rg -n "fetch|XMLHttpRequest|process\\.env|import\\.meta\\.env" src index.html pa
 find . -name '.env*' -print
 ```
 
-Expected: install/build/dev/preview succeed, the app renders at the host root (`/`), the `rg` command has no matches, and `find` prints no `.env*` files.
+Expected: install/build/dev/preview succeed, the app renders at `/play/breach/` (and still at `/` on the old host via the `_redirects` rewrite), the `rg` command has no matches, and `find` prints no `.env*` files.
 
 For public-repo security checks, also run:
 

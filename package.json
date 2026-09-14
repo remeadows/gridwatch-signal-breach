@@ -20,7 +20,8 @@
     "verify:rusher": "node scripts/run-typescript.mjs scripts/verify-rusher.ts",
     "verify:sapper": "node scripts/run-typescript.mjs scripts/verify-sapper.ts",
     "verify:expansion-sim": "node scripts/run-typescript.mjs scripts/verify-expansion-sim.ts",
-    "verify:assets": "node scripts/verify-assets.mjs"
+    "verify:assets": "node scripts/verify-assets.mjs",
+    "verify:play-base": "node scripts/run-typescript.mjs scripts/verify-play-base.ts"
   },
   "devDependencies": {
     "esbuild": "^0.28.2",
