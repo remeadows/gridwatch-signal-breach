@@ -103,23 +103,7 @@ the active promotion gate.
 
 ### Configuration
 
-Set two build-time env vars in the **Cloudflare Pages** project (and `.env.local`
-for local dev — see `.env.example`). Both are publishable; protection comes from RLS
-plus replay validation, not secrecy:
-
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_ANON_KEY`
-
-These are **build-time** variables: Vite inlines them when the site is built, so
-after adding or changing them in the Cloudflare Pages project you must trigger a
-fresh production build (push to `main` or retry the latest deployment) for the
-values to take effect.
-
-The Supabase **service-role** key is never in the repo or frontend — it lives only in
-the Edge Function's runtime environment. If the env vars are absent, the leaderboard
-UI degrades gracefully and the game stays fully offline.
-
-**Auth providers.** Sign-in needs Google and GitHub enabled in **Supabase →
-Authentication → Sign In / Providers** (each provider's OAuth app uses the callback
-`https://<project-ref>.supabase.co/auth/v1/callback`), and the site origin plus
-`http://localhost:5173` listed under **Authentication → URL Configuration**.
+The leaderboard and sign-in use the shared GridWatch account kit (`@gridwatch/account-kit`),
+which owns the Supabase project coordinates; no environment variables are needed. Sign-in
+happens on Nexus (`https://nexus.warsignallabs.net/account/sign-in`) and returns the player
+to the game.

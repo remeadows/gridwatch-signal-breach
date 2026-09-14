@@ -4,13 +4,14 @@
 
 GridWatch: Signal Breach is a static-first browser game and must remain fully
 playable offline. The **one sanctioned exception** is the optional online
-leaderboard (Supabase): OAuth sign-in (Google/GitHub) and authenticated score
-submission with server-side replay validation. This adds a build-time
-dependency (`@supabase/supabase-js`), `VITE_SUPABASE_*` env vars, and network
-calls — but only when those vars are configured. With them absent the game runs
-with no backend, no accounts, and no network traffic. Outside the leaderboard,
-keep it static: no other backends, API calls, secrets, runtime dependencies, or
-multiplayer. The core simulation stays pure and deterministic.
+leaderboard (Supabase): OAuth sign-in and authenticated score submission with
+server-side replay validation. The leaderboard and sign-in use the shared
+GridWatch account kit (`@gridwatch/account-kit`), which owns the Supabase
+project coordinates; no environment variables are needed. Sign-in happens on
+Nexus (`https://nexus.warsignallabs.net/account/sign-in`) and returns the
+player to the game. Outside the leaderboard, keep it static: no other
+backends, API calls, secrets, runtime dependencies, or multiplayer. The core
+simulation stays pure and deterministic.
 
 The current V2 product scope is a three-sector campaign with twelve total waves.
 Keep that campaign immutable: do not add sectors or waves to it, and do not

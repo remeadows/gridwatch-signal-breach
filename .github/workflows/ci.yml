@@ -43,6 +43,7 @@ jobs:
           npm run typecheck:tools
           npm run verify:assets
           npm run verify:play-base
+          npm run verify:account-kit
           npm run verify:replays
           npm run verify:latency-trap
           npm run verify:rusher

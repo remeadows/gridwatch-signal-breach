@@ -1,6 +1,11 @@
 import type { Session } from "@supabase/supabase-js";
+import { createAccountKit, type AccountKit } from "@gridwatch/account-kit";
 import { MAX_HANDLE_LENGTH } from "./config";
-import { supabase } from "./supabaseClient";
+
+// Where this game lives on the Nexus origin; sign-in on Nexus returns the player here.
+export const PLAY_RETURN_PATH = "/play/breach/";
+
+export const accountKit: AccountKit = createAccountKit({ returnPath: PLAY_RETURN_PATH });
 
 // Cached auth/profile state. The render loop reads these synchronously every
 // frame; mutations notify listeners so open UI can refresh in place.
@@ -9,6 +14,7 @@ let handle: string | null = null;
 let ready = false;
 const listeners = new Set<() => void>();
 
+// "disabled" is kept for API compatibility; the kit is always configured so it is never returned.
 export type AccountState = "disabled" | "loading" | "signed-out" | "needs-handle" | "ready";
 
 function notify(): void {
@@ -22,7 +28,6 @@ export function onAccountChange(listener: () => void): () => void {
 }
 
 export function accountState(): AccountState {
-  if (!supabase) return "disabled";
   if (!ready) return "loading";
   if (!session) return "signed-out";
   if (!handle) return "needs-handle";
@@ -41,53 +46,48 @@ export function accessToken(): string | null {
   return session?.access_token ?? null;
 }
 
-// Loads the current session + profile handle, then keeps them in sync with auth
-// state changes (sign-in, sign-out, token refresh, OAuth redirect completion).
-export async function initAccount(): Promise<void> {
-  if (!supabase) {
-    ready = true;
-    notify();
-    return;
-  }
+// The Nexus sign-in page, which returns the player to /play/breach/ afterwards.
+export function signInHref(): string {
+  return accountKit.signInUrl();
+}
 
-  const { data } = await supabase.auth.getSession();
-  session = data.session;
+// Loads the current session + profile handle, then keeps them in sync with auth
+// state changes (sign-in completed on Nexus, sign-out from any game, token refresh).
+export async function initAccount(): Promise<void> {
+  session = await accountKit.getSession();
   await loadHandle();
   ready = true;
   notify();
 
-  supabase.auth.onAuthStateChange(async (_event, nextSession) => {
+  accountKit.onChange((nextSession) => {
     session = nextSession;
-    handle = null;
-    await loadHandle();
-    notify();
+    // Never await a Supabase call inside the auth callback (kit contract); defer the read.
+    setTimeout(() => {
+      void loadHandle().then(notify);
+    }, 0);
   });
 }
 
 async function loadHandle(): Promise<void> {
-  if (!supabase || !session) {
+  if (!session) {
     handle = null;
     return;
   }
-  const { data } = await supabase
-    .from("profiles")
-    .select("handle")
-    .eq("user_id", session.user.id)
-    .maybeSingle();
-  handle = data?.handle ?? null;
-}
-
-export async function signIn(provider: "google" | "github"): Promise<void> {
-  if (!supabase) return;
-  await supabase.auth.signInWithOAuth({
-    provider,
-    options: { redirectTo: window.location.origin },
-  });
+  try {
+    handle = (await accountKit.getProfile()).handle;
+  } catch (error) {
+    // A failed read keeps the last known handle for this session (matches the shared bar).
+    console.warn("[signal-breach] profile read failed:", error instanceof Error ? error.message : String(error));
+  }
 }
 
 export async function signOut(): Promise<void> {
-  if (!supabase) return;
-  await supabase.auth.signOut();
+  try {
+    await accountKit.signOut();
+  } catch (error) {
+    console.warn("[signal-breach] sign-out failed:", error instanceof Error ? error.message : String(error));
+    return;
+  }
   session = null;
   handle = null;
   notify();
@@ -97,30 +97,26 @@ export type SaveHandleResult =
   | Readonly<{ ok: true; handle: string }>
   | Readonly<{ ok: false; error: string }>;
 
-// Creates or updates the signed-in player's display handle. Uniqueness is
-// enforced case-insensitively by the database; a collision returns a friendly
-// "taken" error.
+// Creates or updates the signed-in player's display handle through the kit, which enforces
+// the shared handle rule and maps the database's uniqueness violation to a friendly error.
 export async function saveHandle(raw: string): Promise<SaveHandleResult> {
-  if (!supabase || !session) {
+  if (!session) {
     return { ok: false, error: "Sign in first." };
   }
-  const cleaned = raw.replace(/\s+/g, " ").trim().slice(0, MAX_HANDLE_LENGTH);
+  const cleaned = raw.trim().slice(0, MAX_HANDLE_LENGTH);
   if (cleaned.length < 1) {
     return { ok: false, error: "Enter a handle." };
   }
-
-  const { error } = await supabase.from("profiles").upsert(
-    { user_id: session.user.id, handle: cleaned, updated_at: new Date().toISOString() },
-    { onConflict: "user_id" },
-  );
+  const error = await accountKit.saveHandle(cleaned);
   if (error) {
-    if (error.code === "23505") {
-      return { ok: false, error: "That handle is already taken." };
-    }
-    return { ok: false, error: "Could not save handle." };
+    return { ok: false, error };
   }
-
   handle = cleaned;
   notify();
   return { ok: true, handle: cleaned };
+}
+
+/** @deprecated removed in the next commit — sign-in is a link to Nexus (see signInHref). */
+export async function signIn(_provider: "google" | "github"): Promise<void> {
+  window.location.assign(signInHref());
 }
