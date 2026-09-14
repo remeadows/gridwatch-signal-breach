@@ -1,5 +1,5 @@
 import type { Session, SupabaseClient } from "@supabase/supabase-js";
-import { accountKit, currentHandle, initAccount, signInHref } from "../src/leaderboard/account";
+import { accessToken, accountKit, accountState, currentEmail, currentHandle, initAccount, signInHref } from "../src/leaderboard/account";
 import { leaderboardConfig } from "../src/leaderboard/config";
 import { __setSupabaseForTests, SUPABASE_ANON_KEY, SUPABASE_URL } from "@gridwatch/account-kit";
 
@@ -62,14 +62,29 @@ let currentSession: Session | null = null;
 let authChangeCallback: ((event: string, session: Session | null) => void) | null = null;
 const profileReads: Array<Deferred<ProfileRow>> = [];
 
+type SessionRow = { data: { session: Session | null }; error: null };
+// Every call to auth.getSession() (both the direct one in initAccount() and the ones nested
+// inside the kit's getProfile()->currentUserId()) is recorded here. By default each call
+// resolves immediately with `currentSession` (matching the earlier, simpler fake) so the
+// existing profile-ordering scenarios below don't need to manage it. The final race scenario
+// flips `manualSessionReads` on to hold a specific getSession() call open long enough to
+// control its resolution order against an in-flight auth change.
+const sessionReads: Array<Deferred<SessionRow>> = [];
+let manualSessionReads = false;
+
 // Minimal fake client — only the methods account.ts's call path actually touches:
 // auth.getSession (used both by accountKit.getSession() and internally by getProfile()),
 // auth.onAuthStateChange (captures the callback the kit's onChange wraps), and
 // from("profiles").select().eq().maybeSingle() (the profile read itself).
 const fakeClient = {
   auth: {
-    async getSession() {
-      return { data: { session: currentSession }, error: null };
+    getSession(): Promise<SessionRow> {
+      const deferred = createDeferred<SessionRow>();
+      sessionReads.push(deferred);
+      if (!manualSessionReads) {
+        deferred.resolve({ data: { session: currentSession }, error: null });
+      }
+      return deferred.promise;
     },
     onAuthStateChange(callback: (event: string, session: Session | null) => void) {
       authChangeCallback = callback;
@@ -143,4 +158,48 @@ expectEqual(currentHandle(), null, "A failed read for a new user must not fall b
 
 console.log(
   "verify-account-kit: generation-guarded profile reads keep the newest session's handle and never leak a stale handle across users.",
+);
+
+// --- Race check 2: initAccount()'s OWN initial getSession() read must never clobber a ---
+// --- newer session that arrived via onChange while that initial read was still in flight. ---
+
+const sessionBase = sessionReads.length;
+const profileBase = profileReads.length;
+
+manualSessionReads = true;
+
+void initAccount();
+await flush();
+expectEqual(sessionReads.length, sessionBase + 1, "initAccount() must have its initial getSession() read pending.");
+
+// A fast Nexus sign-in redirect delivers u2 via onChange while the initial read is still parked.
+emitSession(u2);
+await flush();
+expectEqual(sessionReads.length, sessionBase + 2, "The onChange-triggered loadHandle() must start its own getSession() read.");
+sessionReads[sessionBase + 1].resolve({ data: { session: u2 }, error: null });
+await flush();
+expectEqual(profileReads.length, profileBase + 1, "The onChange-triggered loadHandle() must reach the profile read for u2.");
+profileReads[profileBase].resolve({ data: { handle: "second" }, error: null });
+await flush();
+
+// NOW resolve the STALE initial read with u1. It arrived after u2's onChange event and must
+// not be allowed to overwrite the session (or the handle it implies) that onChange installed.
+sessionReads[sessionBase].resolve({ data: { session: u1 }, error: null });
+await flush();
+expectEqual(sessionReads.length, sessionBase + 3, "initAccount()'s trailing loadHandle() must still run its own getSession() read.");
+sessionReads[sessionBase + 2].resolve({ data: { session: u2 }, error: null });
+await flush();
+expectEqual(profileReads.length, profileBase + 2, "initAccount()'s trailing loadHandle() must reach its own profile read.");
+profileReads[profileBase + 1].resolve({ data: { handle: "second" }, error: null });
+await flush();
+
+manualSessionReads = false;
+
+expectEqual(accountState(), "ready", "Account state must settle to ready once the initial load resolves.");
+expectEqual(currentHandle(), "second", "The stale initial getSession() read must not have clobbered the newer session's handle.");
+expectEqual(currentEmail(), "u2@example.com", "The stale initial getSession() read must not have clobbered the newer session.");
+expectEqual(accessToken(), "token-u2", "The stale initial getSession() read must not have clobbered the newer session's access token.");
+
+console.log(
+  "verify-account-kit: a stale initial getSession() read can never clobber a session installed by a concurrent onChange event.",
 );

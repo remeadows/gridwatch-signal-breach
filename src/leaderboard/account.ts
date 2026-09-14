@@ -66,6 +66,7 @@ export async function initAccount(): Promise<void> {
   // still in flight (e.g. a fast round-trip back from Nexus sign-in) is never missed. The
   // generation guard in loadHandle() below keeps the two reads' results correctly ordered.
   accountKit.onChange((nextSession) => {
+    generation += 1; // any later-resolving read of an older snapshot (incl. the initial one) is now stale
     session = nextSession;
     // Never await a Supabase call inside the auth callback (kit contract); defer the read.
     setTimeout(() => {
@@ -73,8 +74,15 @@ export async function initAccount(): Promise<void> {
     }, 0);
   });
 
-  session = await accountKit.getSession();
-  await loadHandle();
+  // Guard the initial read the same way: if an onChange event installs a newer session while
+  // this is still in flight (a fast Nexus sign-in redirect racing a slow/refreshing initial
+  // read), the stale result here must not overwrite it.
+  const mine = ++generation;
+  const initial = await accountKit.getSession(); // never rejects
+  if (mine === generation) {
+    session = initial; // no change event arrived while we waited
+  } // else: onChange already installed the newer session; keep it
+  await loadHandle(); // loadHandle takes its own generation and reads `session` now
   ready = true;
   notify();
 }
