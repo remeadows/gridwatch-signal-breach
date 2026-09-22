@@ -2,7 +2,7 @@ import { MAX_BODY_BYTES, hasLoneSurrogate, validateAgainst, type SavePayload } f
 import { MAX_EXPANSION_REPLAY_COMMANDS, MAX_EXPANSION_REPLAY_TICKS, validateExpansionCommands } from "../sim/expansion/replay";
 import { EXPANSION_CAMPAIGN_ID, EXPANSION_RULESET_ID, type ExpansionHardwareKind, type ExpansionRecordedCommand } from "../sim/expansion/types";
 import { EXPANSION_SAVE_SLOT, parseExpansionSave, type ExpansionSave } from "../ui/expansionSave";
-import { BREACH_EXPANSION_V1 } from "./expansionSaveSchema";
+import { BREACH_EXPANSION_V1 } from "@gridwatch/account-kit/saves-schema";
 
 // Immutable wire opcode assignment. Never derive this from the evolving UI/tile order.
 const UNITS: readonly ExpansionHardwareKind[] = Object.freeze(["relay", "firewall", "turret", "scrubber", "overclock", "latencyTrap", "arcIce"]);

@@ -15,6 +15,11 @@ import { ExpansionRunSession } from "./ui/expansionRunSession";
 import { ExpansionLocalSave } from "./ui/expansionLocalSave";
 import { ExpansionSaveUi } from "./ui/expansionSaveUi";
 import type { ProgressStorage } from "./ui/progress";
+import { initAccount, onSaveOwnerChange, saveOwner } from "./leaderboard/account";
+import { createExpansionCloudSave } from "./leaderboard/expansionCloudClient";
+import type { ExpansionAccountSave } from "./leaderboard/expansionAccountSave";
+import { mayReconcileExpansionSave } from "./ui/expansionSavePolicy";
+import { createExpansionSavePrompt } from "./ui/expansionSavePrompt";
 
 const canvas = required<HTMLCanvasElement>("#game-canvas");
 const context = canvas.getContext("2d");
@@ -30,10 +35,13 @@ const levelId = getRequestedLevelId();
 const level = getRequiredLevel(levelId);
 let run = new ExpansionRunSession(levelId, createSeed());
 let state = run.state;
-// This local package deliberately stays guest-only. Auth/cloud integration must
-// replace this adapter with an owner-scoped session, never upload the guest cache.
-const saves = new ExpansionLocalSave(browserStorage(), "guest", loadExpansionR4Progress().clearedLevels);
+let saves: ExpansionLocalSave | ExpansionAccountSave = new ExpansionLocalSave(browserStorage(), "guest", loadExpansionR4Progress().clearedLevels);
+let cloud: ExpansionAccountSave | null = null;
+let activeOwner: string | undefined;
+const saveBusy = () => activeOwner === undefined || (cloud?.busy ?? false);
 let checkpointError = false;
+let unsavedRunChanges = false;
+let reconcileAfterWave = false;
 let selectedTool: ExpansionPlayerTool = defaultTool();
 const artMode = getExpansionArtMode();
 let hover: GridPosition | null = null;
@@ -70,20 +78,53 @@ preloadExpansionLevelArt(level, artMode);
 buildHud();
 buildPicker();
 const saveUi = new ExpansionSaveUi({
-  saves, levelId, hud, overlay, canvas, background: [hud, picker, playUi, canvas],
+  get saves() { return saves; }, levelId, hud, overlay, canvas, background: [hud, picker, playUi, canvas],
+  cloudStatus: () => activeOwner === undefined ? "checking" : cloud?.cloudStatus ?? (activeOwner === "guest" ? "guest" : "blocked"),
+  isBusy: saveBusy, onRetry: queueCloudReconcile, syncDeferred: () => reconcileAfterWave,
   onResume: resumeSavedRun, onLevelSelect: openLevelSelect,
   onStartNew: () => {
+    if (saveBusy()) return;
     if (saves.status === "invalid") saves.discardUnreadable();
     else saves.update({ ...saves.save, checkpoint: null });
     saveUi.closeChoice();
   },
 });
+onSaveOwnerChange(() => {
+  const owner = saveOwner();
+  if (owner === undefined || owner === activeOwner) return;
+  cloud?.dispose();
+  cloud = null;
+  activeOwner = owner;
+  const local = new ExpansionLocalSave(browserStorage(), owner, owner === "guest" ? loadExpansionR4Progress().clearedLevels : []);
+  saves = local;
+  if (owner !== "guest") {
+    try { cloud = createExpansionCloudSave(local, owner, restoreSavePresentation, createExpansionSavePrompt()); saves = cloud; }
+    catch { /* Keep this owner's local cache; status reports cloud writes stopped. */ }
+  }
+  restoreSavePresentation();
+  void cloud?.retry();
+});
+window.addEventListener("online", queueCloudReconcile);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) queueCloudReconcile(); });
+void initAccount();
+
+function queueCloudReconcile(): void {
+  if (cloud) reconcileAfterWave = true;
+}
+
+function restoreSavePresentation(): void {
+  run = new ExpansionRunSession(levelId, createSeed());
+  resetRunPresentation();
+  lowQuality = new URLSearchParams(window.location.search).get("quality") === "low" || saves.save.settings.lowEffects;
+  hud.querySelector("[data-quality]")?.setAttribute("aria-pressed", String(lowQuality));
+  saveUi.refreshChoice();
+}
 
 installExpansionPointerInput({
   canvas,
   getState: () => state,
   getSelectedTool: () => selectedTool,
-  isEnabled: () => !saveUi.choiceOpen && !paused && (state.phase === "prep" || state.phase === "active"),
+  isEnabled: () => !saveBusy() && !saveUi.choiceOpen && !paused && (state.phase === "prep" || state.phase === "active"),
   onHover: (position) => { hover = position; if (position) rangePreview.inspect(position); },
   isRangePreviewEnabled: () => rangePreview.enabled,
   onRangePreview: inspectRange,
@@ -93,12 +134,13 @@ installExpansionKeyboardInput({
   canvas,
   getState: () => state,
   getSelectedTool: () => selectedTool,
-  isEnabled: () => !saveUi.choiceOpen && !paused && (state.phase === "prep" || state.phase === "active"),
+  isEnabled: () => !saveBusy() && !saveUi.choiceOpen && !paused && (state.phase === "prep" || state.phase === "active"),
   onFocus: (position) => { keyboardFocus = position; if (position) rangePreview.inspect(position); },
   dispatch,
 });
 
 window.addEventListener("keydown", (event) => {
+  if (saveBusy()) return;
   if (saveUi.handleKey(event)) return;
   if (guideOpen) {
     if (event.key === "Escape") { event.preventDefault(); closeGuide(); }
@@ -116,7 +158,7 @@ requestAnimationFrame(frame);
 
 function frame(now: number): void {
   visualTimeline.advance(now, paused);
-  if (!paused && running && state.phase === "active") {
+  if (!saveBusy() && !saveUi.choiceOpen && !paused && running && state.phase === "active") {
     let steps = 0;
     while (now - lastTime >= state.config.simulationTickMs && steps < 5 && state.phase === "active") {
       run.step();
@@ -133,6 +175,7 @@ function frame(now: number): void {
     running = false;
     try {
       checkpointError = !saves.update({ ...saves.save, checkpoint: run.checkpoint() });
+      if (!checkpointError) unsavedRunChanges = false;
     } catch { checkpointError = true; }
   }
   if (state.phase === "won" && !clearAttempted) {
@@ -141,6 +184,10 @@ function frame(now: number): void {
     saveLevelClear();
   }
   previousPhase = state.phase;
+  if (reconcileAfterWave && !saveBusy() && mayReconcileExpansionSave(state.phase, unsavedRunChanges)) {
+    reconcileAfterWave = false;
+    void cloud?.retry();
+  }
   drawExpansionGrid(renderContext, canvas, state, {
     ...visualTimeline.snapshot(state, reducedMotion),
     hover, focus: keyboardFocus, selectedTool,
@@ -157,7 +204,7 @@ function frame(now: number): void {
 }
 
 function dispatch(command: ExpansionSimCommand): void {
-  if (saveUi.choiceOpen || paused) return;
+  if (saveBusy() || saveUi.choiceOpen || paused) return;
   // Both pointer taps and keyboard placement/sale commands pass this one gate.
   // Preview never changes the grid, bandwidth, command log, or replay state.
   if (rangePreview.filterCommand(command) === null) {
@@ -167,6 +214,7 @@ function dispatch(command: ExpansionSimCommand): void {
   const previous = state;
   run.dispatch(command);
   state = run.state;
+  if (state !== previous) unsavedRunChanges = true;
   if (command.type !== "skipPrep") {
     const cell = `column ${command.position.x + 1}, row ${command.position.y + 1}`;
     toolStatus.textContent = state === previous
@@ -187,7 +235,7 @@ function exitRangePreview(): void {
 }
 
 function launchWave(): void {
-  if (saveUi.choiceOpen || paused || state.phase !== "prep" || running) return;
+  if (saveBusy() || saveUi.choiceOpen || paused || state.phase !== "prep" || running) return;
   dispatch({ type: "skipPrep" });
   running = true;
   paused = false;
@@ -195,6 +243,7 @@ function launchWave(): void {
 }
 
 function restart(): void {
+  if (saveBusy()) return;
   saves.update({ ...saves.save, checkpoint: null });
   run = new ExpansionRunSession(levelId, createSeed());
   resetRunPresentation();
@@ -204,6 +253,8 @@ function restart(): void {
 function resetRunPresentation(): void {
   state = run.state;
   checkpointError = false;
+  unsavedRunChanges = false;
+  reconcileAfterWave = false;
   selectedTool = defaultTool();
   hover = null;
   keyboardFocus = null;
@@ -241,6 +292,7 @@ function buildHud(): void {
   hud.querySelector("[data-exit]")?.addEventListener("click", openLevelSelect);
   hud.querySelector("[data-guide]")?.addEventListener("click", openGuide);
   hud.querySelector("[data-quality]")?.addEventListener("click", () => {
+    if (saveBusy()) return;
     lowQuality = !lowQuality;
     // An explicit toggle supersedes a preview URL override on subsequent reloads.
     const url = new URL(window.location.href);
@@ -397,7 +449,16 @@ function renderOverlay(): void {
   }
   if (state.phase === "prep" || state.phase === "active") { overlay.hidden = true; overlay.dataset.overlayKey = state.phase; return; }
   overlay.hidden = false;
-  if (overlay.dataset.overlayKey === state.phase) return;
+  if (overlay.dataset.overlayKey === state.phase) {
+    // Save completion is asynchronous; keep the victory copy truthful without
+    // rebuilding focused action buttons every time the cloud status changes.
+    if (state.phase === "won") {
+      const detail = overlay.querySelector<HTMLElement>(".terminal-detail");
+      const message = saveUi.message(checkpointError);
+      if (detail && detail.textContent !== message) detail.textContent = message;
+    }
+    return;
+  }
   overlay.dataset.overlayKey = state.phase;
   const score = calculateExpansionScore(state);
   const panel = document.createElement("section");
@@ -424,6 +485,7 @@ function saveLevelClear(): void {
 }
 
 function resumeSavedRun(): void {
+  if (saveBusy()) return;
   const checkpoint = saves.save.checkpoint;
   if (!checkpoint) return;
   if (checkpoint.replay.level !== levelId) { openLevel(checkpoint.replay.level); return; }
@@ -461,10 +523,12 @@ function action(label: string, onClick: () => void, primary: boolean): HTMLButto
 }
 
 function openLevel(levelToOpen: number): void {
+  if (saveBusy()) return;
   const url = navigationUrl(); url.searchParams.set("expansion-play", "1"); url.searchParams.set("level", String(levelToOpen)); window.location.assign(url.toString());
 }
 
 function openLevelSelect(): void {
+  if (saveBusy()) return;
   const url = navigationUrl(); url.searchParams.set("expansion-nav", "1"); url.searchParams.set("chapter", String(level.chapterId)); window.location.assign(url.toString());
 }
 

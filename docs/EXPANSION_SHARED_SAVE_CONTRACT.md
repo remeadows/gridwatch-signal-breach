@@ -1,7 +1,8 @@
-# Expansion shared-save contract — candidate v1
+# Expansion shared-save contract — v1
 
-Status: implemented and tested locally, **not activated or deployed**. The game
-still pins released account-kit v0.2.4 and does not configure `kit.saves`.
+Status: shared server deployed; game-side account adapter implemented locally,
+**not publicly activated or deployed**. The game pins released account-kit
+v0.2.5 and creates an owner-bound saves client from the kit's public primitives.
 The companion [account-kit PR #7](https://github.com/remeadows/gridwatch-account-kit/pull/7)
 was owner-merged as `f188d348`; post-merge CI passed and released tag `v0.2.5`
 points to that commit. Its tree matches the reviewed head `9d8643a`.
@@ -18,8 +19,9 @@ No migration was needed. Owner-approved Nexus `a7cb5c9` is now deployed as
 `fab82dec-eb86-4379-a25a-e5d3bb9c0e8e` (100%, 2026-09-22). Live Breach r4 GET
 now returns 401 without credentials; historical slots remain 404 and Match's
 gate is unchanged. See HANDOFF.md for smoke evidence and rollback baseline.
-The server rollout prerequisite is met; the game client remains unconfigured
-until account-owned reconciliation is implemented, reviewed and tested.
+The server rollout prerequisite is met. The local client now has account-owned
+reconciliation, conflict choices, retry/status UI and isolated tests. Real
+authenticated cross-device acceptance remains a separate gate.
 The companion registry patch is in the isolated account-kit checkout
 `/tmp/signal-breach-account-kit-20260922`, branch
 `codex/breach-expansion-save-schema`.
@@ -102,8 +104,8 @@ New mechanics/layouts need explicit versioning and compatibility review.
 
 No failures authorize falling back to the old standalone RPC, silently dropping
 a checkpoint, adopting guest saves into an account, or marking progress synced.
-Those UI and account reconciliation behaviors must be implemented in the next
-package before this codec can be used for cloud persistence.
+The local account adapter enforces these boundaries. A failed cloud adoption
+stops further cloud writes until reload, while preserving the local copy.
 
 ## Verification and release gates
 
@@ -113,13 +115,12 @@ package before this codec can be used for cloud persistence.
   and explicit out-of-grid no-op rejection without modifying local history.
 - Companion kit: full unit suite, typecheck and build; Match tests unchanged
   except the additive registry expectation. Breach slots and payloads isolated.
-- `npm run check:expansion-save-contract -- /path/to/built/account-kit`: exact
+- `npm run check:expansion-save-contract` (optional companion-checkout path): exact
   schema descriptor comparison and all 102 payload fixtures accepted by the
-  candidate registry, rejected as Match campaign data.
-- The local game schema mirror is temporary because v0.2.4 has no Breach export.
-  After the reviewed kit release, replace the mirror import with its released
-  `BREACH_EXPANSION_V1` export and run this contract check in normal CI against
-  the installed kit. Do not activate cloud saves with a divergent mirror.
+  released registry, rejected as Match campaign data.
+- The runtime codec imports the released `BREACH_EXPANSION_V1` export. The local
+  frozen mirror remains only as a compatibility fixture; normal CI compares it
+  with the installed kit. No runtime fallback to a divergent mirror is allowed.
 - Review/release kit first; pin the released kit in Nexus and verify its existing
   generic save service and database prerequisites. Deploy compatible server
   before enabling account-owned reconciliation and writes in the game.

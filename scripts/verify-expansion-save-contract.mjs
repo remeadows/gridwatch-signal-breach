@@ -3,9 +3,9 @@ import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { build } from "esbuild";
 
-// Explicit companion-checkout path; never replaces the game's pinned dependency.
-const candidate = process.argv[2];
-if (!candidate) throw new Error("Usage: npm run check:expansion-save-contract -- /path/to/built/account-kit");
+// Default to the released pinned dependency; an explicit companion checkout
+// remains available for future schema reviews and never replaces the pin.
+const candidate = process.argv[2] ?? "node_modules/@gridwatch/account-kit";
 const kit = await import(pathToFileURL(resolve(candidate, "dist/saves-schema/index.js")).href);
 const { outputFiles } = await build({ entryPoints: ["scripts/verify-expansion-save-codec.ts"],
   bundle: true, write: false, format: "esm", platform: "node", target: "es2022", logLevel: "silent" });

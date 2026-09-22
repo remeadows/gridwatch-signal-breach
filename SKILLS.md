@@ -2,6 +2,14 @@
 
 Last reviewed: 2026-09-22
 
+Current save package: the compatible Nexus server is deployed and the game now
+uses released account-kit v0.2.5 in a local owner-bound adapter. Run
+`verify:expansion-account-save` (including isolated two-device kit integration)
+and `check:expansion-save-contract` (defaults to the installed kit) alongside
+the existing codec/checkpoint/account/LAN lanes. Do not confuse these tests
+with real authenticated two-device acceptance. The runtime uses shared kit
+saves, not `expansionSaveApi.ts`'s historical standalone RPC prototype.
+
 Upstream reconciliation: use `/play/breach/` on local ports 4391/4393.
 Shared authentication comes from the account kit, not environment variables.
 Dedicated LAN preview explicitly disables account networking. Before cloud-save

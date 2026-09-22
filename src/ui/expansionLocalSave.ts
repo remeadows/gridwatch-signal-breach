@@ -10,7 +10,7 @@ export class ExpansionLocalSave {
   private currentStatus: LocalSaveStatus = "ready";
   private readonly key: string;
 
-  constructor(private readonly storage: ProgressStorage | null, private readonly owner: string, guestClears: readonly number[] = []) {
+  constructor(private readonly storage: ProgressStorage | null, readonly owner: string, guestClears: readonly number[] = []) {
     this.key = expansionSaveKey(owner);
     try {
       if (!storage) throw new Error("Storage unavailable");
@@ -25,6 +25,9 @@ export class ExpansionLocalSave {
 
   get save(): ExpansionSave { return this.value.save; }
   get status(): LocalSaveStatus { return this.currentStatus; }
+  get dirty(): boolean { return this.value.dirty; }
+  get revision(): number { return this.value.revision; }
+  get hasSave(): boolean { return this.expectedRaw != null || this.value.dirty; }
 
   clearLevel(levelId: number): boolean {
     const clearedLevels = this.save.clearedLevels.includes(levelId)
@@ -37,6 +40,28 @@ export class ExpansionLocalSave {
     try {
       this.value = { ...this.value, dirty: true, save: parseExpansionSave(save) };
     } catch { this.currentStatus = "checkpoint-error"; return false; }
+    return this.persist();
+  }
+
+  /** Cloud acknowledgments apply to exactly the payload sent, never newer local edits. */
+  acknowledge(revision: number, sent: ExpansionSave): boolean {
+    if (this.currentStatus === "invalid" || this.currentStatus === "conflict" || !Number.isSafeInteger(revision) || revision < this.value.revision) return false;
+    this.value = { ...this.value, revision, dirty: JSON.stringify(this.save) !== JSON.stringify(sent) };
+    return this.persist();
+  }
+
+  /** Adopt only after explicit reconciliation; stale-tab protection still applies. */
+  adopt(save: ExpansionSave, revision: number): boolean {
+    if (this.currentStatus === "invalid" || this.currentStatus === "conflict" || !Number.isSafeInteger(revision) || revision < 0) return false;
+    const next = { save: parseExpansionSave(save), revision, dirty: false };
+    const previous = this.value;
+    this.value = next;
+    const saved = this.persist();
+    if (!saved) this.value = previous;
+    return saved;
+  }
+
+  private persist(): boolean {
     try {
       if (!this.storage) throw new Error("Storage unavailable");
       const current = this.storage.getItem(this.key);

@@ -22,7 +22,8 @@ function makeProgress(highest: number, cleared: readonly number[]): ExpansionR4P
 }
 
 /** Guest navigation reads canonical clears without dual-writing the legacy key. */
-export function loadPlayableExpansionR4Progress(storage: ProgressStorage | null = browserStorage()): ExpansionR4Progress {
+export function loadPlayableExpansionR4Progress(storage: ProgressStorage | null = browserStorage(), owner = "guest"): ExpansionR4Progress {
+  if (owner !== "guest") return makeProgress(1, readLocalExpansionSave(storage, owner)?.save.clearedLevels ?? []);
   const retained = loadExpansionR4Progress(storage);
   const local = readLocalExpansionSave(storage, "guest");
   return makeProgress(retained.highestUnlockedLevel, [...retained.clearedLevels, ...(local?.save.clearedLevels ?? [])]);

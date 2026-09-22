@@ -2,28 +2,31 @@
 
 ## Shared-platform reconciliation — 2026-09-22
 
+Update: kit v0.2.5 and the compatible Nexus server are released/deployed.
+The game-side owner-bound adapter is now implemented locally and under review.
+See the latest HANDOFF entry for test evidence and remaining public release
+gates. References to v0.2.4 below describe the earlier audit, not the current pin.
+
 The owner approved proceeding in order after the shared-account/cloud-save audit.
 The shared Nexus platform now owns auth and generic cloud saves. Do not ship a
 parallel expansion login or deploy the older standalone RPC prototype unchanged.
 
 1. Integrate upstream `7609592` (`/play/breach/`, account bar and kit identity)
    while retaining the 25-level campaign. Local checkpoint: `380763d`.
-2. Adopt the released account kit v0.2.4. Its registry currently accepts Match,
-   not Breach; simply adding `game` to the Breach kit config throws at startup.
-   Register `breach` / `gridwatch-signal-breach` / revision-isolated expansion
-   slot in the shared kit, release it after review, then update Nexus's schema
-   dependency and deploy the compatible server before enabling the game client.
+2. Completed: register `breach` / `gridwatch-signal-breach` / the revision-isolated
+   expansion slot, release kit v0.2.5, pin it in Nexus and deploy the compatible
+   server. The initial v0.2.4 audit accepted only Match; that blocker is resolved.
 3. Adapt the expansion save codec to the shared 65,536-byte **whole request**
    limit (the old local envelope allows 96,000 bytes). Preserve canonical local
    saves and complete replay history; never silently truncate commands. Test
    maximum sizes, malformed data and exact checkpoint round trips. The shared
    schema cannot currently represent `null` or union types, so the wire shape
    needs an explicit tested mapping, not a cast of the existing local envelope.
-   Local candidate schema/codec is now implemented; see
+   Released schema/codec is now implemented; see
    `EXPANSION_SHARED_SAVE_CONTRACT.md` for the immutable opcode mapping, limits,
-   cross-repository verification and remaining release gates. It is not wired
-   into gameplay and the installed kit remains v0.2.4.
-4. Wire authenticated save ownership/reconciliation. Gate writes until the
+   cross-repository verification and remaining release gates. The local game
+   now uses the installed v0.2.5 export and owner-bound save adapter.
+4. Implemented locally: authenticated save ownership/reconciliation. Gate writes until the
    current account's reconciliation finishes; reject stale completions after
    account changes. Handle `use_cloud`, `fresh`, `discarded`, offline retries
    and `onBackgroundStored` truthfully. Guest data never uploads implicitly.
@@ -64,7 +67,7 @@ become the next signed-in user's save. No destructive reset is required.
 2. The local cloud-save model, sync controller, transport, RPC migration and
    verification scripts exist. Gameplay now captures replay-backed checkpoints
    and offers browser-only guest resume. Auth-aware sync/navigation integration
-   and two-device production-auth QA remain incomplete.
+   is implemented locally; two-device production-auth QA remains incomplete.
 3. `assertExpansionContentPublished` in the server's expansion validation module
    rejects every submission. A canonical immutable r4 registry, expansion replay
    bundle, server-derived score path and client submission UI are required.

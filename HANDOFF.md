@@ -1,5 +1,65 @@
 # GridWatch Handoff
 
+## Game-side shared saves — tested local checkpoint, 2026-09-22
+
+- Working on the owner-approved next package in `codex/expansion-25-local`.
+  Installed the released account-kit v0.2.5; the runtime codec now uses its
+  registered Breach schema. Nexus's compatible server was deployed in the
+  preceding checkpoint below. No game push/deployment or production save/score
+  write was performed for this local package.
+- Added an immutable-owner save adapter using the kit's public saves client,
+  transport, CAS/conflict prompts, refresh and retry implementation. Its auth
+  getter is owner-bound; auth identity changes notify synchronously, dispose the
+  old client, and load a separate account cache. Guest data never uploads.
+- Kit bookkeeping is per session, seeded from the account cache's durable
+  revision/dirty envelope. Confirmations persist with their matching payload;
+  a background/older acknowledgment cannot clear newer edits. Failed cloud
+  adoption stops the client until reload so an already-confirmed kit revision
+  cannot silently overwrite the cloud copy with stale local data.
+- Gameplay and navigation now expose guest/account sync status, explicit retry,
+  conflict choices and wave-boundary resume. Gameplay input/simulation pauses
+  while a foreground save/reconciliation is pending. Local play and account
+  caches remain available on network errors; initialization failure falls back
+  to that account's local cache, never a disposed previous account's cache.
+- Verification so far: build/tool typecheck, account/account-LAN checks,
+  progress/r4 progress, replay, preview policy, play base, save codec/contract,
+  local run session and shared-kit adapter tests pass. All 100 checkpoints
+  round-trip and continue to identical wins; isolated two-device CAS tests
+  cover offline edits and both conflict choices. A fake-auth/fetch-tripwire
+  test proves an account switch during session lookup sends no request.
+  Audit reports zero vulnerabilities. The original validator regenerates
+  byte-identically. No `.env*` files; network changes stay in the sanctioned
+  account/save boundary.
+- Browser QA through the in-app browser: local preview at
+  `http://127.0.0.1:4393/play/breach/?expansion-play=1&level=1`, desktop,
+  320x740, 390x844 and 844x390. Guest settings survive reload, navigation reads
+  existing guest clears, and an actual Wave 1 clear saves/restores Wave 2
+  (70 bandwidth, 180 core). No warning/error logs observed. This touched only
+  the local guest checkpoint, not an authenticated cloud save.
+- CodeRabbit: first tracked-file pass reported four findings representing two
+  duplicates (busy choice buttons; deep-linked chapter restoration), fixed.
+  The full staged-file pass completed with seven findings representing five
+  unique issues, all fixed (UI module placement, listener containment, shared retry refresh,
+  navigation/gameplay cloud-init fallbacks). Third full pass found one valid
+  issue twice: reconnect reconciliation could replace an active run. Fixed by
+  deferring automatic/manual retry until a saved wave boundary; edited build
+  phases are protected too, with policy regressions. Its other suggestion to
+  add `status: discarded` is not applicable to kit v0.2.5: the released union
+  returns `status: error, error.message: discarded`, already handled, now
+  explicitly tested. The lighter follow-up completed with six findings covering
+  three unique items: README network scope, stale release-plan status and UI
+  prompt construction. All are fixed; prompts are now injected from `src/ui/`.
+  Post-fix build, tool types, adapter/account/LAN tests and Codex inspection pass.
+  The last CodeRabbit response predates that final small cleanup: do not call
+  this a zero-findings head review or bypass fresh PR checks before publication.
+- Remaining gates: owner local acceptance and fresh publication reviews, real signed-in two-device
+  acceptance through a reviewed Nexus-served build, isolated replay-validated
+  expansion leaderboards, full release checks and public client activation.
+  Localhost sign-in still returns to the canonical Nexus path; mocked
+  two-device tests are not production-auth/cross-device acceptance evidence.
+  Expansion public feature flags remain closed; shared DB and other games
+  are unchanged.
+
 ## Nexus production rollout complete — 2026-09-22
 
 - Owner explicitly approved deploying Nexus `a7cb5c9`. Deployed the exact clean

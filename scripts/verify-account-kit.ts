@@ -1,5 +1,5 @@
 import type { Session, SupabaseClient } from "@supabase/supabase-js";
-import { accessToken, accountKit, accountState, currentEmail, currentHandle, initAccount, saveHandle, signInHref, signOut } from "../src/leaderboard/account";
+import { accessToken, accountKit, accountState, currentEmail, currentHandle, initAccount, saveHandle, signInHref, signOut, saveOwner, onSaveOwnerChange } from "../src/leaderboard/account";
 import { leaderboardConfig } from "../src/leaderboard/config";
 import { __setSupabaseForTests, SUPABASE_ANON_KEY, SUPABASE_URL } from "@gridwatch/account-kit";
 
@@ -236,7 +236,13 @@ console.log(
   expectEqual(currentHandle(), "first", "Priming: switch-1 should be signed in with handle 'first'.");
 
   const switchUser2 = makeSession("switch-2");
+  let observedOwner: string | undefined;
+  const unobserveFailure = onSaveOwnerChange(() => { throw new Error("test listener failure"); });
+  const unobserve = onSaveOwnerChange(() => { observedOwner = saveOwner(); });
   emitSession(switchUser2); // switch-2's profile read has not started (or resolved) yet.
+  expectEqual(observedOwner, "switch-2", "Save ownership must change synchronously, before a delayed profile read.");
+  unobserve();
+  unobserveFailure();
   expectEqual(
     currentHandle(),
     null,
@@ -362,5 +368,5 @@ expectEqual(signOutScopes.length, 1, "Sign-out must reach the shared client once
 expectEqual(JSON.stringify(signOutScopes[0]), JSON.stringify({ scope: "local" }), "Sign-out must be browser-local, never global.");
 expectEqual(accountState(), "signed-out", "Account state must clear after sign-out.");
 expectEqual(accessToken(), null, "Cached access token must clear after sign-out.");
-expectEqual(accountKit.saves, undefined, "Do not enable expansion saves before Breach schema registration and server rollout.");
-console.log("verify-account-kit: local sign-out preserves other devices; unpublished cloud saves remain disabled.");
+expectEqual(accountKit.saves, undefined, "Expansion uses an owner-bound kit saves client, not an unpartitioned global client.");
+console.log("verify-account-kit: local sign-out preserves other devices; expansion saves use a separately owner-bound client.");

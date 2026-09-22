@@ -76,6 +76,8 @@ jobs:
           npm run verify:expansion-save-sync
           npm run verify:expansion-save-api
           npm run verify:expansion-save-codec
+          npm run verify:expansion-account-save
+          npm run check:expansion-save-contract
           npm run verify:expansion-r4-drafts
           npm run verify:expansion-canvas
           npm run verify:expansion-r4-evidence

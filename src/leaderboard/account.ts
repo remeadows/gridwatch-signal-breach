@@ -13,6 +13,22 @@ let session: Session | null = null;
 let handle: string | null = null;
 let ready = false;
 const listeners = new Set<() => void>();
+const ownerListeners = new Set<() => void>();
+let ownerReady = false;
+
+/** Auth identity notification is synchronous; profile reads must not delay save fencing. */
+export function saveOwner(): string | undefined { return ownerReady ? session?.user.id ?? "guest" : undefined; }
+export function onSaveOwnerChange(listener: () => void): () => void {
+  ownerListeners.add(listener);
+  return () => ownerListeners.delete(listener);
+}
+function notifyOwner(): void {
+  ownerReady = true;
+  for (const listener of ownerListeners) {
+    try { listener(); }
+    catch (error) { console.warn("[signal-breach] save-owner listener failed:", error instanceof Error ? error.message : String(error)); }
+  }
+}
 
 // Each profile read gets a generation number; a slower, older read must never overwrite a
 // newer one's result (mirrors the kit's own header bar — see dist/header.js `refresh`).
@@ -66,7 +82,7 @@ export function signInHref(): string {
 // every auth event, so each event costs two reads (bar + this module). Known and
 // accepted duplication, not a bug.
 export async function initAccount(): Promise<void> {
-  if (!accountNetworkingEnabled) { ready = true; notify(); return; }
+  if (!accountNetworkingEnabled) { ready = true; notifyOwner(); notify(); return; }
   // Registered BEFORE the initial load so an auth event that arrives while that load is
   // still in flight (e.g. a fast round-trip back from Nexus sign-in) is never missed. The
   // generation guard in loadHandle() below keeps the two reads' results correctly ordered.
@@ -77,6 +93,7 @@ export async function initAccount(): Promise<void> {
     // handle (same-user token refreshes are not a switch, so they keep the handle as-is).
     if (nextSession?.user.id !== session?.user.id) handle = null;
     session = nextSession;
+    notifyOwner();
     // Never await a Supabase call inside the auth callback (kit contract); defer the read.
     setTimeout(() => {
       void loadHandle().then(notify);
@@ -90,6 +107,7 @@ export async function initAccount(): Promise<void> {
   const initial = await accountKit.getSession(); // never rejects
   if (mine === generation) {
     session = initial; // no change event arrived while we waited
+    notifyOwner();
   } // else: onChange already installed the newer session; keep it
   await loadHandle(); // loadHandle takes its own generation and reads `session` now
   ready = true;
@@ -126,6 +144,7 @@ export async function signOut(): Promise<void> {
     return;
   }
   session = null;
+  notifyOwner();
   handle = null;
   lastKnownProfile = null;
   notify();

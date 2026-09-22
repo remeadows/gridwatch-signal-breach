@@ -27,7 +27,12 @@ import { renderUnitPicker } from "./ui/unitPicker";
 import { getCommandFeedback } from "./ui/toolInfo";
 import { leaderboardConfig } from "./leaderboard/config";
 import { submitScore } from "./leaderboard/api";
-import { accessToken, accountState, initAccount, onAccountChange } from "./leaderboard/account";
+import { accessToken, accountState, initAccount, onAccountChange, onSaveOwnerChange, saveOwner } from "./leaderboard/account";
+import { ExpansionLocalSave } from "./ui/expansionLocalSave";
+import { createExpansionCloudSave } from "./leaderboard/expansionCloudClient";
+import type { ExpansionAccountSave } from "./leaderboard/expansionAccountSave";
+import { renderExpansionNavigationSaveStatus } from "./ui/expansionNavigationSaveUi";
+import { createExpansionSavePrompt } from "./ui/expansionSavePrompt";
 import { savePendingRun, takePendingRun } from "./leaderboard/pendingRun";
 import type { GamePhase, GridPosition, PlayerTool, RecordedCommand, SimCommand } from "./sim";
 import { getCurrentWave } from "./sim/waves";
@@ -96,10 +101,13 @@ function dispatch(command: SimCommand): void {
 }
 
 let progress: GameProgress = loadGameProgress();
-const expansionProgress = expansionNavigationEnabled ? loadPlayableExpansionR4Progress() : loadPlayableExpansionR4Progress(null);
+let expansionProgress = loadPlayableExpansionR4Progress(null);
+let navigationSave: ExpansionAccountSave | null = null;
+let navigationOwner: string | undefined;
 let currentSector = getInitialSector(getSignalBreachProgress(progress));
 const navigationQuery = new URLSearchParams(window.location.search);
 const requestedChapter = Number(navigationQuery.get("chapter"));
+let pendingRequestedChapter = navigationQuery.get("expansion-nav") === "1";
 const requestedChapterAvailable = isExpansionChapterAvailable(requestedChapter, expansionProgress.highestUnlockedLevel);
 let selectedExpansionChapterId = requestedChapterAvailable ? requestedChapter : 1;
 document.documentElement.dataset.sector = String(currentSector);
@@ -589,7 +597,24 @@ function drawFrame(now: number): void {
     leaderboardNotice,
   });
 
+  renderNavigationSaveStatus();
   requestAnimationFrame(drawFrame);
+}
+
+function renderNavigationSaveStatus(): void {
+  if (!expansionNavigationEnabled || !["chapterSelect", "levelSelect"].includes(screen)) return;
+  renderExpansionNavigationSaveStatus(screenContainer, navigationOwner, navigationSave, () => { void navigationSave?.retry().then(refreshExpansionProgress); });
+}
+
+function refreshExpansionProgress(): void {
+  expansionProgress = loadPlayableExpansionR4Progress(undefined, navigationOwner ?? "guest");
+  if (pendingRequestedChapter && isExpansionChapterAvailable(requestedChapter, expansionProgress.highestUnlockedLevel)) {
+    selectedExpansionChapterId = requestedChapter;
+    if (screen === "chapterSelect") screen = "levelSelect";
+    pendingRequestedChapter = false;
+  }
+  if (!isExpansionChapterAvailable(selectedExpansionChapterId, expansionProgress.highestUnlockedLevel)) selectedExpansionChapterId = 1;
+  screenContainer.dataset.screenKey = "";
 }
 
 // Restore any existing session and complete a pending Nexus sign-in navigation
@@ -599,6 +624,24 @@ function drawFrame(now: number): void {
 onAccountChange(() => {
   void maybeAutoSubmitPendingRun();
 });
+if (expansionNavigationEnabled) {
+  onSaveOwnerChange(() => {
+    const owner = saveOwner();
+    if (owner === undefined || owner === navigationOwner) return;
+    navigationSave?.dispose();
+    navigationSave = null;
+    navigationOwner = owner;
+    let storage: Storage | null = null;
+    try { storage = window.localStorage; } catch { /* Offline in-memory play remains available. */ }
+    if (owner !== "guest") {
+      try { navigationSave = createExpansionCloudSave(new ExpansionLocalSave(storage, owner), owner, refreshExpansionProgress, createExpansionSavePrompt()); }
+      catch { /* Keep this owner's local progress, never the disposed account's adapter. */ }
+    }
+    refreshExpansionProgress();
+    void navigationSave?.retry().then(refreshExpansionProgress);
+  });
+  window.addEventListener("online", () => { void navigationSave?.retry().then(refreshExpansionProgress); });
+}
 void initAccount();
 
 requestAnimationFrame(drawFrame);
