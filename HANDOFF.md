@@ -1,5 +1,46 @@
 # GridWatch Handoff
 
+## Shared-kit publication — 2026-09-22
+
+- Owner approved proceeding from the local schema/codec checkpoint. Refreshed
+  upstream: kit main/tag v0.2.4 still `30848922`; Nexus main `9bc257ae` pins it.
+- Published only the companion kit branch and opened
+  https://github.com/remeadows/gridwatch-account-kit/pull/7 at `9d8643a`.
+  It contains reviewed schema commit `ef5d859` plus v0.2.5 candidate metadata.
+  The v0.2.5 tag does not exist yet; the game's dependency remains v0.2.4.
+- Requested both `@codex review` and `@coderabbitai review`. Initial `329db64`
+  review: Codex found no major issues; CodeRabbit had no actionable findings and
+  one docstring warning. Added JSDoc to the test helper in `9d8643a`, reran all
+  306 tests/typecheck/check:dist, and requested both reviews on that head. Both
+  CI runs pass. Final current-head reviews are complete: CodeRabbit successful
+  with no actionable comments; Codex reports no major issues on `9d8643a`.
+  Zero review conversations exist. PR is open and ready for owner merge.
+  Kit main currently has neither rulesets nor legacy branch protection; no
+  security settings were changed and the owner review gate remains in force.
+- Fresh local verification: kit 306 tests/typecheck/reproducible dist pass;
+  game cross-repo contract still passes all 102 payloads and 100 round trips.
+- Read-only production route checks: Breach r4 GET returns 404 `unknown_game`;
+  Match campaign GET returns 401 `unauthorized` without credentials. This proves
+  routing/auth gates only, not authenticated save persistence or DB readiness.
+- Inspected unmodified Nexus checkout `/tmp/signal-breach-nexus-20260922`.
+  Fresh install, typecheck and all 124 unit tests pass without source changes.
+  A temporary mocked integration smoke (`/tmp/breach-nexus-candidate-smoke.mjs`)
+  aliases only the built candidate schema into the unchanged handler: Breach
+  GET/PUT user/game/slot parameters, 401, historical-slot 404, malformed/cross-game
+  payload rejection and CAS 409 all pass. This is not a deployed server or live
+  authenticated save test; every auth/RPC call was mocked.
+  Its generic handler resolves alias/slot/schema from the pinned kit and scopes
+  RPCs by verified user, game slug and slot. After kit merge/tag, add a released
+  dependency pin and mocked handler tests for Breach GET/PUT, no-auth rejection,
+  unknown historical slots, malformed payloads, CAS conflict and Match isolation.
+  Verify generic RPC migration/secret readiness separately before server rollout.
+- No game branch push, Nexus code change, release tag, merge, migration,
+  deployment or production save/score write occurred in this publication step.
+- NEXT: owner merges account-kit PR #7; verify the merged commit and CI before
+  tagging v0.2.5. Then prepare the Nexus released dependency update and route
+  regressions, review, and separately verify/authorize the server rollout before
+  enabling the game's authenticated save adapter.
+
 ## Shared save schema/codec candidate — 2026-09-22
 
 - Working on the next bounded release package: compact r4 wire codec plus an
