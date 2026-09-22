@@ -9,9 +9,13 @@ points to that commit. Its tree matches the reviewed head `9d8643a`.
 pins that release and adds eight handler regressions (132 total unit tests pass).
 Local CodeRabbit and desktop/375px shell QA pass. GitHub validation and
 current-head CodeRabbit/Codex reviews pass, with no review conversations;
-PR #29 remains open for owner merge.
-No server deployment has occurred. Nexus's existing sharp toolchain advisory
-(Dependabot PR #17) must also be resolved/re-audited before deployment.
+PR #29 was owner-merged as `00a949c`; dependency-fix PR #17 was then merged as
+`a7cb5c9`. Post-merge CI and full audit pass. CodeRabbit CLI completed the exact
+PR #17 diff with zero findings (the GitHub bot check itself remained skipped).
+Read-only readiness verified the existing game row, all three deployed generic
+RPC bodies/grants against the reviewed migration, and the production secret name.
+No migration is needed. No server deployment has occurred; owner authorization
+for the Nexus-only rollout remains next. See HANDOFF.md for rollback baseline.
 Do not activate the game client before the reviewed server rollout.
 The companion registry patch is in the isolated account-kit checkout
 `/tmp/signal-breach-account-kit-20260922`, branch

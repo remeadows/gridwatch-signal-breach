@@ -1,5 +1,36 @@
 # GridWatch Handoff
 
+## Nexus server readiness verified — 2026-09-22
+
+- Read-only readiness pass for merged Nexus main `a7cb5c9`. Fresh main CI is
+  successful; it remains the reviewed/tested tree with kit v0.2.5 and the clean
+  dependency audit. No new code, deployment or DB mutation in this pass.
+- Confirmed Supabase project `mggxfzzxrpjgpzhwiwqi` is healthy GridWatchGamesDB.
+  Migration `20260921165036_cloud_saves_generic` is applied. All three generic
+  RPC body MD5s match the reviewed repository migration exactly. Functions are
+  postgres-owned SECURITY DEFINER, empty search_path, service_role execute only
+  (anon/authenticated execution denied). Both tables have RLS; no anon or
+  authenticated DML grants or policies. Request-table service DML is revoked;
+  the pre-existing game_saves service access remains unchanged.
+- Existing game rows include Breach, Match, Drift and Zero. No registration
+  insert or migration is required. Inspected schema metadata only, not player
+  save payloads; no RPC save/score writes or synthetic score tests occurred.
+- Confirmed existing Nexus Worker in Cloudflare account
+  `210e77c9da5741b3aa1b6199a082d70b`. Production secret name
+  `SUPABASE_SERVICE_ROLE_KEY` exists; its value was not read. Latest deployed
+  version/rollback baseline: `e5f1f376-2943-45d0-a60f-a6968aa38bfc` (100%,
+  2026-09-21T22:09:29Z), deployment `715f4aa1-88d6-409c-9dd6-60a6c3d104c3`.
+- Production baseline: home HTTP 200; unauthenticated Match save GET 401;
+  Breach r4 GET 404 unknown_game, so new schema is not deployed yet.
+- NEXT owner gate: approve Nexus-only rollout of `a7cb5c9`, using the verified
+  account and explicit production environment. Rebuild/test/dry-run from the
+  clean merged tree before uploading. Then require Breach r4 unauthenticated
+  GET 401, historical slots 404, Match still 401, home/sign-in/game routes healthy.
+  Stop/roll back to the captured version on unexpected auth/proxy/save failures;
+  never delete shared data or disable the shared save secret as routine rollback.
+  Leave the game client unchanged. Authenticated save/reload and cross-device
+  acceptance still require the upcoming account-owned game integration.
+
 ## Nexus PR #17 review completed — 2026-09-22
 
 - Owner merged PR #17 as `a7cb5c9`; post-merge CI passed. Its tree is identical
