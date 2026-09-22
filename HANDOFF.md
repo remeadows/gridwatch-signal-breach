@@ -1,5 +1,33 @@
 # GridWatch Handoff
 
+## Shared save schema/codec candidate — 2026-09-22
+
+- Working on the next bounded release package: compact r4 wire codec plus an
+  additive shared-kit registry entry for `breach` / `gridwatch-signal-breach` /
+  `expansion-1-r4`, schema v1. The installed game kit remains released v0.2.4;
+  this code is not wired to gameplay and does not enable network writes.
+- See `docs/EXPANSION_SHARED_SAVE_CONTRACT.md`. All 100 wave boundaries across
+  25 levels round-trip exactly and continue to wins. Worst structural request:
+  46,677 / 65,536 bytes. Existing 96,000-byte local limit remains enforced.
+  Unencodable no-op coordinates fail explicitly; no history is dropped.
+- Companion kit checkout `/tmp/signal-breach-account-kit-20260922` has the
+  additive schema, regenerated distribution and 306 passing tests. Game/kit
+  schema descriptors match exactly and 102 payload fixtures pass the candidate
+  registry while remaining invalid for Match. Companion local commit `ef5d859`;
+  a recovery patch lives in `docs/companion-patches/` (instructions in contract).
+- Final checks: build, tools typecheck, all 30 game verifiers, cross-repo contract,
+  audit (zero vulnerabilities), and byte-identical original validator pass. Kit
+  tests/typecheck/build and `check:dist` pass. Codex self-review added malformed
+  Unicode/future-unit guards. CodeRabbit: final game diff and companion kit diff
+  both zero findings; these are local reviews, not GitHub approvals.
+- In-app browser QA on the rebuilt 4393 preview: chapter screen -> Chapter 1
+  level selection works; screenshot shows content, no blank/error overlay and
+  no console warnings/errors. No auth, cross-device or new mobile acceptance is
+  claimed by this smoke check. Existing local clears were preserved.
+- NEXT after local review: reviewed kit release and Nexus dependency/server
+  compatibility first; then account-owned reconciliation and honest sync UI.
+  No push, release tag, deployment, migration or production DB write in this work.
+
 ## Account-kit v0.2.4 adoption — 2026-09-22
 
 - Upstream reconciliation is committed locally as `380763d`. Follow-on package

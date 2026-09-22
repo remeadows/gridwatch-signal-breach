@@ -30,6 +30,8 @@
     "verify:expansion-run-session": "node scripts/run-typescript.mjs scripts/verify-expansion-run-session.ts",
     "verify:expansion-save-sync": "node scripts/run-typescript.mjs scripts/verify-expansion-save-sync.ts",
     "verify:expansion-save-api": "node scripts/run-typescript.mjs scripts/verify-expansion-save-api.ts",
+    "verify:expansion-save-codec": "node scripts/run-typescript.mjs scripts/verify-expansion-save-codec.ts",
+    "check:expansion-save-contract": "node scripts/verify-expansion-save-contract.mjs",
     "verify:expansion-r4-evidence": "node scripts/run-typescript.mjs scripts/verify-expansion-r4-evidence.ts",
     "verify:expansion-r4-drafts": "node scripts/run-typescript.mjs scripts/verify-r4-drafts.ts",
     "verify:expansion-canvas": "node scripts/run-typescript.mjs scripts/verify-expansion-canvas.ts",

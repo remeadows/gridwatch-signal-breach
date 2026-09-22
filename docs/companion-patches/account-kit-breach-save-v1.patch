@@ -1,0 +1,194 @@
+diff --git a/README.md b/README.md
+index 98a0a3d..885e8c2 100644
+--- a/README.md
++++ b/README.md
+@@ -32,0 +33,15 @@ mountAccountHeader(kit);
++The registry also defines Breach's isolated `expansion-1-r4` slot (alias `breach`,
++game slug `gridwatch-signal-breach`, schema version 1). `BREACH_EXPANSION_V1` is
++exported from `./saves-schema`. This additive registration alone does not enable
++any client's cloud saves: deploy a compatible Nexus server before configuring
++Breach's `game` option. Match's schema and slots are unchanged.
++
++Breach payloads contain `contentRevision`, `clearedLevels`, `settings.lowEffects`,
++and an optional compact checkpoint (omit it when absent). The schema checks
++structure only; the game must decode and deterministically replay the checkpoint
++before adoption. It contains no trusted scores or auth fields. Command integers
++encode `tick * 1024 + opcode * 64 + y * 8 + x`: opcode 0 is launch (cell zero),
++1 sells, and 2–8 place relay/firewall/turret/scrubber/overclock/latencyTrap/arcIce.
++The game rejects reserved opcodes 9–15, invalid history and hashes. Only r4 is
++registered; original campaign and historical expansion slots stay outside it.
++
+diff --git a/dist/saves-schema/breach.d.ts b/dist/saves-schema/breach.d.ts
+new file mode 100644
+index 0000000..7ba4153
+--- /dev/null
++++ b/dist/saves-schema/breach.d.ts
+@@ -0,0 +1,5 @@
++import type { Schema } from "./validate.js";
++/** Frozen v1 wire shape for breach / expansion-1-r4. Structural validation only:
++ * the game must unpack commands and deterministically validate the checkpoint.
++ * Scores, credentials and trusted simulation snapshots are deliberately absent. */
++export declare const BREACH_EXPANSION_V1: Schema;
+diff --git a/dist/saves-schema/breach.js b/dist/saves-schema/breach.js
+new file mode 100644
+index 0000000..aed8e2e
+--- /dev/null
++++ b/dist/saves-schema/breach.js
+@@ -0,0 +1,24 @@
++/** Frozen v1 wire shape for breach / expansion-1-r4. Structural validation only:
++ * the game must unpack commands and deterministically validate the checkpoint.
++ * Scores, credentials and trusted simulation snapshots are deliberately absent. */
++export const BREACH_EXPANSION_V1 = {
++    type: "object",
++    optional: ["checkpoint"],
++    properties: {
++        contentRevision: { type: "string", maxLength: 14, pattern: /^expansion-1-r4$/ },
++        clearedLevels: { type: "array", maxLength: 25, items: { type: "integer", min: 1, max: 25 } },
++        settings: { type: "object", properties: { lowEffects: { type: "boolean" } } },
++        checkpoint: {
++            type: "object",
++            properties: {
++                completedWaves: { type: "integer", min: 1, max: 4 },
++                tick: { type: "integer", min: 1, max: 12000 },
++                level: { type: "integer", min: 1, max: 25 },
++                contentHash: { type: "string", maxLength: 64, pattern: /^[0-9a-f]{64}$/ },
++                seed: { type: "string", maxLength: 200, pattern: /[\s\S]/ },
++                // t * 1024 + opcode * 64 + y * 8 + x; reserved opcodes rejected by game.
++                commands: { type: "array", maxLength: 5000, items: { type: "integer", min: 0, max: 12287551 } },
++            },
++        },
++    },
++};
+diff --git a/dist/saves-schema/games.js b/dist/saves-schema/games.js
+index 9cee8b9..f88bc43 100644
+--- a/dist/saves-schema/games.js
++++ b/dist/saves-schema/games.js
+@@ -1,0 +2 @@ import { findDeniedKey } from "./denylist.js";
++import { BREACH_EXPANSION_V1 } from "./breach.js";
+@@ -7,0 +9 @@ export const SAVE_GAMES = Object.freeze({
++    breach: Object.freeze({ slug: "gridwatch-signal-breach", slots: Object.freeze(["expansion-1-r4"]), schemaVersion: 1 }),
+@@ -52,0 +55 @@ export const payloadSchemas = Object.freeze({
++    "gridwatch-signal-breach": Object.freeze({ 1: Object.freeze({ "expansion-1-r4": BREACH_EXPANSION_V1 }) }),
+diff --git a/dist/saves-schema/index.d.ts b/dist/saves-schema/index.d.ts
+index 1b4916a..1adb314 100644
+--- a/dist/saves-schema/index.d.ts
++++ b/dist/saves-schema/index.d.ts
+@@ -5,0 +6 @@ export * from "./games.js";
++export * from "./breach.js";
+diff --git a/dist/saves-schema/index.js b/dist/saves-schema/index.js
+index 1b4916a..1adb314 100644
+--- a/dist/saves-schema/index.js
++++ b/dist/saves-schema/index.js
+@@ -5,0 +6 @@ export * from "./games.js";
++export * from "./breach.js";
+diff --git a/src/saves-schema/breach.ts b/src/saves-schema/breach.ts
+new file mode 100644
+index 0000000..08e27b3
+--- /dev/null
++++ b/src/saves-schema/breach.ts
+@@ -0,0 +1,26 @@
++import type { Schema } from "./validate.js";
++/** Frozen v1 wire shape for breach / expansion-1-r4. Structural validation only:
++ * the game must unpack commands and deterministically validate the checkpoint.
++ * Scores, credentials and trusted simulation snapshots are deliberately absent. */
++export const BREACH_EXPANSION_V1: Schema = {
++  type: "object",
++  optional: ["checkpoint"],
++  properties: {
++    contentRevision: { type: "string", maxLength: 14, pattern: /^expansion-1-r4$/ },
++    clearedLevels: { type: "array", maxLength: 25, items: { type: "integer", min: 1, max: 25 } },
++    settings: { type: "object", properties: { lowEffects: { type: "boolean" } } },
++    checkpoint: {
++      type: "object",
++      properties: {
++        completedWaves: { type: "integer", min: 1, max: 4 },
++        tick: { type: "integer", min: 1, max: 12000 },
++        level: { type: "integer", min: 1, max: 25 },
++        contentHash: { type: "string", maxLength: 64, pattern: /^[0-9a-f]{64}$/ },
++        seed: { type: "string", maxLength: 200, pattern: /[\s\S]/ },
++        // t * 1024 + opcode * 64 + y * 8 + x; reserved opcodes rejected by game.
++        commands: { type: "array", maxLength: 5000, items: { type: "integer", min: 0, max: 12287551 } },
++      },
++    },
++  },
++};
++
+diff --git a/src/saves-schema/games.ts b/src/saves-schema/games.ts
+index b8fe8e7..13ff599 100644
+--- a/src/saves-schema/games.ts
++++ b/src/saves-schema/games.ts
+@@ -1,0 +2 @@ import { findDeniedKey } from "./denylist.js";
++import { BREACH_EXPANSION_V1 } from "./breach.js";
+@@ -10,0 +12 @@ export const SAVE_GAMES: Readonly<Record<string, SaveGame | undefined>> = Object
++  breach: Object.freeze({ slug: "gridwatch-signal-breach", slots: Object.freeze(["expansion-1-r4"]), schemaVersion: 1 }),
+@@ -62,0 +65 @@ export const payloadSchemas: Readonly<
++  "gridwatch-signal-breach": Object.freeze({ 1: Object.freeze({ "expansion-1-r4": BREACH_EXPANSION_V1 }) }),
+diff --git a/src/saves-schema/index.ts b/src/saves-schema/index.ts
+index 1b4916a..1adb314 100644
+--- a/src/saves-schema/index.ts
++++ b/src/saves-schema/index.ts
+@@ -5,0 +6 @@ export * from "./games.js";
++export * from "./breach.js";
+diff --git a/tests/savesSchema.breach.test.ts b/tests/savesSchema.breach.test.ts
+new file mode 100644
+index 0000000..9de531a
+--- /dev/null
++++ b/tests/savesSchema.breach.test.ts
+@@ -0,0 +1,45 @@
++import { describe, expect, it } from "vitest";
++import { resolveSaveGame, validatePayload } from "../src/saves-schema/games";
++import { MAX_BODY_BYTES } from "../src/saves-schema/wire";
++
++const empty = { contentRevision: "expansion-1-r4", clearedLevels: [], settings: { lowEffects: false } };
++const checkpoint = { completedWaves: 4, tick: 12000, level: 25, contentHash: "a".repeat(64), seed: "test", commands: [0, 12287551] };
++const validate = (value: unknown) => validatePayload("gridwatch-signal-breach", 1, "expansion-1-r4", value);
++
++describe("Breach expansion save registry", () => {
++  it("registers only the isolated r4 slot, not original campaign or historical revisions", () => {
++    expect(resolveSaveGame("breach")).toEqual({ slug: "gridwatch-signal-breach", slots: ["expansion-1-r4"], schemaVersion: 1 });
++    for (const slot of ["campaign", "settings", "expansion-1-r1", "expansion-1-r3"]) {
++      expect(validatePayload("gridwatch-signal-breach", 1, slot, empty)).toEqual({ ok: false, detail: "unknown_schema" });
++    }
++    expect(validatePayload("gridwatch-signal-breach", 2, "expansion-1-r4", empty).ok).toBe(false);
++    expect(validatePayload("gridwatch-match", 1, "expansion-1-r4", empty).ok).toBe(false);
++  });
++  it("accepts progress/settings with an optional compact checkpoint", () => {
++    expect(validate(empty)).toEqual({ ok: true });
++    expect(validate({ ...empty, clearedLevels: [1, 25], checkpoint })).toEqual({ ok: true });
++  });
++  it("rejects unknown fields, invalid identities, limits, and state/auth blobs", () => {
++    for (const value of [
++      { ...empty, contentRevision: "expansion-1-r3" },
++      { ...empty, clearedLevels: [0] }, { ...empty, clearedLevels: [26] },
++      { ...empty, clearedLevels: Array(26).fill(1) },
++      { ...empty, checkpoint: null }, { ...empty, score: 123 },
++      { ...empty, accessToken: "never-store-credentials" },
++      { ...empty, settings: { lowEffects: 1 } },
++      ...[{ level: 26 }, { tick: 12001 }, { completedWaves: 5 }, { seed: "" },
++        { seed: "x".repeat(201) }, { contentHash: "wrong" }, { state: {} },
++        { commands: [NaN] }, { commands: [-1] }, { commands: [1.5] },
++        { commands: [12287552] }, { commands: Array(5001).fill(0) }]
++        .map((change) => ({ ...empty, checkpoint: { ...checkpoint, ...change } })),
++    ]) expect(validate(value).ok).toBe(false);
++  });
++  it("fits the full 5000-command structural maximum inside the entire UTF-8 request limit", () => {
++    const payload = { ...empty, clearedLevels: Array.from({ length: 25 }, (_, i) => i + 1),
++      checkpoint: { ...checkpoint, seed: "\u0000".repeat(200), commands: Array(5000).fill(12287551) } };
++    expect(validate(payload)).toEqual({ ok: true });
++    const request = { schemaVersion: 1, baseRevision: Number.MAX_SAFE_INTEGER, payload,
++      deviceId: "a".repeat(36), idempotencyKey: "b".repeat(36) };
++    expect(new TextEncoder().encode(JSON.stringify(request)).length).toBeLessThan(MAX_BODY_BYTES);
++  });
++});
+diff --git a/tests/savesSchema.games.test.ts b/tests/savesSchema.games.test.ts
+index 9d2e8b7..fe4e350 100644
+--- a/tests/savesSchema.games.test.ts
++++ b/tests/savesSchema.games.test.ts
+@@ -18,2 +18,2 @@ describe("save game registry", () => {
+-  it("registers only Match in 4a", () => {
+-    expect(SAVE_GAMES).toEqual({ match: { slug: "gridwatch-match", slots: ["campaign", "settings"], schemaVersion: 1 } });
++  it("registers Match and the isolated Breach expansion slot", () => {
++    expect(SAVE_GAMES).toEqual({ match: { slug: "gridwatch-match", slots: ["campaign", "settings"], schemaVersion: 1 }, breach: { slug: "gridwatch-signal-breach", slots: ["expansion-1-r4"], schemaVersion: 1 } });
+@@ -21 +21 @@ describe("save game registry", () => {
+-    for (const alias of ["zero", "breach", "drift", "gambit", "MATCH", "match/"]) expect(resolveSaveGame(alias)).toBeNull();
++    for (const alias of ["zero", "drift", "gambit", "MATCH", "match/"]) expect(resolveSaveGame(alias)).toBeNull();

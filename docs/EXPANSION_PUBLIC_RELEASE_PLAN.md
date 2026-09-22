@@ -19,6 +19,10 @@ parallel expansion login or deploy the older standalone RPC prototype unchanged.
    maximum sizes, malformed data and exact checkpoint round trips. The shared
    schema cannot currently represent `null` or union types, so the wire shape
    needs an explicit tested mapping, not a cast of the existing local envelope.
+   Local candidate schema/codec is now implemented; see
+   `EXPANSION_SHARED_SAVE_CONTRACT.md` for the immutable opcode mapping, limits,
+   cross-repository verification and remaining release gates. It is not wired
+   into gameplay and the installed kit remains v0.2.4.
 4. Wire authenticated save ownership/reconciliation. Gate writes until the
    current account's reconciliation finishes; reject stale completions after
    account changes. Handle `use_cloud`, `fresh`, `discarded`, offline retries

@@ -8,6 +8,10 @@ Dedicated LAN preview explicitly disables account networking. Before cloud-save
 rollout, reconcile the local expansion RPC prototype with the shared Nexus save
 service and register a compatible expansion schema. Older verification counts,
 six-chapter references and root-host URLs below are historical.
+The local schema/codec candidate is documented in
+`docs/EXPANSION_SHARED_SAVE_CONTRACT.md`; test it with
+`verify:expansion-save-codec` and the explicit companion-kit contract check.
+Do not enable cloud writes until the reviewed kit/Nexus server is compatible.
 
 Release override: the owner now requests public expansion with cloud saves and
 leaderboards, permits GitHub review/publication, and accepts current Blender art.
