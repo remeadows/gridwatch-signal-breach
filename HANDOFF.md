@@ -1,5 +1,23 @@
 # GridWatch Handoff
 
+## Nexus PR #17 review completed — 2026-09-22
+
+- Owner merged PR #17 as `a7cb5c9`; post-merge CI passed. Its tree is identical
+  to reviewed/tested `86d5a85` and includes account-kit v0.2.5 from PR #29.
+- GitHub CodeRabbit remained a skipped bot review despite manual requests.
+  Completed authenticated CLI review of the exact committed diff from
+  `00a949cb51f0978ca138b15ed68ecccb05d97f92` to `86d5a85`, without `--light`.
+  Result: `review_completed`, zero findings, both `package.json` and
+  `package-lock.json` reviewed. Recorded evidence on Nexus PR #17; this does not
+  claim the skipped GitHub check ran or change any protection settings.
+- Codex GitHub review completed on `86d5a85` with no major issues. Fresh full
+  audit reports zero vulnerabilities; full CI passes all 132 unit tests plus
+  production build/typecheck, shell, environment and bundle checks. No fixes
+  needed. No production deployment, DB mutation or save activation performed.
+- NEXT: verify shared server migration/game registration/secret readiness and
+  authorize Nexus rollout before enabling the game account-owned save adapter.
+  Dependency and review gaps are closed; live save acceptance is still pending.
+
 ## Nexus PR #17 conflict verification — 2026-09-22
 
 - Owner merged Nexus PR #29 as `00a949c`; post-merge validation passed.
