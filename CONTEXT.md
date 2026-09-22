@@ -2,10 +2,11 @@
 
 GridWatch: Signal Breach is a static-first browser game built with Vite, vanilla
 TypeScript, and Canvas2D. The game remains fully playable offline. Its one
-sanctioned network feature is the optional Supabase leaderboard: Auth, reads,
-and replay-validated score submissions are enabled only when
-`VITE_SUPABASE_*` build variables are configured. The Vite base path is `/` so
-the app is served from the root of its host (Cloudflare Pages).
+sanctioned network feature is the leaderboard and sign-in, which come from the
+shared `@gridwatch/account-kit`; no environment variables are needed. The Vite
+base path is `/play/breach/` because the game is served through the Nexus
+proxy; `public/_redirects` maps the `/play/breach/` prefix back to the dist
+root so the same build still serves at the old host root (Cloudflare Pages).
 
 ## Architecture
 

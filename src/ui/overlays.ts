@@ -11,10 +11,10 @@ export type OverlayOptions = Readonly<{
   onSectorSelect: () => void;
   onNextSector: (() => void) | null;
   onViewLeaderboard: () => void;
-  // Null when the leaderboard is unconfigured; the submit UI is then hidden.
+  // Null when score submission is unavailable; the submit UI is then hidden.
   // Submits the current run for the signed-in player (identity comes from auth).
   onSubmitScore: (() => Promise<SubmitResult>) | null;
-  // Persists the finished run before an OAuth sign-in redirect.
+  // Persists the finished run before the Nexus sign-in navigation.
   onBeforeSignIn: () => void;
   // The Build phase is rendered by playUi.ts without covering the grid. Only a
   // true pause needs a full-board clock-gate cover here.

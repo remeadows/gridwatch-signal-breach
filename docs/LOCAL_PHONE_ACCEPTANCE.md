@@ -11,11 +11,12 @@ npm run dev:phone
 ```
 
 Use Vite's printed private Network address on port 4392 and append
-`?expansion-nav=1`. This explicit development mode accepts private IPv4 hosts
+`/play/breach/?expansion-nav=1`. This explicit development mode accepts private IPv4 hosts
 only. Do not forward the port or expose it to the internet. Stop the server
 after acceptance. The regular production build always compiles the LAN gate
-off, even if built with `--mode lan-preview`. This mode also suppresses the
-`VITE_` environment prefix, so leaderboard configuration is not exposed.
+off, even if built with `--mode lan-preview`. This dev mode also disables account
+header mounting, account initialization and leaderboard requests. Suppressing
+environment variables alone is no longer sufficient with the shared account kit.
 
 The expansion never submits scores. Do not copy tokens or attempt fabricated
 score submissions. Preserve existing browser saves: the phone, the Mac, and

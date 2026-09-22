@@ -54,7 +54,7 @@ body {
 
 .app-shell {
   width: 100vw;
-  min-height: 100vh;
+  min-height: calc(100vh - var(--gw-account-bar-height, 0px));
   display: grid;
   align-content: center;
   justify-content: center;
@@ -66,6 +66,9 @@ body {
     radial-gradient(circle at 80% 70%, color-mix(in srgb, var(--sector-secondary) 15%, transparent), transparent 34%),
     #090f14;
 }
+
+/* No header is mounted in the deliberately network-free phone preview. */
+:root.account-network-disabled { --gw-account-bar-height: 0px; }
 
 .game-logo {
   margin: 0;
@@ -329,6 +332,12 @@ body {
   font-family: var(--font-display);
   font-size: 12px;
   text-transform: uppercase;
+}
+
+a.neon-button {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
 }
 
 .neon-button {
@@ -691,12 +700,12 @@ body {
 
 .screen-root {
   position: fixed;
-  inset: 0;
+  inset: var(--gw-account-bar-height, 0px) 0 0 0;
   z-index: 20;
 }
 
 .screen {
-  min-height: 100dvh;
+  min-height: calc(100dvh - var(--gw-account-bar-height, 0px));
   display: grid;
   place-items: center;
   padding: 28px;
@@ -1605,8 +1614,8 @@ html[data-effects-quality="low"] .screen-title::after {
 
   .app-shell {
     width: 100%;
-    height: 100dvh;
-    min-height: 100dvh;
+    height: calc(100dvh - var(--gw-account-bar-height, 0px));
+    min-height: calc(100dvh - var(--gw-account-bar-height, 0px));
     align-content: stretch;
     gap: 0;
     padding:
@@ -1641,7 +1650,7 @@ html[data-effects-quality="low"] .screen-title::after {
   .game-panel {
     grid-column: 1;
     grid-row: 2;
-    width: min(100%, calc(100dvh - 230px));
+    width: min(100%, calc(100dvh - var(--gw-account-bar-height, 0px) - 230px));
     min-width: 0;
     min-height: 0;
     justify-self: center;
@@ -1968,7 +1977,7 @@ html[data-effects-quality="low"] .screen-title::after {
   }
 
   .game-layout {
-    grid-template-columns: minmax(116px, 1fr) minmax(240px, calc(100dvh - 24px)) minmax(116px, 1fr);
+    grid-template-columns: minmax(116px, 1fr) minmax(240px, calc(100dvh - var(--gw-account-bar-height, 0px) - 24px)) minmax(116px, 1fr);
     grid-template-rows: minmax(0, 1fr);
     gap: 6px;
   }

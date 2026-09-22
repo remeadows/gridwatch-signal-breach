@@ -37,7 +37,7 @@ html[data-expansion-play="true"] #game-canvas:focus-visible { outline: 2px solid
 }
 @media (max-width: 760px) and (orientation: portrait) {
   /* Reserve the active HUD's three action rows plus the two-row tool dock. */
-  html[data-expansion-play="true"] .game-panel { width: min(100%, calc(100dvh - 412px - var(--expansion-save-ui-height, 60px))); }
+  html[data-expansion-play="true"] .game-panel { width: min(100%, calc(100dvh - var(--gw-account-bar-height, 0px) - 412px - var(--expansion-save-ui-height, 60px))); }
 }
 @media (max-width: 760px) and (max-height: 820px) and (orientation: portrait) {
   /* The wave bar already carries level/phase. Keep resources and signal above
@@ -48,7 +48,7 @@ html[data-expansion-play="true"] #game-canvas:focus-visible { outline: 2px solid
   .expansion-hud [data-metric="neutralized"] { display: none; }
   .expansion-hud .hud-actions { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .expansion-hud .hud-actions .neon-button { min-height: 44px; padding: 4px; font-size: 10px; }
-  html[data-expansion-play="true"] .game-panel { width: min(100%, calc(100dvh - 312px - var(--expansion-save-ui-height, 60px))); }
+  html[data-expansion-play="true"] .game-panel { width: min(100%, calc(100dvh - var(--gw-account-bar-height, 0px) - 312px - var(--expansion-save-ui-height, 60px))); }
 }
 @media (max-width: 760px) and (max-height: 520px) and (orientation: landscape) {
   .expansion-hud .hud-metric { min-height: 34px; padding: 3px 4px; }
@@ -63,9 +63,9 @@ html[data-expansion-play="true"] #game-canvas:focus-visible { outline: 2px solid
    to expansion play so the frozen original campaign's layout is unchanged. */
 @media (min-width: 761px) and (max-width: 1100px) and (max-height: 520px) and (orientation: landscape) {
   html[data-expansion-play="true"], html[data-expansion-play="true"] body { height: 100%; overflow: hidden; overscroll-behavior: none; }
-  html[data-expansion-play="true"] .app-shell { width: 100%; height: 100dvh; min-height: 100dvh; align-content: stretch; gap: 0; padding: calc(4px + env(safe-area-inset-top)) calc(6px + env(safe-area-inset-right)) calc(4px + env(safe-area-inset-bottom)) calc(6px + env(safe-area-inset-left)); }
+  html[data-expansion-play="true"] .app-shell { width: 100%; height: calc(100dvh - var(--gw-account-bar-height, 0px)); min-height: calc(100dvh - var(--gw-account-bar-height, 0px)); align-content: stretch; gap: 0; padding: calc(4px + env(safe-area-inset-top)) calc(6px + env(safe-area-inset-right)) calc(4px + env(safe-area-inset-bottom)) calc(6px + env(safe-area-inset-left)); }
   html[data-expansion-play="true"] .game-logo { display: none; }
-  html[data-expansion-play="true"] .game-layout { width: 100%; height: 100%; grid-template-columns: minmax(116px, 1fr) minmax(240px, calc(100dvh - 24px)) minmax(116px, 1fr); grid-template-rows: minmax(0, 1fr); gap: 6px; align-items: center; }
+  html[data-expansion-play="true"] .game-layout { width: 100%; height: 100%; grid-template-columns: minmax(116px, 1fr) minmax(240px, calc(100dvh - var(--gw-account-bar-height, 0px) - 24px)) minmax(116px, 1fr); grid-template-rows: minmax(0, 1fr); gap: 6px; align-items: center; }
   html[data-expansion-play="true"] .control-panel { display: contents; }
   html[data-expansion-play="true"] .control-panel::before { display: none; }
   html[data-expansion-play="true"] .game-panel { grid-column: 2; grid-row: 1; width: 100%; min-width: 0; min-height: 0; max-height: 100%; }

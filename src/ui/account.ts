@@ -1,24 +1,26 @@
 import {
+  PLAY_RETURN_PATH,
+  accountKit,
   accountState,
   currentEmail,
   currentHandle,
   onAccountChange,
   saveHandle,
-  signIn,
+  signInHref,
   signOut,
 } from "../leaderboard/account";
 import type { SubmitResult } from "../leaderboard/api";
 import { MAX_HANDLE_LENGTH } from "../leaderboard/config";
 
 // "submit" mode requires the submission callback; "manage" mode forbids it.
-// onBeforeSignIn runs just before an OAuth redirect (used to persist the run).
+// onBeforeSignIn runs just before navigating to the Nexus sign-in page.
 export type AccountPanelOptions =
   | Readonly<{ mode: "submit"; onSubmit: () => Promise<SubmitResult>; onBeforeSignIn?: () => void }>
   | Readonly<{ mode: "manage"; onSubmit?: never; onBeforeSignIn?: never }>;
 
-// Builds an auth-aware control that renders the right state — signed out (OAuth
-// buttons), needs a handle (picker), or ready — and refreshes itself when the
-// account changes. Self-unsubscribes once detached from the DOM.
+// Builds an auth-aware control that renders the right state — signed out (link
+// to the Nexus sign-in page), needs a handle (picker), or ready — and refreshes
+// itself when the account changes. Self-unsubscribes once detached from the DOM.
 export function createAccountPanel(options: AccountPanelOptions): HTMLElement {
   const root = document.createElement("div");
   root.className = "account-panel";
@@ -52,24 +54,49 @@ export function createAccountPanel(options: AccountPanelOptions): HTMLElement {
   };
 
   function renderSignedOut(): void {
+    // The old host is a compatibility shim: origin-scoped localStorage means a run stashed
+    // here cannot be read after sign-in redirects to Nexus. Say so plainly instead of
+    // silently dropping it, and send the player straight to Nexus to play there instead
+    // (no onBeforeSignIn, no stash — there is no run here that could carry over).
+    if (window.location.origin !== accountKit.config.nexusOrigin) {
+      root.append(line("Sign-in and score logging live on Nexus. Play there to log this run."));
+      const actions = document.createElement("div");
+      actions.className = "account-actions";
+      const link = document.createElement("a");
+      link.className = "neon-button neon-button-primary account-button";
+      link.href = accountKit.config.nexusOrigin + PLAY_RETURN_PATH;
+      link.textContent = "Play on Nexus";
+      actions.append(link);
+      root.append(actions);
+      return;
+    }
+
     root.append(
       line(
         options.mode === "submit"
-          ? "Sign in to log your score on the leaderboard."
-          : "Sign in to claim your operator handle.",
+          ? "Sign in on Nexus to log your score on the leaderboard."
+          : "Sign in on Nexus to claim your operator handle.",
       ),
     );
-    const start = (provider: "google" | "github") => {
-      // Persist the finished run before the full-page OAuth redirect.
-      options.onBeforeSignIn?.();
-      void signIn(provider);
-    };
     const actions = document.createElement("div");
     actions.className = "account-actions";
-    actions.append(
-      button("Sign in with Google", "primary", () => start("google")),
-      button("Sign in with GitHub", "secondary", () => start("github")),
-    );
+    const link = document.createElement("a");
+    link.className = "neon-button neon-button-primary account-button";
+    link.href = signInHref();
+    link.textContent = "Sign in via Nexus";
+    // Full-page navigation to Nexus: persist the finished run first so it can be
+    // auto-submitted when the player returns signed in. Registered for both
+    // click and auxclick so a middle-click (opens in a new tab/window) also
+    // stashes the run — stashing twice is harmless, it's the same run. A
+    // right-click also emits auxclick but navigates nowhere, so only the
+    // middle button (1) counts there.
+    for (const type of ["click", "auxclick"] as const) {
+      link.addEventListener(type, (event) => {
+        if (type === "auxclick" && event.button !== 1) return;
+        options.onBeforeSignIn?.();
+      });
+    }
+    actions.append(link);
     root.append(actions);
   }
 

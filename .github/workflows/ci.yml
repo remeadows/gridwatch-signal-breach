@@ -60,6 +60,9 @@ jobs:
           npm run verify:assets
           npm run verify:expansion-art
           npm run verify:expansion-art-fallback
+          npm run verify:play-base
+          npm run verify:account-kit
+          npm run verify:account-preview
           npm run verify:replays
           npm run verify:latency-trap
           npm run verify:rusher
