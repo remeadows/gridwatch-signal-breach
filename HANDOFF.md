@@ -1,5 +1,27 @@
 # GridWatch Handoff
 
+## Account-kit v0.2.4 adoption — 2026-09-22
+
+- Upstream reconciliation is committed locally as `380763d`. Follow-on package
+  pins shared account-kit v0.2.4 / `30848922` and adds a regression asserting
+  browser-local sign-out and no premature cloud-save activation.
+- Build, tools typecheck and all 29 game verification scripts pass. Repeated
+  browser QA at five desktop/mobile viewports passes; settings reload, wave
+  launch, guide and LAN network isolation still work with the upgraded kit.
+- The isolated kit checkout `/tmp/signal-breach-account-kit-20260922` passed
+  all 302 upstream tests and typecheck. It has no schema changes or remote
+  writes. Its local branch is `codex/breach-expansion-save-schema`.
+- CodeRabbit upgrade review: one scope finding on the release plan requested
+  removing authenticated saves. Rejected: the owner's 2026-09-13 release
+  override explicitly approves them, reinforced by the 2026-09-22 instruction
+  to proceed in the shared-platform order. No code findings in that review.
+- NEXT: prepare the Breach schema/codec contract in the shared kit and game,
+  including the 64 KiB request limit, review the companion kit/Nexus changes,
+  then wire account-owned reconciliation. See the updated public release plan.
+  Do not ship the older standalone RPC prototype. Saves remain browser-only;
+  production activation, cloud writes and expansion leaderboard release are
+  unfinished. No push/deploy/DB write occurred in these local checkpoints.
+
 ## Upstream reconciliation — 2026-09-22
 
 - Working on `codex/expansion-25-local` to integrate upstream `7609592`

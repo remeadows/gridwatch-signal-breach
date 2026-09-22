@@ -1,5 +1,35 @@
 # Expansion public release — 2026-09-13
 
+## Shared-platform reconciliation — 2026-09-22
+
+The owner approved proceeding in order after the shared-account/cloud-save audit.
+The shared Nexus platform now owns auth and generic cloud saves. Do not ship a
+parallel expansion login or deploy the older standalone RPC prototype unchanged.
+
+1. Integrate upstream `7609592` (`/play/breach/`, account bar and kit identity)
+   while retaining the 25-level campaign. Local checkpoint: `380763d`.
+2. Adopt the released account kit v0.2.4. Its registry currently accepts Match,
+   not Breach; simply adding `game` to the Breach kit config throws at startup.
+   Register `breach` / `gridwatch-signal-breach` / revision-isolated expansion
+   slot in the shared kit, release it after review, then update Nexus's schema
+   dependency and deploy the compatible server before enabling the game client.
+3. Adapt the expansion save codec to the shared 65,536-byte **whole request**
+   limit (the old local envelope allows 96,000 bytes). Preserve canonical local
+   saves and complete replay history; never silently truncate commands. Test
+   maximum sizes, malformed data and exact checkpoint round trips. The shared
+   schema cannot currently represent `null` or union types, so the wire shape
+   needs an explicit tested mapping, not a cast of the existing local envelope.
+4. Wire authenticated save ownership/reconciliation. Gate writes until the
+   current account's reconciliation finishes; reject stale completions after
+   account changes. Handle `use_cloud`, `fresh`, `discarded`, offline retries
+   and `onBackgroundStored` truthfully. Guest data never uploads implicitly.
+5. Complete isolated, replay-validated expansion leaderboards, then full local
+   and two-device acceptance, Codex/CodeRabbit PR review and server-first rollout.
+
+The older RPC migration and its tests below are historical prototype evidence,
+not permission to bypass the shared save endpoint. No production migration or
+save reset has been performed by this reconciliation work.
+
 ## Owner decisions
 
 - Release three chapters / 25 levels / 125 waves to the public with saves and

@@ -1,5 +1,5 @@
 import type { Session, SupabaseClient } from "@supabase/supabase-js";
-import { accessToken, accountKit, accountState, currentEmail, currentHandle, initAccount, saveHandle, signInHref } from "../src/leaderboard/account";
+import { accessToken, accountKit, accountState, currentEmail, currentHandle, initAccount, saveHandle, signInHref, signOut } from "../src/leaderboard/account";
 import { leaderboardConfig } from "../src/leaderboard/config";
 import { __setSupabaseForTests, SUPABASE_ANON_KEY, SUPABASE_URL } from "@gridwatch/account-kit";
 
@@ -78,6 +78,7 @@ let manualSessionReads = false;
 // auth event.
 type UpsertRow = { data: null; error: { message: string; code?: string } | null };
 const upsertCalls: Array<Deferred<UpsertRow>> = [];
+const signOutScopes: unknown[] = [];
 
 // Minimal fake client — only the methods account.ts's call path actually touches:
 // auth.getSession (used both by accountKit.getSession() and internally by getProfile()),
@@ -85,6 +86,10 @@ const upsertCalls: Array<Deferred<UpsertRow>> = [];
 // from("profiles").select().eq().maybeSingle() (the profile read) / .upsert() (the profile save).
 const fakeClient = {
   auth: {
+    async signOut(options: unknown) {
+      signOutScopes.push(options);
+      return { error: null };
+    },
     getSession(): Promise<SessionRow> {
       const deferred = createDeferred<SessionRow>();
       sessionReads.push(deferred);
@@ -350,3 +355,12 @@ const bootstrap = readFileSync("src/bootstrap.ts", "utf8");
 if (!bootstrap.includes("mountAccountHeader(")) throw new Error("src/bootstrap.ts must mount the shared account bar.");
 
 console.log("verify-account-kit: sign-in is a Nexus link and the shared account bar is mounted.");
+
+// v0.2.4: signing out here must not revoke another device's save session.
+await signOut();
+expectEqual(signOutScopes.length, 1, "Sign-out must reach the shared client once.");
+expectEqual(JSON.stringify(signOutScopes[0]), JSON.stringify({ scope: "local" }), "Sign-out must be browser-local, never global.");
+expectEqual(accountState(), "signed-out", "Account state must clear after sign-out.");
+expectEqual(accessToken(), null, "Cached access token must clear after sign-out.");
+expectEqual(accountKit.saves, undefined, "Do not enable expansion saves before Breach schema registration and server rollout.");
+console.log("verify-account-kit: local sign-out preserves other devices; unpublished cloud saves remain disabled.");
