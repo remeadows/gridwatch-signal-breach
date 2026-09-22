@@ -1,5 +1,25 @@
 # GridWatch Handoff
 
+## Nexus PR #17 conflict verification — 2026-09-22
+
+- Owner merged Nexus PR #29 as `00a949c`; post-merge validation passed.
+- PR #17 initially conflicted, but Dependabot refreshed it to `86d5a85` before
+  manual edits were needed. Verified `00a949c` is an ancestor and GitHub reports
+  MERGEABLE. Account-kit remains v0.2.5 at `f188d348` with all Breach tests intact.
+- The fix upgrades Wrangler 4.119.0 to 4.136.1 and its Miniflare/workerd/sharp
+  dependencies (sharp 0.35.4). It does not add a sharp override or edit app code.
+- In isolated `/tmp/signal-breach-nexus-20260922`, branch
+  `codex/verify-nexus-pr17`: clean install, full audit (zero vulnerabilities),
+  full CI (132 unit tests plus build/shell/production checks), diff check and
+  Wrangler no-upload packaging dry run all pass. Working tree is unchanged.
+- PR #17's initial green CodeRabbit status was a skipped bot review, not an
+  approval. Requested actual CodeRabbit and Codex reviews of `86d5a85` and posted
+  verification evidence. Review completion remains pending; no review threads
+  existed when inspected. No manual conflict commit/push, merge or deploy.
+- NEXT: finish the actual PR #17 reviews, then owner merge. Verify merged-main
+  audit/CI and server readiness before separately authorized Nexus rollout and
+  account-owned game save integration. Production and game saves are unchanged.
+
 ## Nexus schema adoption published — 2026-09-22
 
 - Owner merged account-kit PR #7 as `f188d348`. Post-merge CI passed and its
