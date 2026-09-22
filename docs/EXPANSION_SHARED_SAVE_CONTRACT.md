@@ -2,14 +2,20 @@
 
 Status: implemented and tested locally, **not activated or deployed**. The game
 still pins released account-kit v0.2.4 and does not configure `kit.saves`.
-The companion is now in [account-kit PR #7](https://github.com/remeadows/gridwatch-account-kit/pull/7),
-head `9d8643a`, proposing v0.2.5. No release tag exists yet; do not pin the
-unreleased version or enable the game client before the reviewed server rollout.
-CI and current-head CodeRabbit/Codex reviews pass with no unresolved conversations;
-the PR remains open for owner merge. Nexus source and production are unchanged.
+The companion [account-kit PR #7](https://github.com/remeadows/gridwatch-account-kit/pull/7)
+was owner-merged as `f188d348`; post-merge CI passed and released tag `v0.2.5`
+points to that commit. Its tree matches the reviewed head `9d8643a`.
+[Nexus PR #29](https://github.com/remeadows/gridwatch-command-nexus/pull/29)
+pins that release and adds eight handler regressions (132 total unit tests pass).
+Local CodeRabbit and desktop/375px shell QA pass. GitHub validation and
+current-head CodeRabbit/Codex reviews pass, with no review conversations;
+PR #29 remains open for owner merge.
+No server deployment has occurred. Nexus's existing sharp toolchain advisory
+(Dependabot PR #17) must also be resolved/re-audited before deployment.
+Do not activate the game client before the reviewed server rollout.
 The companion registry patch is in the isolated account-kit checkout
 `/tmp/signal-breach-account-kit-20260922`, branch
-`codex/breach-expansion-save-schema`. No version/tag is reserved by this document.
+`codex/breach-expansion-save-schema`.
 Reviewed companion local commit: `ef5d859`. A recovery copy is checked in at
 `companion-patches/account-kit-breach-save-v1.patch` so this package does not
 depend on a temporary checkout surviving. Apply only to a clean kit v0.2.4

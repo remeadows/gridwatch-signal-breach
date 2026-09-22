@@ -1,5 +1,34 @@
 # GridWatch Handoff
 
+## Nexus schema adoption published — 2026-09-22
+
+- Owner merged account-kit PR #7 as `f188d348`. Post-merge CI passed and its
+  tree matches reviewed `9d8643a`; created/verified release tag `v0.2.5` there.
+- Prepared isolated Nexus branch `codex/breach-save-schema-v025` in
+  `/tmp/signal-breach-nexus-20260922`, commit `acdfb81`, and published
+  https://github.com/remeadows/gridwatch-command-nexus/pull/29. Only the released
+  dependency/lock pin, eight save-handler regressions and handoff changed.
+  No Worker runtime source, migration, auth settings or deploy config changes.
+- Seven new tests failed as expected under v0.2.4; all pass under v0.2.5.
+  Nexus `npm run ci` passes: production build/typecheck, 132 unit tests, three
+  shell tests, environment guard and bundle contract. Local CodeRabbit: zero
+  findings. Desktop/375px browser smoke passes preview open/close and mobile
+  navigation, no horizontal overflow or console warnings/errors. Handler tests
+  mock all auth/RPCs; static Vite QA is not authenticated save acceptance.
+- Current-head GitHub reviews on PR #29 are complete: CodeRabbit reports no
+  actionable comments and five passed pre-merge checks; Codex found no major
+  issues at `acdfb81`. Nexus validation is successful. Zero review conversations
+  exist; the PR is open for owner merge.
+- Deployment hold: Nexus full audit has the pre-existing sharp <0.35.4 advisory
+  through Miniflare/Wrangler (three high entries); production-only audit is clean.
+  Existing Nexus Dependabot PR #17 targets it. Resolve/re-audit before deploying;
+  no unrelated/forced toolchain upgrade was bundled into the schema PR.
+- Game remains kit v0.2.4 with browser-only expansion saves. No game push,
+  Nexus deploy, DB migration, production save/score write or automatic merge.
+- NEXT: owner merges PR #29; clear Nexus #17 audit gate.
+  Separately verify generic RPC migration, existing game row and secret readiness
+  and authorize server rollout before enabling account-owned game save sync.
+
 ## Shared-kit publication — 2026-09-22
 
 - Owner approved proceeding from the local schema/codec checkpoint. Refreshed
