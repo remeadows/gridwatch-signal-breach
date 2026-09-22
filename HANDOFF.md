@@ -15,6 +15,9 @@
   CI runs pass. Final current-head reviews are complete: CodeRabbit successful
   with no actionable comments; Codex reports no major issues on `9d8643a`.
   Zero review conversations exist. PR is open and ready for owner merge.
+  CodeRabbit's separate advisory docstring-coverage warning still appears after
+  documenting the test helper; recorded explicitly on the PR, not suppressed.
+  Its native check is successful; this advisory is not an unresolved thread.
   Kit main currently has neither rulesets nor legacy branch protection; no
   security settings were changed and the owner review gate remains in force.
 - Fresh local verification: kit 306 tests/typecheck/reproducible dist pass;
