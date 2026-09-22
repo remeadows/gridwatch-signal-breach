@@ -1,5 +1,36 @@
 # GridWatch Handoff
 
+## Nexus production rollout complete — 2026-09-22
+
+- Owner explicitly approved deploying Nexus `a7cb5c9`. Deployed the exact clean
+  detached revision from `/tmp/signal-breach-nexus-20260922` with Wrangler 4.136.1,
+  the verified Cloudflare account, explicit production environment (`--env ''`),
+  and `--keep-vars`. No game client changes, DB migration/reset/write or secret
+  changes. Clean install, full audit (zero vulnerabilities), all 132 unit tests,
+  production build/shell/environment/bundle checks and dry-run passed again.
+- Deployment succeeded at `2026-09-22T06:50:09Z`. Independently confirmed active
+  version `fab82dec-eb86-4379-a25a-e5d3bb9c0e8e` at 100%, deployment
+  `e29021cb-c32e-4ba0-b524-d7408fbf66c5`. Rollback baseline remains
+  `e5f1f376-2943-45d0-a60f-a6968aa38bfc`; no rollback was needed.
+- All 12 immediate read-only HTTP smoke checks pass: Breach r4 GET now 401
+  unauthorized (previously 404 unknown_game), r1/r2/r3/original campaign 404
+  unknown_slot, Match campaign still 401, Match/Breach-slot crossover 404,
+  Nexus home/sign-in/Breach/Match/Drift proxied pages all 200.
+- In-app browser: live Nexus renders at desktop, Sign in opens the actual
+  sign-in page, 375px sign-in renders with no horizontal overflow (375/375),
+  no blank/error overlay or console warnings/errors. Screenshots captured in
+  tool output; no credentials entered, OAuth flow or cloud writes performed.
+  This is an immediate smoke check, not a 15-minute metrics observation or
+  authenticated/cross-device persistence acceptance.
+- Header observation for later Nexus audit: sign-in is `Cache-Control: no-store`,
+  but live `Referrer-Policy` is `strict-origin-when-cross-origin` while Worker
+  source specifies `no-referrer`. No header code changed in this release;
+  edge override/baseline attribution is unverified, so do not claim parity.
+- NEXT: implement the game-side kit v0.2.5 adapter, account-owned reconciliation,
+  truthful sync status and conflict handling locally, then review/test it.
+  Server schema gate is deployed, but game saves remain browser-only and public
+  expansion leaderboards plus authenticated/two-device acceptance are unfinished.
+
 ## Nexus server readiness verified — 2026-09-22
 
 - Read-only readiness pass for merged Nexus main `a7cb5c9`. Fresh main CI is

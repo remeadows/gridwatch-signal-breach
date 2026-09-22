@@ -14,9 +14,12 @@ PR #29 was owner-merged as `00a949c`; dependency-fix PR #17 was then merged as
 PR #17 diff with zero findings (the GitHub bot check itself remained skipped).
 Read-only readiness verified the existing game row, all three deployed generic
 RPC bodies/grants against the reviewed migration, and the production secret name.
-No migration is needed. No server deployment has occurred; owner authorization
-for the Nexus-only rollout remains next. See HANDOFF.md for rollback baseline.
-Do not activate the game client before the reviewed server rollout.
+No migration was needed. Owner-approved Nexus `a7cb5c9` is now deployed as
+`fab82dec-eb86-4379-a25a-e5d3bb9c0e8e` (100%, 2026-09-22). Live Breach r4 GET
+now returns 401 without credentials; historical slots remain 404 and Match's
+gate is unchanged. See HANDOFF.md for smoke evidence and rollback baseline.
+The server rollout prerequisite is met; the game client remains unconfigured
+until account-owned reconciliation is implemented, reviewed and tested.
 The companion registry patch is in the isolated account-kit checkout
 `/tmp/signal-breach-account-kit-20260922`, branch
 `codex/breach-expansion-save-schema`.
