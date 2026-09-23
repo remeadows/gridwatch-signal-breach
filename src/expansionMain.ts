@@ -1,4 +1,6 @@
 import "./expansion.css";
+import { isExpansionPlayPreviewEnabled } from "./ui/featureFlags";
+import { canOpenExpansionLevel } from "./ui/expansionLevelAccess";
 import { getExpansionLevelDefinition } from "./data/campaigns/expansion";
 import { installExpansionKeyboardInput } from "./input/expansionKeyboard";
 import { installExpansionPointerInput } from "./input/expansionPointer";
@@ -41,6 +43,10 @@ let saves: ExpansionLocalSave | ExpansionAccountSave = new ExpansionLocalSave(br
 let cloud: ExpansionAccountSave | null = null;
 let activeOwner: string | undefined;
 const saveBusy = () => activeOwner === undefined || (cloud?.busy ?? false);
+const levelLocked = () => !isExpansionPlayPreviewEnabled() && !canOpenExpansionLevel(
+  levelId, saves.save.clearedLevels, saves.save.checkpoint?.replay.level,
+  activeOwner === "guest" ? loadExpansionR4Progress().highestUnlockedLevel : 1,
+);
 let checkpointError = false;
 let unsavedRunChanges = false;
 let reconcileAfterWave = false;
@@ -166,6 +172,9 @@ document.addEventListener("visibilitychange", () => { if (document.hidden && run
 requestAnimationFrame(frame);
 
 function frame(now: number): void {
+  // Wait for account/cloud reconciliation before applying owner-specific access.
+  // A locked direct link returns to navigation without altering any saved run.
+  if (!saveBusy() && levelLocked()) { openLevelSelect(); return; }
   visualTimeline.advance(now, paused);
   if (!saveBusy() && !saveUi.choiceOpen && !paused && running && state.phase === "active") {
     let steps = 0;
@@ -213,7 +222,7 @@ function frame(now: number): void {
 }
 
 function dispatch(command: ExpansionSimCommand): void {
-  if (saveBusy() || saveUi.choiceOpen || paused) return;
+  if (saveBusy() || levelLocked() || saveUi.choiceOpen || paused) return;
   // Both pointer taps and keyboard placement/sale commands pass this one gate.
   // Preview never changes the grid, bandwidth, command log, or replay state.
   if (rangePreview.filterCommand(command) === null) {
@@ -244,7 +253,7 @@ function exitRangePreview(): void {
 }
 
 function launchWave(): void {
-  if (saveBusy() || saveUi.choiceOpen || paused || state.phase !== "prep" || running) return;
+  if (saveBusy() || levelLocked() || saveUi.choiceOpen || paused || state.phase !== "prep" || running) return;
   dispatch({ type: "skipPrep" });
   running = true;
   paused = false;
@@ -545,12 +554,12 @@ function action(label: string, onClick: () => void, primary: boolean): HTMLButto
 
 function openLevel(levelToOpen: number): void {
   if (saveBusy()) return;
-  const url = navigationUrl(); url.searchParams.set("expansion-play", "1"); url.searchParams.set("level", String(levelToOpen)); window.location.assign(url.toString());
+  const url = navigationUrl(); url.searchParams.set("campaign", "expansion-1"); url.searchParams.set("level", String(levelToOpen)); window.location.assign(url.toString());
 }
 
 function openLevelSelect(): void {
   if (saveBusy()) return;
-  const url = navigationUrl(); url.searchParams.set("expansion-nav", "1"); url.searchParams.set("chapter", String(level.chapterId)); window.location.assign(url.toString());
+  const url = navigationUrl(); url.searchParams.set("campaign", "expansion-1"); url.searchParams.set("view", "levels"); url.searchParams.set("chapter", String(level.chapterId)); window.location.assign(url.toString());
 }
 
 function navigationUrl(): URL {

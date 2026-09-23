@@ -303,7 +303,7 @@ function renderCampaignSelectScreen(options: ScreenOptions): void {
   const header = createNavigationHeader(
     "CAMPAIGN ROUTER",
     "Select campaign",
-    "Choose the original campaign or Expansion 1: three chapters, 25 levels. Guest progress stays in this browser; signed-in progress can sync to your account when online services are available. Expansion online scoring is not enabled.",
+    "Choose the original campaign or Expansion 1: three chapters, 25 levels. Guest progress stays in this browser. Sign in through Nexus for optional cloud saves and verified per-level scores; offline play stays available.",
   );
   const grid = document.createElement("div");
   const backButton = createNavigationButton("BACK", "secondary", onBackToTitle);
@@ -324,7 +324,7 @@ function renderCampaignSelectScreen(options: ScreenOptions): void {
         ? "Twenty-five fresh tactical boards. Master delay, demolition spacing, and shield-breaking chain attacks."
         : "Defend the original three-sector uplink. Your existing progress and leaderboard remain separate.",
       meta: isExpansion ? "LEVELS 01–25" : "SECTORS 01–03",
-      status: isExpansion ? "LOCAL / OPTIONAL CLOUD" : "ACTIVE",
+      status: isExpansion ? "25 LEVELS / OPTIONAL ONLINE" : "ACTIVE",
       disabled: false,
       onSelect: () => onSelectCampaign(campaign.id),
       testId: `campaign-${campaign.id}`,
@@ -379,7 +379,7 @@ function renderChapterSelectScreen(options: ScreenOptions): void {
             : "Catch fast Rushers with Latency Traps while keeping Source connected to Core."
         : chapter.id <= 3 ? "Clear the preceding chapter to unlock this front." : "Future chapter. Not included in this three-chapter milestone.",
       meta: isUnlocked ? `LEVELS ${formatChapterLevels(chapter)}` : "LEVELS LOCKED",
-      status: isUnlocked ? "LOCAL PLAYTEST" : "LOCKED",
+      status: isUnlocked ? "AVAILABLE" : "LOCKED",
       disabled: !isUnlocked,
       onSelect: () => onSelectExpansionChapter(chapter.id),
       testId: `chapter-${chapter.id}`,
@@ -408,7 +408,7 @@ function renderLevelSelectScreen(options: ScreenOptions): void {
   const header = createNavigationHeader(
     "EXPANSION ROUTER",
     `${chapter.codename} // Levels`,
-    `${chapter.levelIds.length} levels. Each starts fresh and contains five waves; no score leaves this browser.`,
+    `${chapter.levelIds.length} levels. Each starts fresh and contains five waves. Submit completed wins to the optional per-level leaderboard when signed in.`,
   );
   const grid = document.createElement("div");
   const backButton = createNavigationButton("BACK", "secondary", onBackToChapterSelect);
@@ -436,7 +436,7 @@ function renderLevelSelectScreen(options: ScreenOptions): void {
         ? "This record has no board, tools, waves, replay payload, score, or launch action."
         : "No authored expansion level is available in this slot.",
       meta: isUnlocked ? "5 WAVES // FRESH LOADOUT" : placeholder ? "CONTENT PENDING" : "CONTENT LOCKED",
-      status: isCleared ? "CLEARED" : isUnlocked ? "LOCAL PLAYTEST" : placeholder ? "PENDING" : "LOCKED",
+      status: isCleared ? "CLEARED" : isUnlocked ? "AVAILABLE" : placeholder ? "PENDING" : "LOCKED",
       disabled: !isUnlocked,
       onSelect: () => onSelectExpansionLevel(levelId),
       testId: `level-${levelId}`,

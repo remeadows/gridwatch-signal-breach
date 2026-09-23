@@ -3,8 +3,8 @@ import { canonicalExpansionScoreReplay, expansionScoreCategory, MAX_EXPANSION_SC
 import type { ExpansionReplayInput } from "../sim/expansion/types";
 import type { FetchLeaderboardResult, LeaderboardEntry } from "./api";
 
-// Server-first release latch. Flip only in the reviewed public activation package.
-export const EXPANSION_LEADERBOARDS_RELEASED = false;
+// Compatible score function v10 deployed before this reviewed client activation.
+export const EXPANSION_LEADERBOARDS_RELEASED = true;
 export type ExpansionSubmitResult = { ok: false; error: string } | {
   ok: true; improved: boolean; runScore: number; bestScore: number; levelRank: number;
   rating: string; handle: string; category: string; level: number; contentRevision: string;
@@ -23,7 +23,7 @@ export function createExpansionScoreApi(config: { enabled: boolean; url: string;
   return {
     enabled: config.enabled,
     async submit(raw: ExpansionReplayInput, token: string): Promise<ExpansionSubmitResult> {
-      if (!config.enabled) return { ok: false, error: "Expansion leaderboard awaits server release. Your run remains local." };
+      if (!config.enabled) return { ok: false, error: "Expansion leaderboard is disabled in this build. Your run remains local." };
       try {
         const proof = canonicalExpansionScoreReplay(raw);
         if (new TextEncoder().encode(JSON.stringify(proof)).length > MAX_EXPANSION_SCORE_BYTES) return { ok: false, error: "Replay is too large to submit." };
@@ -39,7 +39,7 @@ export function createExpansionScoreApi(config: { enabled: boolean; url: string;
       } catch { return { ok: false, error: "Score not confirmed. Check your connection and retry." }; }
     },
     async read(level: number): Promise<FetchLeaderboardResult> {
-      if (!config.enabled) return { ok: false, error: "Expansion leaderboard awaits server release." };
+      if (!config.enabled) return { ok: false, error: "Expansion leaderboard is disabled in this build." };
       try {
         const response = await post("/rest/v1/rpc/get_leaderboard", { p_game: config.gameSlug, p_category: expansionScoreCategory(level) }, config.anonKey);
         if (!response.ok) return { ok: false, error: "Rankings could not be loaded. Retry when online." };

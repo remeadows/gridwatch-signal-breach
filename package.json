@@ -46,6 +46,7 @@
     "verify:shield-network": "node scripts/run-typescript.mjs scripts/verify-shield-network.ts",
     "verify:shield-combat": "node scripts/run-typescript.mjs scripts/verify-shield-combat.ts",
     "verify:preview-policy": "node scripts/run-typescript.mjs scripts/verify-preview-policy.ts",
+    "verify:expansion-activation": "node scripts/verify-expansion-activation.mjs",
     "verify:assets": "node scripts/verify-assets.mjs",
     "verify:expansion-art": "node scripts/verify-expansion-art.mjs",
     "verify:expansion-art-fallback": "node scripts/verify-expansion-art-fallback.mjs",

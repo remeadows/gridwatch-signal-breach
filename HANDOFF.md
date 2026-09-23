@@ -1,5 +1,58 @@
 # GridWatch Handoff
 
+## PR #86 review follow-up — 2026-09-23
+
+- Current head `e4e9f74`: build, CodeQL, Cloudflare preview and CodeRabbit status
+  passed; Codex completed with no major findings. CodeRabbit requested one fix:
+  durable rollback retrieval, not a CI failure.
+- Verified all four deployed version-9 runtime files exactly match immutable
+  repository commit `6e0506df83c5099601aa2448ef22986966cc0c6a`, available on GitHub
+  and retained in main history. Release documentation now provides its exact
+  retrieval command and per-file SHA-256 manifest; local task files are optional.
+  This is documentation-only remediation, with no deploy or production writes.
+- Publish the verified documentation fix, reply with evidence, resolve the
+  addressed conversation and request fresh Codex/CodeRabbit review. Owner merge
+  remains required; public activation and genuine account acceptance are pending.
+
+## Public activation candidate — 2026-09-23
+
+- Owner approved proceeding with the activation PR after the version-10 server
+  deployment. Working locally; do not merge this candidate or bypass review.
+- Normal campaign navigation now enables `?campaign=expansion-1&level=N` and
+  return-to-picker `?campaign=expansion-1&view=levels&chapter=N`. Local preview
+  jumps/prototypes remain private. Direct public level links respect reconciled
+  owner unlocks, retained guest access and valid saved checkpoints.
+- Explicit per-level rankings/submissions enabled; dedicated LAN networking is
+  still disabled. No game tuning, art, replay, schema or backend changes here.
+- New activation regression failed on the old gates, then passed. Build/types,
+  preview/LAN, score client/UI, account-save, codec/session, content and original
+  replay checks pass; install/audit zero vulnerabilities and no lockfile change.
+- Local built browser: picker -> normal Level 1 URL -> existing Wave 2 resume
+  preserved BW70/Core180; locked Level25 URL returns to locked chapter picker.
+  Desktop 1280x720 and mobile 390x844 passed without overflow or browser errors;
+  original campaign selection remains intact. Explicit rankings read returned
+  the expected empty board. No save discarded and no score submitted.
+- Every package verification script and the save-contract check passed; both
+  generated validators remain unchanged. Local CodeRabbit reviewed all 17
+  activation files with zero findings. Publish for current-head GitHub reviews;
+  owner merge remains required. Real account/two-device/human-win and physical
+  phone QA remain distinct from browser emulation and isolated harnesses.
+
+## Server-first release — 2026-09-23
+
+- PR #84 is merged as `4f8c10f`; all PR reviews/conversations completed and the
+  monitor is paused. Older next-monitor instructions below are historical.
+- Owner approved proceeding with the server-first release. Only the reviewed
+  `submit-gridwatch-score` function was deployed to GridWatchGamesDB version 10.
+  Rollback version 9 is captured; no DB migration, data reset or other-game change.
+- Deno static/runtime preflight, replay/score regressions and unchanged-bundle
+  checks passed. Live Nexus CORS, 405/401 rejection and read-only category checks
+  passed. All deployed runtime source matches merged code.
+- Public expansion navigation and leaderboard latch remain off. Next: separately
+  reviewed activation PR, then genuine production score and two-device save QA.
+  No authenticated production write or human gameplay acceptance was performed.
+- Full evidence and rollback: `docs/EXPANSION_SERVER_RELEASE_2026_09_23.md`.
+
 ## PR #84 review follow-up — 2026-09-23
 
 - **Next monitor action:** publish the tested follow-ups `e3d4e1f` / `186c4de`

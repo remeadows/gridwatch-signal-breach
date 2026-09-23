@@ -40,7 +40,7 @@ const before = requests;
 assert.equal((await disabled.submit(proof, "x")).ok, false);
 assert.equal((await disabled.read(1)).ok, false);
 assert.equal(requests, before);
-assert.equal(expansionScoreApi.enabled, false, "Server-first latch stays closed in this package.");
+assert.equal(expansionScoreApi.enabled, true, "Scores are enabled after the compatible server release.");
 let bodyAborted = false;
 const stalledBody = createExpansionScoreApi(config, async (_url, init) => new Response(new ReadableStream({
   start(controller) {

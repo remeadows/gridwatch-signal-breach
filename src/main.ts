@@ -22,7 +22,7 @@ import {
   type GameProgress,
   type SignalBreachProgress,
 } from "./ui/progress";
-import { isExpansionNavigationEnabled } from "./ui/featureFlags";
+import { isExpansionNavigationEnabled, isExpansionLevelSelectRequested } from "./ui/featureFlags";
 import { renderUnitPicker } from "./ui/unitPicker";
 import { getCommandFeedback } from "./ui/toolInfo";
 import { leaderboardConfig } from "./leaderboard/config";
@@ -106,7 +106,7 @@ let navigationOwner: string | undefined;
 let currentSector = getInitialSector(getSignalBreachProgress(progress));
 const navigationQuery = new URLSearchParams(window.location.search);
 const requestedChapter = Number(navigationQuery.get("chapter"));
-let pendingRequestedChapter = navigationQuery.get("expansion-nav") === "1";
+let pendingRequestedChapter = isExpansionLevelSelectRequested();
 const requestedChapterAvailable = isExpansionChapterAvailable(requestedChapter, expansionProgress.highestUnlockedLevel);
 let selectedExpansionChapterId = requestedChapterAvailable ? requestedChapter : 1;
 document.documentElement.dataset.sector = String(currentSector);
@@ -114,7 +114,7 @@ let currentSeed = "";
 let recordedCommands: RecordedCommand[] = [];
 let state = createRunState();
 let selectedTool: PlayerTool = getDefaultTool(state);
-let screen: AppScreen = expansionNavigationEnabled && navigationQuery.get("expansion-nav") === "1"
+let screen: AppScreen = expansionNavigationEnabled && isExpansionLevelSelectRequested()
   ? requestedChapterAvailable ? "levelSelect" : "chapterSelect"
   : "title";
 let briefingReturn: AppScreen = "sectorSelect";
@@ -312,7 +312,7 @@ function selectExpansionLevel(levelId: number): void {
   const retained = ["art", "quality"].map((key) => [key, url.searchParams.get(key)] as const);
   url.search = "";
   for (const [key, value] of retained) if (value) url.searchParams.set(key, value);
-  url.searchParams.set("expansion-play", "1");
+  url.searchParams.set("campaign", "expansion-1");
   url.searchParams.set("level", String(levelId));
   window.location.assign(url.toString());
 }

@@ -1,5 +1,15 @@
 # Expansion public release — 2026-09-13
 
+## Current activation checkpoint — 2026-09-23
+
+PR #84 merged; score function version 10 is deployed and runtime-verified.
+See `EXPANSION_SERVER_RELEASE_2026_09_23.md`. The separate activation candidate
+enables normal public routes and explicit rankings/submissions, retaining
+preview-only debug jumps, owner-specific progression and LAN isolation.
+Older implementation-gap descriptions below are historical. The activation PR
+must pass current-head Codex/CodeRabbit/CI review before owner merge; genuine
+Nexus score and two-device save acceptance remain open after deployment.
+
 ## Leaderboard package — 2026-09-23
 
 The owner confirmed the release includes both the original campaign with its

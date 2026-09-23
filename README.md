@@ -38,10 +38,13 @@ Serving from the old host's root (`/`) is a compatibility route only, handled
 by `public/_redirects` rewriting `/play/breach/*` requests back onto the same
 built assets; it is not a second base-path configuration.
 
-### Expansion 1 Chapters 1–3 local acceptance
+### Expansion 1 — three chapters / 25 levels
 
-The expansion stays local while its separate server validator and leaderboard
-categories remain unpublished. Dedicated ports avoid the other GridWatch games:
+The activation candidate exposes the full expansion through the normal campaign
+picker. The compatible score validator was deployed first as version 10; see
+`docs/EXPANSION_SERVER_RELEASE_2026_09_23.md`. Public activation takes effect only
+after this candidate passes review and is merged/deployed. Dedicated local ports
+avoid the other GridWatch games:
 
 ```sh
 npm run dev:local
@@ -55,8 +58,11 @@ introduces Shield Drones and shield-piercing Arc ICE. Blender CLI produces the
 three themed grids and consistent hardware/enemy roster; Canvas2D remains the
 runtime renderer. Source scenes and raster provenance are versioned in the repo.
 
-Local results never submit to Supabase. Production builds cannot enable the
-expansion on public hosts. For a physical phone on trusted Wi-Fi, use
+Leaderboard reads and score submissions require explicit player actions. Start
+ranked play on Nexus; local sign-in returns there, not to localhost. Normal play
+uses `?campaign=expansion-1&level=N`; direct links respect account/guest unlocks
+and valid saved checkpoints. Debug `?expansion-play=1`, `?expansion-nav=1` and
+prototype shortcuts remain private-preview-only. For a physical phone on trusted Wi-Fi, use
 `npm run dev:phone` on port 4392; that explicit dev mode suppresses leaderboard
 networking. See `docs/LOCAL_PHONE_ACCEPTANCE.md`. Do not use ports 4175–4185
 without checking ownership: several other games are being tested concurrently.
@@ -92,7 +98,7 @@ shown in the HUD. Guests stay browser-only. Signed-in accounts have a separate
 cache and use the shared Nexus save service through account-kit v0.2.5, with
 reconciliation before writes, explicit conflict choices and truthful sync status.
 Guest progress is never silently uploaded to an account. This client integration
-is a **local release candidate**, not a public deployment or proof of real
+is an **activation candidate**, not proof of real
 two-device authenticated acceptance. Local sign-in links still return to the
 canonical Nexus game path, not localhost; isolated tests do not bypass that flow.
 Run `npm run verify:expansion-run-session` for all 100 reload boundaries across
