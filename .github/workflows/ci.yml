@@ -94,6 +94,7 @@ jobs:
           npm run verify:shield-network
           npm run verify:shield-combat
           npm run verify:preview-policy
+          npm run verify:expansion-activation
           npm run verify:content
           npm run verify:progress
           npm run balance:report

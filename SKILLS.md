@@ -2,6 +2,15 @@
 
 Last reviewed: 2026-09-23
 
+Activation candidate: score function v10 is deployed and verified; the client
+now enables normal expansion navigation/play and explicit leaderboard actions.
+Run `verify:expansion-activation` for public routes, private preview shortcuts,
+progression access and LAN network isolation. See
+`docs/EXPANSION_SERVER_RELEASE_2026_09_23.md` for rollback/evidence. Earlier
+closed-latch/local-only descriptions below are historical. Public activation
+still requires the separate protected PR to be reviewed and merged. Genuine
+production score and two-device save acceptance remain distinct gates.
+
 Current leaderboard package: run `verify:expansion-leaderboard`,
 `verify:expansion-score-client`, `verify:expansion-score-http`,
 `verify:expansion-score-ui` and disposable

@@ -50,7 +50,7 @@ export function createExpansionLeaderboardPanel(level: number, offer?: Expansion
     actions.replaceChildren();
     status.textContent = message || (expansionScoreApi.enabled
       ? `Level ${level} rankings only. Scores are verified by replay; no campaign totals are mixed in.`
-      : "Leaderboard release pending. Gameplay and saves remain available; no score is sent from this build.");
+      : "Leaderboard disabled in this build. Gameplay and local saves remain available; no score is sent.");
     actions.append(button("VIEW LEVEL RANKINGS", async () => {
       const mine = generation;
       list.textContent = "Loading rankings…";

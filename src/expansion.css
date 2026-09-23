@@ -1,4 +1,4 @@
-html[data-expansion-play="true"] .game-logo small::after { content: " // EXPANSION 1 LOCAL"; color: #b381ff; }
+html[data-expansion-play="true"] .game-logo small::after { content: " // EXPANSION 1"; color: #b381ff; }
 html[data-expansion-play="true"] .game-layout { border-color: rgba(179,129,255,.55); }
 html[data-expansion-play="true"] .game-panel { align-self: center; }
 /* Expansion owns its root directly; it does not run the original overlay

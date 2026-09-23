@@ -3,13 +3,11 @@ import "@gridwatch/account-kit/header.css";
 import { mountAccountHeader } from "@gridwatch/account-kit";
 import { accountKit } from "./leaderboard/account";
 import { accountNetworkingEnabled } from "./leaderboard/config";
-import { isExpansionPlayEnabled } from "./ui/featureFlags";
+import { isExpansionPlayEnabled, isPrototypePreviewEnabled } from "./ui/featureFlags";
 
-const query = new URLSearchParams(window.location.search);
-const latencyTrapPreviewEnabled = query.get("latency-trap-preview") === "1";
-const rusherPreviewEnabled = query.get("rusher-preview") === "1";
-const localPreviewHost = ["127.0.0.1", "localhost", "::1", "[::1]"].includes(window.location.hostname);
-const sapperPreviewEnabled = localPreviewHost && query.get("sapper-preview") === "1";
+const latencyTrapPreviewEnabled = isPrototypePreviewEnabled("latency-trap-preview");
+const rusherPreviewEnabled = isPrototypePreviewEnabled("rusher-preview");
+const sapperPreviewEnabled = isPrototypePreviewEnabled("sapper-preview");
 const expansionPlayEnabled = isExpansionPlayEnabled();
 
 // Shared GridWatch account bar (spec §2.1): same bar on every game and on Nexus.

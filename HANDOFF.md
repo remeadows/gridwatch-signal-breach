@@ -1,5 +1,29 @@
 # GridWatch Handoff
 
+## Public activation candidate — 2026-09-23
+
+- Owner approved proceeding with the activation PR after the version-10 server
+  deployment. Working locally; do not merge this candidate or bypass review.
+- Normal campaign navigation now enables `?campaign=expansion-1&level=N` and
+  return-to-picker `?campaign=expansion-1&view=levels&chapter=N`. Local preview
+  jumps/prototypes remain private. Direct public level links respect reconciled
+  owner unlocks, retained guest access and valid saved checkpoints.
+- Explicit per-level rankings/submissions enabled; dedicated LAN networking is
+  still disabled. No game tuning, art, replay, schema or backend changes here.
+- New activation regression failed on the old gates, then passed. Build/types,
+  preview/LAN, score client/UI, account-save, codec/session, content and original
+  replay checks pass; install/audit zero vulnerabilities and no lockfile change.
+- Local built browser: picker -> normal Level 1 URL -> existing Wave 2 resume
+  preserved BW70/Core180; locked Level25 URL returns to locked chapter picker.
+  Desktop 1280x720 and mobile 390x844 passed without overflow or browser errors;
+  original campaign selection remains intact. Explicit rankings read returned
+  the expected empty board. No save discarded and no score submitted.
+- Every package verification script and the save-contract check passed; both
+  generated validators remain unchanged. Local CodeRabbit reviewed all 17
+  activation files with zero findings. Publish for current-head GitHub reviews;
+  owner merge remains required. Real account/two-device/human-win and physical
+  phone QA remain distinct from browser emulation and isolated harnesses.
+
 ## Server-first release — 2026-09-23
 
 - PR #84 is merged as `4f8c10f`; all PR reviews/conversations completed and the
