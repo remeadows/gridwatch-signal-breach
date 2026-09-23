@@ -3,7 +3,7 @@ import { isExpansionChapterAvailable } from "./data/campaigns/expansion";
 import { loadPlayableExpansionR4Progress } from "./ui/expansionProgressR4";
 import { installPointerInput } from "./input/pointer";
 import { drawAmbientBackdrop, drawGrid } from "./render/renderer";
-import { getBoardArtMode, preloadPhase6BoardSprites } from "./render/assetRegistry";
+import { getBoardArtMode, preloadBoardSprites } from "./render/assetRegistry";
 import { getEffectsQuality } from "./render/visualTheme";
 import { applyCommand, createGameState, SIM_RULESET_ID, tick } from "./sim";
 import { createAudioEngine } from "./ui/audio";
@@ -71,9 +71,7 @@ let reducedMotion = reducedMotionQuery.matches;
 
 document.documentElement.dataset.effectsQuality = effectsQuality;
 document.documentElement.dataset.artMode = boardArtMode;
-if (boardArtMode === "phase6") {
-  preloadPhase6BoardSprites();
-}
+preloadBoardSprites(boardArtMode);
 reducedMotionQuery.addEventListener("change", (event) => {
   reducedMotion = event.matches;
 });

@@ -1,5 +1,37 @@
 # GridWatch Handoff
 
+## Original campaign Blender parity — tested locally, 2026-09-22
+
+- Owner requested the original three-sector campaign use the accepted expansion
+  Blender style too. Updated the board, placement ghosts, picker and
+  briefing portraits; reuse the existing 13 matching sprite families and map
+  sectors 1/2/3 to the three authored floors. No new art generation or sim/data,
+  score, save, auth, DB or deployment changes are in this package.
+- Preserve `?art=phase6` and `?art=glyphs`; failed/pending sprites use glyphs,
+  failed floors retain the procedural board. Same shared URL/cache as expansion.
+- Build/tool types, original replay/content/progress, asset provenance,
+  base-path, preview policy, LAN account isolation, expansion visual timeline
+  and original/expansion art fallback tests pass. The new art regression failed
+  first on the old default, then passed after implementation; it renders every
+  original family in all three sectors in all art modes, checks render purity,
+  floor cache readiness, pending/error fallback and no repeated failed requests.
+  Validator regenerated unchanged; npm audit reports zero vulnerabilities.
+- In-app browser QA at `/play/breach/` on preview 4393: original tutorial
+  arsenal/threat portraits load Blender URLs; desktop 1280x720 and mobile
+  390x844/320x740 board/picker remain legible with no horizontal overflow.
+  Placed ICE (30 to 16 bandwidth), keyboard-launched Wave 1, naturally cleared
+  it and reached Wave 2 (42 bandwidth, 150 core, one neutralized). No console
+  warning/error logs. Landscape 844x390 inspected; viewport reset afterward.
+  Later sectors/all enemies are covered by renderer tests, not a new full human
+  campaign clear. Physical-phone/performance and disconnected-browser QA were
+  not repeated. No production save/score writes or account login.
+- Local CodeRabbit `--uncommitted --include-untracked --agent` completed with
+  zero findings across all 12 package files; local Codex diff inspection passed.
+  Documentation status updated afterward. Existing shared-save cleanup still
+  needs its own current-head review before publication as noted below.
+- Local dev 4391 / built preview 4393 remain available; user preview tab kept.
+  No GitHub push, game deployment or shared DB change. Await owner visual check.
+
 ## Game-side shared saves — tested local checkpoint, 2026-09-22
 
 - Working on the owner-approved next package in `codex/expansion-25-local`.

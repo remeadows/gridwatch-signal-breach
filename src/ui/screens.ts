@@ -17,7 +17,7 @@ import { fetchLeaderboard, type LeaderboardEntry } from "../leaderboard/api";
 import { leaderboardConfig } from "../leaderboard/config";
 import type { IconName } from "../render/iconPaths";
 import { createAccountPanel } from "./account";
-import { svgIcon } from "./iconsSvg";
+import { createGameplayIcon } from "./gameplayIcon";
 import {
   getSignalBreachProgress,
   type GameProgress,
@@ -869,7 +869,7 @@ function createGlyphNode(kind: IconName, label: string): HTMLElement {
   const caption = document.createElement("small");
 
   glyph.className = `briefing-glyph briefing-glyph-${kind}`;
-  glyph.insertAdjacentHTML("afterbegin", svgIcon(kind, 34, "briefing-icon"));
+  glyph.append(createGameplayIcon(kind, 34, "briefing-icon"));
   caption.textContent = label;
   glyph.append(caption);
 

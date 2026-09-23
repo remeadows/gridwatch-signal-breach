@@ -72,8 +72,14 @@ The historical `expansion:balance` lane proves deterministic solvability, not
 human fun or phone performance. Contextual owner approval remains pending;
 asset release gates intentionally reject candidate art until it is recorded.
 
+Both the original three-sector campaign and the expansion now default to the
+same Blender-rendered hardware/enemy sprites. Original sectors 1–3 reuse the
+three chapter floor textures, and original tutorial/picker portraits match the
+board. This is a local art update, not a gameplay or leaderboard ruleset change.
 Use `?art=phase6` or `?art=glyphs` for visual rollback and `?quality=low` for
-reduced effects. These switches do not change the simulation or scores.
+reduced effects. These switches do not change the simulation or scores. Run
+`npm run verify:expansion-art-fallback` to test both campaigns' shared assets,
+all original sector render paths, floor-cache readiness and failed-image fallback.
 
 The local expansion saves a checkpoint after each completed wave.
 Reloading offers an explicit resume at the next build phase, with the original

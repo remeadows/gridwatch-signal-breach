@@ -30,10 +30,11 @@ assert.equal(chunks.length, 1, "The in-memory harness must be one self-contained
 assert.equal(chunks[0].imports.length, 0, "The test must not import or request external runtime chunks.");
 const moduleUrl = `data:text/javascript;base64,${Buffer.from(chunks[0].code).toString("base64")}`;
 
-const saved = Object.fromEntries(["Image", "window", "document"].map((key) => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));
+const saved = Object.fromEntries(["Image", "window", "document", "Path2D"].map((key) => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));
 const originalWarn = console.warn;
 let scenarioNumber = 0;
 try {
+  await verifyOriginalCampaign();
   await verifyGlyphMode();
   await verifyPhase6Mode();
   await verifyFailedBlenderRoster();
@@ -46,6 +47,70 @@ try {
   }
 }
 console.log("Expansion art fallback verified: real Vite glob URLs, failed/pending glyph rendering, one-time warnings, cached failures, isolated rollback modes, and decode readiness.");
+
+async function verifyOriginalCampaign() {
+  for (const mode of ["blender-v2", "phase6", "glyphs"]) {
+    const { api, images } = await scenario(mode === "blender-v2" ? "" : `?art=${mode}`);
+    assert.equal(api.getBoardArtMode(), mode, "Original campaign must default to Blender with explicit rollback modes.");
+    api.preloadBoardSprites(mode);
+    const size = { width: 888, height: 888, dpr: 1 };
+    const pendingFloor = api.getBoardBackgroundLayer(size, 1, "low", mode);
+    assert.equal(images.length, mode === "glyphs" ? 0 : mode === "phase6" ? 13 : 16);
+    for (const id of api.BOARD_SPRITE_IDS) {
+      assert.equal(api.getBoardSpriteUrl(id, mode), api.getExpansionArtUrl(id, mode), "Both campaigns must share exactly the same authored sprite URL.");
+      assert.equal(api.getBoardSprite(id, mode), null, "Pending originals must fall back safely.");
+    }
+    for (const image of images) image.emit("load");
+    await Promise.resolve();
+    const readyFloor = api.getBoardBackgroundLayer(size, 1, "low", mode);
+    assert.equal(readyFloor === pendingFloor, mode !== "blender-v2", "A decoded floor must invalidate the pending cached background.");
+    assert.equal(api.getBoardBackgroundLayer(size, 1, "low", mode), readyFloor, "Stable backgrounds must be cached.");
+    for (const id of api.BOARD_SPRITE_IDS) {
+      const sprite = api.getBoardSprite(id, mode);
+      assert.equal(Boolean(sprite), mode !== "glyphs");
+      if (sprite) assert.ok(sprite.src.includes(mode === "blender-v2" ? "gw-blender-v2-" : "gw-phase6-"));
+    }
+    for (const sector of [1, 2, 3]) {
+      const floor = api.getBoardFloorSprite(sector, mode);
+      assert.equal(Boolean(floor), mode === "blender-v2");
+      if (floor) assert.ok(floor.src.includes(`floor-chapter${sector}`));
+      renderOriginalRoster(api, mode, sector);
+    }
+  }
+  const { api, images } = await scenario("");
+  api.preloadBoardSprites("blender-v2");
+  images.forEach((image) => image.emit("error"));
+  for (let frame = 0; frame < 10; frame++) {
+    for (const id of api.BOARD_SPRITE_IDS) assert.equal(api.getBoardSprite(id, "blender-v2"), null);
+    for (const sector of [1, 2, 3]) assert.equal(api.getBoardFloorSprite(sector, "blender-v2"), null);
+    renderOriginalRoster(api, "blender-v2", 1);
+  }
+  assert.equal(images.length, 16, "Original failures must not cause repeated requests.");
+  console.log("Original campaign art verified: shared 13-family roster, three sector floors, rollback modes, pending/error fallback.");
+}
+
+function renderOriginalRoster(api, mode, sector) {
+  let state = api.createGameState({ sector, seed: "original-art-test" });
+  const hardware = ["relay", "firewall", "turret", "scrubber", "overclock"];
+  hardware.forEach((kind, x) => { state.grid = api.setTile(state.grid, { x, y: 0 }, { kind, hp: 10 }); });
+  const enemies = ["probe", "crawler", "spoof", "hunter", "splitter", "goliath"];
+  state = { ...state, intrusions: enemies.map((kind, x) => ({
+    id: x + 1, kind, hp: 12, maxHp: 12, position: { x, y: 6 }, previousPosition: { x, y: 6 },
+    spawnedTick: 0, lastMoveTick: 0, corruption: null,
+  })) };
+  const before = JSON.stringify(state);
+  const drawn = drawing();
+  api.drawGrid(drawn.context, { width: 888, height: 888, dpr: 1 }, state, {
+    interpolationAlpha: 1, flashAlpha: 0, shakeMagnitude: 0, timeMs: 0,
+    hover: { x: 5, y: 1 }, focus: null, selectedTool: "firewall", buildMode: true,
+    reducedMotion: true, effectsQuality: "low", artMode: mode,
+  });
+  assert.equal(JSON.stringify(state), before, "Original drawing must not mutate the simulation.");
+  for (const id of api.BOARD_SPRITE_IDS) {
+    const sprite = api.getBoardSprite(id, mode);
+    if (sprite) assert.ok(drawn.drawnImages.includes(sprite), `Original board did not draw ${id} in ${mode}.`);
+  }
+}
 
 async function scenario(search) {
   const images = [];
@@ -75,6 +140,7 @@ async function scenario(search) {
     }
   }
   globalThis.Image = MockImage;
+  globalThis.Path2D = class {};
   globalThis.window = { location: { search } };
   globalThis.document = { createElement: (tag) => {
     assert.equal(tag, "canvas", "Only the floor cache may create a DOM element.");
@@ -92,6 +158,9 @@ function drawing() {
     clearRect() {}, fillRect() {}, strokeRect() {}, beginPath() {}, closePath() {},
     arc() {}, ellipse() {}, fill() {}, stroke() {}, moveTo() {}, lineTo() {},
     save() {}, restore() {}, setLineDash() {},
+    translate() {}, rotate() {}, scale() {}, rect() {}, roundRect() {}, clip() {},
+    quadraticCurveTo() {}, bezierCurveTo() {},
+    createLinearGradient: () => ({ addColorStop() {} }),
     createRadialGradient: () => ({ addColorStop() {} }),
     fillText: (text) => glyphs.push(text),
     drawImage: (image) => {

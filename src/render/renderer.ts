@@ -29,9 +29,9 @@ import {
 import { getBoardBackgroundLayer } from "./background";
 import { type CanvasSize, getBoardMetrics } from "./canvas";
 import {
-  getPhase6BoardSprite,
+  getBoardSprite,
   type BoardArtMode,
-  type Phase6BoardSpriteId,
+  type BoardSpriteId,
 } from "./assetRegistry";
 import { drawBoardSprite } from "./drawBoardSprite";
 import { ICONS, type IconName } from "./iconPaths";
@@ -77,7 +77,7 @@ export function drawGrid(
 
   context.clearRect(0, 0, size.width, size.height);
   context.drawImage(
-    getBoardBackgroundLayer(size, state.config.sectorId, frame.effectsQuality),
+    getBoardBackgroundLayer(size, state.config.sectorId, frame.effectsQuality, frame.artMode),
     0,
     0,
   );
@@ -339,12 +339,16 @@ function drawTiles(
         drawVoidTile(context, originX, originY, tileSize, position);
       } else {
         context.fillStyle = getTileFill(kind, x, y, state.config.sectorId);
+        // Preserve the floor texture beneath hardware and empty cells.
+        context.save();
+        if (frame.artMode === "blender-v2") context.globalAlpha *= kind === "empty" ? 0.12 : 0.55;
         context.fillRect(
           originX + x * tileSize + inset,
           originY + y * tileSize + inset,
           tileSize - inset * 2,
           tileSize - inset * 2,
         );
+        context.restore();
       }
 
       drawTileUnitIcon(context, originX, originY, tileSize, position, kind, frame);
@@ -515,25 +519,26 @@ function drawMarkers(
       drawCoreRing(context, centerX, centerY, tileSize, state, frame);
     }
 
-    const phase6Sprite = getPhase6MarkerSpriteId(marker.icon);
-    let drewPhase6Sprite = false;
+    const boardSprite = getMarkerSpriteId(marker.icon);
+    let drewSprite = false;
 
     if (
-      frame.artMode === "phase6" &&
-      phase6Sprite &&
-      getPhase6BoardSprite(phase6Sprite)
+      frame.artMode !== "glyphs" &&
+      boardSprite &&
+      getBoardSprite(boardSprite, frame.artMode)
     ) {
       drawUnitContactShadow(context, centerX, centerY, tileSize);
-      drewPhase6Sprite = drawBoardSprite(
+      drewSprite = drawBoardSprite(
         context,
-        phase6Sprite,
+        boardSprite,
         centerX,
         centerY,
-        tileSize * getPhase6UnitDrawSize(phase6Sprite),
+        tileSize * getUnitDrawSize(boardSprite),
+        frame.artMode,
       );
     }
 
-    if (!drewPhase6Sprite) {
+    if (!drewSprite) {
       const iconSize = tileSize * 0.5;
       const sprite = getGlowSprite(marker.icon, iconSize);
       context.drawImage(
@@ -723,9 +728,16 @@ function drawHoverGhost(
     tileSize - 10,
     tileSize - 10,
   );
-  drawIcon(context, frame.selectedTool, center.x, center.y, tileSize * 0.48, {
-    alpha: iconAlpha,
-  });
+  context.save();
+  context.globalAlpha *= iconAlpha;
+  const drewSprite = drawBoardSprite(context, frame.selectedTool, center.x, center.y,
+    tileSize * getUnitDrawSize(frame.selectedTool), frame.artMode);
+  context.restore();
+  if (!drewSprite) {
+    drawIcon(context, frame.selectedTool, center.x, center.y, tileSize * 0.48, {
+      alpha: iconAlpha,
+    });
+  }
 }
 
 function drawToolRangeTelegraph(
@@ -1383,9 +1395,9 @@ function drawIntrusions(
     const { x, y } = renderPosition;
     const radius = tileSize * (intrusion.kind === "goliath" ? 0.32 : 0.24);
     const iconName = getEnemyIconName(intrusion.kind);
-    const phase6SpriteId =
-      frame.artMode === "phase6" ? getPhase6EnemySpriteId(intrusion.kind) : null;
-    const phase6Sprite = phase6SpriteId ? getPhase6BoardSprite(phase6SpriteId) : null;
+    const spriteId =
+      frame.artMode !== "glyphs" ? getEnemySpriteId(intrusion.kind) : null;
+    const boardSprite = spriteId ? getBoardSprite(spriteId, frame.artMode) : null;
     const movementAngle =
       current.x === previous.x && current.y === previous.y
         ? 0
@@ -1446,22 +1458,24 @@ function drawIntrusions(
       const jitter = frame.reducedMotion
         ? 0
         : Math.sin(frame.timeMs * 0.02 + intrusion.id * 3) * 2;
-      if (phase6SpriteId && phase6Sprite) {
+      if (spriteId && boardSprite) {
         context.save();
         context.globalAlpha = 0.28;
         drawBoardSprite(
           context,
-          phase6SpriteId,
+          spriteId,
           x - 2 - jitter,
           y,
-          tileSize * getPhase6UnitDrawSize(phase6SpriteId),
+          tileSize * getUnitDrawSize(spriteId),
+          frame.artMode,
         );
         drawBoardSprite(
           context,
-          phase6SpriteId,
+          spriteId,
           x + 2 + jitter,
           y,
-          tileSize * getPhase6UnitDrawSize(phase6SpriteId),
+          tileSize * getUnitDrawSize(spriteId),
+          frame.artMode,
         );
         context.restore();
       } else {
@@ -1474,14 +1488,15 @@ function drawIntrusions(
       }
     }
 
-    if (phase6SpriteId && phase6Sprite) {
+    if (spriteId && boardSprite) {
       drawBoardSprite(
         context,
-        phase6SpriteId,
+        spriteId,
         x,
         y + bob,
-        tileSize * getPhase6UnitDrawSize(phase6SpriteId) * breath,
-        intrusion.kind === "probe" ? movementAngle : 0,
+        tileSize * getUnitDrawSize(spriteId) * breath,
+        frame.artMode,
+        frame.artMode === "phase6" && intrusion.kind === "probe" ? movementAngle : 0,
       );
     } else {
       drawIcon(
@@ -1742,20 +1757,21 @@ function drawTileUnitIcon(
   context.lineWidth = 1;
   context.strokeRect(tileLeft, tileTop, tileSize - 14, tileSize - 14);
 
-  const phase6Sprite = getPhase6UnitSpriteId(kind);
+  const boardSprite = getUnitSpriteId(kind);
   if (
-    frame.artMode === "phase6" &&
-    phase6Sprite &&
-    getPhase6BoardSprite(phase6Sprite)
+    frame.artMode !== "glyphs" &&
+    boardSprite &&
+    getBoardSprite(boardSprite, frame.artMode)
   ) {
     drawUnitContactShadow(context, centerX, centerY, tileSize);
     if (
       drawBoardSprite(
         context,
-        phase6Sprite,
+        boardSprite,
         centerX,
         centerY,
-        tileSize * getPhase6UnitDrawSize(phase6Sprite),
+        tileSize * getUnitDrawSize(boardSprite),
+        frame.artMode,
       )
     ) {
       return;
@@ -1792,7 +1808,7 @@ function drawUnitContactShadow(
   context.restore();
 }
 
-function getPhase6UnitSpriteId(kind: TileKind): Phase6BoardSpriteId | null {
+function getUnitSpriteId(kind: TileKind): BoardSpriteId | null {
   switch (kind) {
     case "relay":
       return "relay";
@@ -1811,7 +1827,7 @@ function getPhase6UnitSpriteId(kind: TileKind): Phase6BoardSpriteId | null {
   }
 }
 
-function getPhase6MarkerSpriteId(icon: IconName): Phase6BoardSpriteId | null {
+function getMarkerSpriteId(icon: IconName): BoardSpriteId | null {
   switch (icon) {
     case "source":
       return "source";
@@ -1822,7 +1838,7 @@ function getPhase6MarkerSpriteId(icon: IconName): Phase6BoardSpriteId | null {
   }
 }
 
-function getPhase6EnemySpriteId(kind: EnemyKind): Phase6BoardSpriteId | null {
+function getEnemySpriteId(kind: EnemyKind): BoardSpriteId | null {
   switch (kind) {
     case "probe":
     case "crawler":
@@ -1834,7 +1850,7 @@ function getPhase6EnemySpriteId(kind: EnemyKind): Phase6BoardSpriteId | null {
   }
 }
 
-function getPhase6UnitDrawSize(id: Phase6BoardSpriteId): number {
+function getUnitDrawSize(id: BoardSpriteId): number {
   switch (id) {
     case "source":
       return 0.8;

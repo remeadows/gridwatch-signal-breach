@@ -1,5 +1,6 @@
 import type { GameState, PlayerTool, UnitKind } from "../sim/types";
 import { svgIcon } from "./iconsSvg";
+import { createGameplayIcon } from "./gameplayIcon";
 import { getToolAvailability, TOOL_INFO } from "./toolInfo";
 
 export type UnitPickerOptions = Readonly<{
@@ -35,7 +36,7 @@ export function renderUnitPicker(options: UnitPickerOptions): void {
 
       button.type = "button";
       button.dataset.tool = unit;
-      button.insertAdjacentHTML("afterbegin", svgIcon(unit, 28, "tool-icon"));
+      button.append(createGameplayIcon(unit, 28, "tool-icon"));
       name.className = "tool-name";
       name.textContent = UNIT_LABELS[unit];
       purpose.className = "tool-purpose";

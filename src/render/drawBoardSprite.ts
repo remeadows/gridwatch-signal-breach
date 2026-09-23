@@ -1,17 +1,19 @@
 import {
-  getPhase6BoardSprite,
-  type Phase6BoardSpriteId,
+  getBoardSprite,
+  type BoardSpriteId,
+  type BoardArtMode,
 } from "./assetRegistry";
 
 export function drawBoardSprite(
   context: CanvasRenderingContext2D,
-  id: Phase6BoardSpriteId,
+  id: BoardSpriteId,
   centerX: number,
   centerY: number,
   drawSize: number,
+  mode: BoardArtMode,
   rotation = 0,
 ): boolean {
-  const image = getPhase6BoardSprite(id);
+  const image = getBoardSprite(id, mode);
 
   if (!image) {
     return false;
