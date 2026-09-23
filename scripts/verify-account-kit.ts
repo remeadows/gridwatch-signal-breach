@@ -129,22 +129,27 @@ const fakeClient = {
 
 __setSupabaseForTests(fakeClient);
 
-function emitSession(session: Session | null): void {
+function emitSession(session: Session | null, event = "SIGNED_IN"): void {
   currentSession = session;
-  authChangeCallback?.("SIGNED_IN", session);
+  authChangeCallback?.(event, session);
 }
 
+const ownerNotifications: Array<string | undefined> = [];
+const stopOwnerNotifications = onSaveOwnerChange(() => ownerNotifications.push(saveOwner()));
+expectEqual(saveOwner(), undefined, "Owner must remain unknown before initialization.");
 const u1 = makeSession("u1");
 currentSession = u1;
 
 void initAccount();
 await flush();
 expectEqual(profileReads.length, 1, "initAccount() must have a profile read in flight for u1.");
+expectEqual(ownerNotifications.join(","), "u1", "Initial owner notification must arrive before the profile read completes.");
 
 const u2 = makeSession("u2");
 emitSession(u2);
 await flush();
 expectEqual(profileReads.length, 2, "The auth-change handler must start a second profile read for u2.");
+expectEqual(ownerNotifications.join(","), "u1,u2", "Actual account switches must notify synchronously.");
 
 // Resolve the NEWER (u2) read first.
 profileReads[1].resolve({ data: { handle: "second" }, error: null });
@@ -157,7 +162,9 @@ await flush();
 expectEqual(currentHandle(), "second", "A stale, out-of-order profile read must not clobber a newer session's handle.");
 
 // A failed read for the SAME user (e.g. a token refresh) must keep the last known handle.
-emitSession(u2);
+emitSession({ ...u2, access_token: "refreshed-token-u2" }, "TOKEN_REFRESHED");
+expectEqual(accessToken(), "refreshed-token-u2", "A same-owner refresh must still update the cached token.");
+expectEqual(ownerNotifications.join(","), "u1,u2", "A token refresh must not invalidate the same owner's pending score or save UI.");
 await flush();
 expectEqual(profileReads.length, 3, "A repeat auth event for the same user must trigger another profile read.");
 profileReads[2].reject(new Error("network blip"));
@@ -368,5 +375,12 @@ expectEqual(signOutScopes.length, 1, "Sign-out must reach the shared client once
 expectEqual(JSON.stringify(signOutScopes[0]), JSON.stringify({ scope: "local" }), "Sign-out must be browser-local, never global.");
 expectEqual(accountState(), "signed-out", "Account state must clear after sign-out.");
 expectEqual(accessToken(), null, "Cached access token must clear after sign-out.");
+expectEqual(ownerNotifications.at(-1), "guest", "Sign-out must notify the guest identity.");
+const notificationsAfterSignOut = ownerNotifications.length;
+emitSession(null, "SIGNED_OUT");
+expectEqual(ownerNotifications.length, notificationsAfterSignOut, "Duplicate sign-out must not invalidate guest state again.");
+emitSession(u1);
+expectEqual(ownerNotifications.at(-1), "u1", "Signing in again must notify even for a previously seen owner.");
+stopOwnerNotifications();
 expectEqual(accountKit.saves, undefined, "Expansion uses an owner-bound kit saves client, not an unpartitioned global client.");
 console.log("verify-account-kit: local sign-out preserves other devices; expansion saves use a separately owner-bound client.");

@@ -30,20 +30,30 @@ def has_clear_margin(bounds, size=256, fraction=.11):
     return min(bounds[:2]) >= clear_pixels and max(bounds[2:]) <= size - 1 - clear_pixels
 
 
-def verify_approval(record):
+def verify_approval(record, manifest_approved):
     # Approval is owner-maintained metadata, independent of artifact integrity.
     assert type(record.get("ownerApproved")) is bool, "ownerApproved must be a boolean."
+    assert type(manifest_approved) is bool, "Manifest ownerApproved must be a boolean."
+    if not manifest_approved:
+        assert record["ownerApproved"] is False, "Unaccepted roster must not claim individual approval."
 
 
 def test_approval():
     for approved in [False, True]:
-        verify_approval({"ownerApproved": approved})
+        verify_approval({"ownerApproved": approved}, True)
+    verify_approval({"ownerApproved": False}, False)
     for invalid in [None, 0, 1, "true", "false"]:
         try:
-            verify_approval({"ownerApproved": invalid})
+            verify_approval({"ownerApproved": invalid}, True)
         except AssertionError:
             continue
         raise AssertionError(f"Invalid approval metadata accepted: {invalid!r}.")
+    try:
+        verify_approval({"ownerApproved": True}, False)
+    except AssertionError:
+        pass
+    else:
+        raise AssertionError("Unaccepted roster allowed individual approval.")
     print("APPROVAL_METADATA_TESTS_PASS", flush=True)
 
 
@@ -62,11 +72,12 @@ def main():
     if "--self-test" in sys.argv:
         return
     manifest = json.loads((ROOT / "art/source/blender-v2/provenance.json").read_text())
+    roster = json.loads((ROOT / "src/assets/board/blender-v2/manifest.json").read_text())
     assert sha(ROOT / manifest["sourceScript"]) == manifest["sourceScriptSha256"], "Builder hash changed. Rebuild the candidate slice."
     assert sha(ROOT / manifest["rigScript"]) == manifest["rigScriptSha256"], "Rig hash changed. Rebuild the candidate slice."
     rows = []
     for record in manifest["assets"]:
-        verify_approval(record)
+        verify_approval(record, roster.get("ownerApproved"))
         for field in ["model", "master", "runtime"]:
             assert sha(ROOT / record[field]) == record[f"{field}Sha256"], f"{record['id']} {field} hash differs."
         path = ROOT / record["runtime"]

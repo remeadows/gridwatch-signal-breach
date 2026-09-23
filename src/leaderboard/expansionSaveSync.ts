@@ -1,3 +1,5 @@
+// Historical standalone-RPC sync prototype, retained for isolated regression tests.
+// Production reconciliation uses expansionAccountSave and Nexus/account-kit.
 import { emptyExpansionSave, parseExpansionSave, type ExpansionSave, type LocalExpansionSave } from "../ui/expansionSave";
 
 export type CloudExpansionSave = Readonly<{ revision: number; save: ExpansionSave }>;

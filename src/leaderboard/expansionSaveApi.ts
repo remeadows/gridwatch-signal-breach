@@ -1,3 +1,6 @@
+// Historical standalone-RPC prototype, exercised only by isolated tests.
+// Production uses expansionAccountSave/expansionCloudClient and the Nexus kit.
+// Never deploy the prototype RPC fixture or wire this transport into the game.
 import { parseExpansionSave, type ExpansionSave } from "../ui/expansionSave";
 import type { CloudExpansionSave, ExpansionSaveTransport } from "./expansionSaveSync";
 

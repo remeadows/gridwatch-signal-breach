@@ -303,7 +303,7 @@ function renderCampaignSelectScreen(options: ScreenOptions): void {
   const header = createNavigationHeader(
     "CAMPAIGN ROUTER",
     "Select campaign",
-    "Choose the original campaign or Expansion 1: three chapters, 25 levels. Expansion progress stays in this browser; online scoring is not enabled.",
+    "Choose the original campaign or Expansion 1: three chapters, 25 levels. Guest progress stays in this browser; signed-in progress can sync to your account when online services are available. Expansion online scoring is not enabled.",
   );
   const grid = document.createElement("div");
   const backButton = createNavigationButton("BACK", "secondary", onBackToTitle);
@@ -324,7 +324,7 @@ function renderCampaignSelectScreen(options: ScreenOptions): void {
         ? "Twenty-five fresh tactical boards. Master delay, demolition spacing, and shield-breaking chain attacks."
         : "Defend the original three-sector uplink. Your existing progress and leaderboard remain separate.",
       meta: isExpansion ? "LEVELS 01–25" : "SECTORS 01–03",
-      status: isExpansion ? "LOCAL ONLY" : "ACTIVE",
+      status: isExpansion ? "LOCAL / OPTIONAL CLOUD" : "ACTIVE",
       disabled: false,
       onSelect: () => onSelectCampaign(campaign.id),
       testId: `campaign-${campaign.id}`,

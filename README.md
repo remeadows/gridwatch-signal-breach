@@ -69,8 +69,9 @@ Run `npm run verify:expansion-sim`, `npm run verify:expansion-revisions`,
 `npm run verify:expansion-art`, `npm run verify:expansion-art-fallback`, and
 `npm run expansion:content-report`.
 The historical `expansion:balance` lane proves deterministic solvability, not
-human fun or phone performance. Contextual owner approval remains pending;
-asset release gates intentionally reject candidate art until it is recorded.
+human fun or phone performance. The owner accepted the current Blender art on
+2026-09-13, and its release approval checks pass. Physical-phone performance
+remains unverified; art acceptance does not close that separate evidence gap.
 
 Both the original three-sector campaign and the expansion now default to the
 same Blender-rendered hardware/enemy sprites. Original sectors 1–3 reuse the

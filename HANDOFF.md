@@ -2,6 +2,22 @@
 
 ## PR #84 review follow-up — 2026-09-23
 
+- GitHub CodeRabbit posted seven conversations; Codex posted the overlapping
+  migration P1. Follow-up also fixes same-owner token refresh notifications:
+  the regression reproduced a duplicate owner event before the fix and now
+  proves token refresh retains the owner while actual switches/sign-out notify.
+  Account, score-client and cloud-save regressions pass. Campaign copy now
+  distinguishes guest-local from account-cloud saves. Historical r3 generator
+  output warns against applying its hashes to r4; its regenerated fixture is
+  unchanged. Prototype transport/sync files are explicitly labeled test-only.
+- The first small local CodeRabbit follow-up returned four stale-baseline
+  findings: three requested restoring the superseded 30-level/six-chapter layout,
+  and one claimed the current level array has only five entries. Rejected using
+  current AGENTS owner overrides and passing 25-level content checks. A further
+  scoped review used commit `4b1c5b7` and current AGENTS guidance as context;
+  completed with one minor copy finding. Fixed by qualifying cloud sync as
+  dependent on online-service availability and labeling it optional, preserving
+  the offline/LAN-preview contract. Build/types and LAN isolation checks pass.
 - Working on owner-authorized CI/review remediation for PR #84. Monitoring is
   active; do not merge, deploy, enable release flags or change protection rules.
 - Codex P1: removed the obsolete standalone save RPC from the deployable

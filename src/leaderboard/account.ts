@@ -15,6 +15,7 @@ let ready = false;
 const listeners = new Set<() => void>();
 const ownerListeners = new Set<() => void>();
 let ownerReady = false;
+let notifiedOwner: string | undefined;
 
 /** Auth identity notification is synchronous; profile reads must not delay save fencing. */
 export function saveOwner(): string | undefined { return ownerReady ? session?.user.id ?? "guest" : undefined; }
@@ -24,6 +25,9 @@ export function onSaveOwnerChange(listener: () => void): () => void {
 }
 function notifyOwner(): void {
   ownerReady = true;
+  const owner = saveOwner();
+  if (owner === notifiedOwner) return;
+  notifiedOwner = owner;
   for (const listener of ownerListeners) {
     try { listener(); }
     catch (error) { console.warn("[signal-breach] save-owner listener failed:", error instanceof Error ? error.message : String(error)); }

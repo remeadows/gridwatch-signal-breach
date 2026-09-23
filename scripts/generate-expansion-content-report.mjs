@@ -11,6 +11,6 @@ const { buildCurrentExpansionContentReport } = await import(`data:text/javascrip
 const report = await buildCurrentExpansionContentReport();
 const relativePath = `docs/fixtures/${report.contentRevision}-content-report.json`;
 await writeFile(resolve(root, relativePath), `${JSON.stringify(report, null, 2)}\n`);
-console.log(`Generated ${relativePath}; frozen Chapter 1 hashes verified.`);
-console.log("Review and apply these values to the current manifest; historical manifests are never rewritten by this command:");
+console.log(`Generated retained r3 evidence at ${relativePath}; frozen Chapter 1 hashes verified.`);
+console.log("These are retained r3 hashes: never apply them to the current r4 manifest. For current content use scripts/generate-expansion-r4-manifest.mjs. Review any retained fixture diff; historical manifests are not rewritten by this command:");
 console.log(JSON.stringify({ campaignHash: report.campaignHash, levelHashes: report.levelHashes }, null, 2));

@@ -227,7 +227,11 @@ For current leaderboard-enabled builds, network/env searches must distinguish
 the sanctioned code under `src/leaderboard/` and Supabase from accidental new
 network dependencies elsewhere.
 
-# Current execution contract — 2026-09-11
+# Historical local execution contract — 2026-09-11
+
+The 2026-09-13 release override above supersedes this milestone's publication
+restriction. PR publication is now authorized; merge and server deployment
+still require their separate release gates.
 
 Use `docs/EXPANSION_25_LOCAL_PLAN.md` for the approved 25-level (8/8/9) local
 revision. Resolve content by revision plus level ID, isolate r4 progress, keep
