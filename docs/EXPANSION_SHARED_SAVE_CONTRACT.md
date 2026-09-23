@@ -129,4 +129,6 @@ stops further cloud writes until reload, while preserving the local copy.
   service. These end-to-end/auth/cross-device gates are **not** proven by codec tests.
 
 No new Supabase migration is introduced here. The old expansion-specific RPC
-migration remains an unapplied prototype, not the release deployment path.
+prototype lives only in `scripts/fixtures/historical-expansion-save-rpc.sql`,
+outside the deployable migration chain. It is test-only historical evidence,
+not the release deployment path. CI rejects these RPC names in release migrations.

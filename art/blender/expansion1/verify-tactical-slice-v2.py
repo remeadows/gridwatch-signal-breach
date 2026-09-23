@@ -30,6 +30,23 @@ def has_clear_margin(bounds, size=256, fraction=.11):
     return min(bounds[:2]) >= clear_pixels and max(bounds[2:]) <= size - 1 - clear_pixels
 
 
+def verify_approval(record):
+    # Approval is owner-maintained metadata, independent of artifact integrity.
+    assert type(record.get("ownerApproved")) is bool, "ownerApproved must be a boolean."
+
+
+def test_approval():
+    for approved in [False, True]:
+        verify_approval({"ownerApproved": approved})
+    for invalid in [None, 0, 1, "true", "false"]:
+        try:
+            verify_approval({"ownerApproved": invalid})
+        except AssertionError:
+            continue
+        raise AssertionError(f"Invalid approval metadata accepted: {invalid!r}.")
+    print("APPROVAL_METADATA_TESTS_PASS", flush=True)
+
+
 def test_clear_margin():
     assert has_clear_margin([29, 29, 226, 226]), "Exact 29-pixel margin should pass."
     assert has_clear_margin([50, 60, 200, 210]), "Larger margins should pass."
@@ -41,6 +58,7 @@ def test_clear_margin():
 
 def main():
     test_clear_margin()
+    test_approval()
     if "--self-test" in sys.argv:
         return
     manifest = json.loads((ROOT / "art/source/blender-v2/provenance.json").read_text())
@@ -48,7 +66,7 @@ def main():
     assert sha(ROOT / manifest["rigScript"]) == manifest["rigScriptSha256"], "Rig hash changed. Rebuild the candidate slice."
     rows = []
     for record in manifest["assets"]:
-        assert record["ownerApproved"] is False, "Candidate authoring package must not claim owner approval."
+        verify_approval(record)
         for field in ["model", "master", "runtime"]:
             assert sha(ROOT / record[field]) == record[f"{field}Sha256"], f"{record['id']} {field} hash differs."
         path = ROOT / record["runtime"]

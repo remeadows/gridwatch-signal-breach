@@ -12,6 +12,7 @@ import { getCurrentExpansionWave } from "./sim/expansion/waves";
 import type { GridPosition } from "./sim/types";
 import { loadExpansionR4Progress } from "./ui/expansionProgressR4";
 import { ExpansionRunSession } from "./ui/expansionRunSession";
+import { getExpansionBriefingCopy } from "./ui/expansionBriefingCopy";
 import { ExpansionLocalSave } from "./ui/expansionLocalSave";
 import { ExpansionSaveUi } from "./ui/expansionSaveUi";
 import type { ProgressStorage } from "./ui/progress";
@@ -401,7 +402,7 @@ function renderPlayUi(): void {
   if (state.phase === "prep" && !running) {
     const bar = document.createElement("section");
     bar.className = "build-bar";
-    bar.innerHTML = `<div class="build-intel"><strong>BUILD · L${levelId} W${state.waveIndex + 1} · +${wave.bandwidthGrant} BW</strong><span>${wave.briefing} · ${wave.maxSpawnedIntrusions} intrusions</span></div>`;
+    bar.innerHTML = `<div class="build-intel"><strong>BUILD · L${levelId} W${state.waveIndex + 1} · +${wave.bandwidthGrant} BW</strong><span>${getExpansionBriefingCopy(state.config.contentRevision, wave.briefing)} · ${wave.maxSpawnedIntrusions} intrusions</span></div>`;
     const launch = document.createElement("button"); launch.type = "button"; launch.className = "neon-button neon-button-primary build-launch"; launch.textContent = `LAUNCH W${state.waveIndex + 1} ▸`; launch.addEventListener("click", launchWave); bar.append(launch); playUi.append(bar);
   }
   const readout = document.createElement("div");

@@ -18,6 +18,7 @@ import { createExpansionGameState } from "../src/sim/expansion/state";
 import { EXPANSION_CAMPAIGN_ID, EXPANSION_CONTENT_REVISION, EXPANSION_RULESET_ID } from "../src/sim/expansion/types";
 import { EXPANSION_CHAPTER_01_CONTENT_MANIFEST, EXPANSION_CHAPTER_02_CONTENT_MANIFEST, EXPANSION_R3_CONTENT_MANIFEST, EXPANSION_CONTENT_MANIFEST, getExpansionLevelContentHash } from "../src/data/campaigns/expansion/contentManifest";
 import { SIM_RULESET_ID } from "../src/sim/ruleset";
+import { getExpansionBriefingCopy } from "../src/ui/expansionBriefingCopy";
 import { isKnownCampaignId, resolveCampaignContent } from "../src/sim/content";
 import {
   buildExpansionContentReport,
@@ -62,6 +63,15 @@ const contentReport = buildExpansionContentReport(
   EXPANSION_CONTENT_REVISION,
 );
 expectEqual(stableStringify(contentReport), stableStringify(contentReportFixture), "Expansion content report fixture drifted.");
+for (const [original, corrected] of [
+  [EXPANSION_LEVELS[4].briefing, "A tough Goliath presses toward the Core while Rushers attack the route. Keep your relay chain alive through five holds before the outer lanes open."],
+  [EXPANSION_LEVELS[12].briefing, "Isolate bait, overlap ICE, and preserve a rebuild lane. Heavy enemies add Core pressure while Sappers threaten clustered hardware before the final demolition tests."],
+  [EXPANSION_LEVELS[7].waves[1].briefing, "Hunters chase hardware while Rushers race along the route. Keep traps in the path."],
+]) {
+  expectEqual(getExpansionBriefingCopy("expansion-1-r4", original), corrected, "r4 combat copy correction is missing.");
+  expectEqual(getExpansionBriefingCopy("expansion-1-r3", original), original, "Presentation correction changed a retained revision.");
+}
+expectEqual(getExpansionBriefingCopy("expansion-1-r4", "Unchanged briefing."), "Unchanged briefing.", "Unrelated briefing changed.");
 
 for (const level of EXPANSION_LEVELS) {
   expectEqual(level.chapterId, level.id <= 8 ? 1 : level.id <= 16 ? 2 : 3, `Level ${level.id} escaped its authored chapter.`);
@@ -111,10 +121,12 @@ expectDeepEqual(
   "Additive revision r3 changed one of the ten retained r2 level hashes.",
 );
 
-const resolved = resolveCampaignContent({ campaignId: "expansion-1", levelId: 1 });
-expectEqual(resolved.campaignId, "expansion-1", "Expansion resolver rejected Chapter 1.");
-expectEqual(resolveCampaignContent({ campaignId: "expansion-1", levelId: 6 }).campaignId, "expansion-1", "Expansion resolver rejected Chapter 2.");
-expectEqual(resolveCampaignContent({ campaignId: "expansion-1", levelId: 11 }).campaignId, "expansion-1", "Expansion resolver rejected Chapter 3.");
+for (const [levelId, chapterId] of [[1, 1], [9, 2], [17, 3]] as const) {
+  const resolved = resolveCampaignContent({ campaignId: "expansion-1", levelId });
+  if (resolved.campaignId !== "expansion-1") throw new Error(`Expansion resolver rejected Chapter ${chapterId}.`);
+  expectEqual(resolved.level.id, levelId, `Expansion resolver returned the wrong level for Chapter ${chapterId}.`);
+  expectEqual(resolved.level.chapterId, chapterId, `Expansion resolver returned the wrong chapter for Level ${levelId}.`);
+}
 expectThrows(() => resolveCampaignContent({ campaignId: "expansion-1", levelId: 26 }), /Expansion level is not authored/, "Unauthored Level 26 became valid.");
 expectThrows(() => resolveCampaignContent({ campaignId: "signal-breach", sectorId: 4 }), /Unknown Signal Breach sector/, "A fourth legacy sector became valid.");
 expectEqual(isKnownCampaignId("signal-breach"), true, "Known campaign rejected.");

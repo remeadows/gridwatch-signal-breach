@@ -21,7 +21,7 @@ behavior is verified with native PostgreSQL 16 locally.
 
 Image provenance: [official Docker Hub PostgreSQL 16 tag metadata](https://hub.docker.com/v2/repositories/library/postgres/tags/16)
 returned digest `sha256:f1c3376c26f2609ab9f29f71f824103fe2fcd8ee0346485cb6122a4f93df6f94`.
-Dependabot's [Docker support](https://docs.docker.com/scout/integrations/source-code-management/github/)
+Dependabot's [Docker configuration](https://docs.github.com/en/code-security/reference/supply-chain-security/dependabot-options-reference#package-ecosystem)
 provides scheduled tag/digest PRs for the Dockerfile; do not assume the existing
 GitHub Actions updater manages service-image references.
 

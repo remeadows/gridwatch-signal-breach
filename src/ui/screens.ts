@@ -13,6 +13,7 @@ import {
 } from "../data/campaigns";
 import { SECTORS } from "../data/levels";
 import type { ExpansionR4Progress } from "./expansionProgressR4";
+import { getExpansionBriefingCopy } from "./expansionBriefingCopy";
 import { fetchLeaderboard, type LeaderboardEntry } from "../leaderboard/api";
 import { leaderboardConfig } from "../leaderboard/config";
 import type { IconName } from "../render/iconPaths";
@@ -428,7 +429,7 @@ function renderLevelSelectScreen(options: ScreenOptions): void {
       title: isUnlocked ? level?.codename ?? "ENCRYPTED LEVEL" : "ENCRYPTED LEVEL",
       name: isUnlocked ? level?.tagline ?? "LOCAL REVIEW" : level ? "CLEAR PREVIOUS LEVEL" : placeholder ? "NOT PLAYABLE" : "SIGNAL LOCKED",
       detail: isUnlocked
-        ? level?.briefing ?? "Local review content."
+        ? getExpansionBriefingCopy(EXPANSION_CAMPAIGN.contentRevision, level?.briefing ?? "Local review content.")
         : level
         ? "Authored and ready. Clear the previous level to unlock this route."
         : placeholder

@@ -1,10 +1,12 @@
-# Blender v2 tactical roster — candidate
+# Blender v2 tactical roster — accepted source package
 
-This package is a local authoring candidate for the first three expansion
+This package supplies the accepted Blender artwork for the three expansion
 chapters. The first contextual slice established the square Chapter 1 deck tile,
-Relay repeater, and ICE turret. The complete candidate roster extends that rig
+Relay repeater, and ICE turret. The complete roster extends that rig
 to three chapter floor treatments, all current units and enemies, Arc ICE, and
-Shield Drone. It has not received owner visual acceptance.
+Shield Drone. The owner accepted this art on 2026-09-13, and subsequently accepted
+the original campaign's integration. That acceptance is not evidence of a new
+physical-device performance test.
 
 The objects follow the tactical industrial direction: manufactured gunmetal
 and ceramic bodies, exposed steel edges and fasteners, functional vents,
@@ -44,11 +46,11 @@ The complete 21-family roster is:
 All runtime candidates together must fit the 1.5 MiB roster budget. Each source
 scene is independently editable; common materials and framing live in the rig.
 
-The completed 21-family render on 2026-09-10 totals 1,058,094 runtime bytes
+The current verified 21-family roster totals 1,058,037 runtime bytes
 (1.009 MiB). The independent Blender verifier passed all model/master/runtime
 hashes, 1024/256 dimensions, transparent object corners, at least 29 pixels of
 object margin, and fully opaque floor borders. These checks establish asset
-integrity and geometry alignment; gameplay-scale visual approval remains pending.
+integrity and geometry alignment; owner art acceptance is recorded separately.
 
 The scene uses Cycles on four CPU threads, a fixed seed of 17, 40 master
 samples, and 64 runtime samples. All rendering happens offline. The process
@@ -80,5 +82,11 @@ denoiser versions. The recorded hashes identify the actual reviewed outputs.
 
 Existing approved v1 sources are untouched. The new files deliberately have a
 new versioned directory and filename prefix. Preserve those older sources for
-comparison and rollback. The `ownerApproved` values in the provenance file stay
-false until actual gameplay-scale desktop and mobile acceptance is recorded.
+comparison and rollback. `ownerApproved` must be a boolean: it records explicit
+owner acceptance, not an automated integrity result. Both approved and candidate
+records undergo the same hash, geometry, and budget checks. The current builder
+conservatively resets every rebuilt record to `status: candidate` and
+`ownerApproved: false`, even if its output happens to be byte-identical. Rebuilt
+art therefore needs explicit acceptance again; untouched compatible records keep
+their existing metadata. Do not edit the generator hash in the manifest without
+actually rebuilding its artifacts, or silently carry approval onto changed art.

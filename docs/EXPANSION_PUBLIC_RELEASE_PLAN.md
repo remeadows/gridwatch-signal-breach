@@ -42,7 +42,8 @@ parallel expansion login or deploy the older standalone RPC prototype unchanged.
 5. Complete isolated, replay-validated expansion leaderboards, then full local
    and two-device acceptance, Codex/CodeRabbit PR review and server-first rollout.
 
-The older RPC migration and its tests below are historical prototype evidence,
+The older RPC SQL (now `scripts/fixtures/historical-expansion-save-rpc.sql`,
+outside `supabase/migrations`) and its tests below are historical prototype evidence,
 not permission to bypass the shared save endpoint. No production migration or
 save reset has been performed by this reconciliation work.
 

@@ -1,5 +1,33 @@
 # GridWatch Handoff
 
+## PR #84 review follow-up — 2026-09-23
+
+- Working on owner-authorized CI/review remediation for PR #84. Monitoring is
+  active; do not merge, deploy, enable release flags or change protection rules.
+- Codex P1: removed the obsolete standalone save RPC from the deployable
+  migration chain. It now lives in `scripts/fixtures/historical-expansion-save-rpc.sql`
+  for disposable historical tests only. CI rejects either old RPC name in release
+  migrations. The regression failed before the move and passes afterward.
+  Local PostgreSQL 16 save/score isolation tests pass; no production writes.
+- Full-diff local CodeRabbit review completed with nine findings (including a
+  duplicate Blender finding), two unreviewed files and binary exclusions. Fixed
+  stale chapter documentation, resolver coverage (Levels 1/9/17 plus chapter
+  identities), validator-drift annotation and the Docker documentation link.
+- Blender verifier now accepts boolean owner-approval metadata instead of
+  rejecting accepted art; regression and all 21 artifact integrity checks pass.
+  The generator remains unchanged: every rebuilt asset conservatively requires
+  fresh approval, even if its bytes match. This avoids restamping accepted art
+  with a generator hash that did not produce it. README documents that contract.
+- Misleading combat copy is corrected in the UI presentation layer. Normal ICE
+  hits all in-range enemies, so Hunters/heavies do not divert its attacks.
+  Frozen r4 definitions, hashes, saves and both validator bundles stay unchanged.
+- Fresh build/tool types, content/copy checks, account-save integration, score UI,
+  preview-host policy and Blender verification pass. Local built browser chapter
+  navigation shows corrected Level 5 copy; desktop interaction and keyboard
+  return pass without app warnings/errors. Mobile-width DOM has no horizontal
+  overflow; physical-device testing was not repeated. Current-head remote review
+  and CI must still finish after the corrective push.
+
 ## Complete-game PR publication authorized — 2026-09-23
 
 - Owner explicitly approved publishing the PR covering the original campaign's
@@ -1313,9 +1341,10 @@ Note: the previous "zero network / no `import.meta.env`" invariant no longer hol
 - Keep gameplay tuning in `src/data/` where practical. Score weights currently live in `src/sim/scoring.ts`.
 - The leaderboard is the one sanctioned network feature. `src/sim` must stay pure and deterministic (no `Math.random`/`Date.now`). Changes to the frozen V2 simulator require `npm run build:validator` and committing any reviewed change to `supabase/functions/submit-gridwatch-score/sim.bundle.js`; deployment is a separate owner-authorized action. Changes confined to `src/sim/expansion/` do not authorize or require deploying that phase4-v1 validator. Expansion 1 has its own immutable replay ruleset and requires isolated leaderboard categories and a separately approved server-first release. The original validator must remain byte-identical for this milestone.
 - Do not add manual path drawing, sectors beyond the existing three, or waves
-  beyond the existing twelve to the frozen V2 campaign. Expansion 1 Chapters
-  1-3 are separately authored through Level 15; Chapters 4-6 remain reserved
-  and unauthored until their one-chapter-at-a-time batches.
+  beyond the existing twelve to the frozen V2 campaign. Expansion 1 r4 contains
+  exactly three chapters and 25 authored levels (8 / 8 / 9), five waves per
+  level. The historical six-chapter roadmap is superseded; no Chapters 4–6
+  belong to the current release scope.
 
 ## Good Next Checks
 

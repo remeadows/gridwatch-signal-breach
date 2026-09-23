@@ -40,6 +40,7 @@ jobs:
 
       - name: Verify expansion save database isolation
         run: |
+          node scripts/verify-expansion-migration-boundary.mjs
           docker build --tag signal-breach-save-test .github/ci
           docker run --detach --name signal-breach-save-test \
             --env POSTGRES_PASSWORD=isolated-ci-test-only \
@@ -108,6 +109,7 @@ jobs:
         run: |
           npm run build:validator
           npm run build:expansion-validator
-          git diff --exit-code -- supabase/functions/submit-gridwatch-score/expansion-r4.bundle.js
+          git diff --exit-code -- supabase/functions/submit-gridwatch-score/expansion-r4.bundle.js \
+            || (echo "::error::expansion-r4.bundle.js is stale — run 'npm run build:expansion-validator' and commit the result." && exit 1)
           git diff --exit-code -- supabase/functions/submit-gridwatch-score/sim.bundle.js \
             || (echo "::error::sim.bundle.js is stale — run 'npm run build:validator' and commit the result." && exit 1)

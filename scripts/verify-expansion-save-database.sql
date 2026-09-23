@@ -17,7 +17,7 @@ insert into public.games values
 insert into public.game_saves values
   ('11111111-1111-1111-1111-111111111111','00000000-0000-0000-0000-000000000002','main',1,1,'{"sentinel":"unchanged"}',null,now());
 begin;
-\ir ../supabase/migrations/20260913000100_signal_breach_expansion_saves.sql
+\ir fixtures/historical-expansion-save-rpc.sql
 commit;
 set role authenticated;
 set request.jwt.claim.sub = '11111111-1111-1111-1111-111111111111';

@@ -1,3 +1,7 @@
+-- HISTORICAL TEST FIXTURE ONLY. Never apply to GridWatchGamesDB.
+-- The released game uses Nexus/account-kit saves with strict schema validation
+-- and a 65,536-byte whole-request limit; these old RPCs are not that contract.
+-- Preserved solely for disposable-database prototype regression tests.
 -- Additive Signal Breach-only access to the existing shared save store.
 -- No grants/policies/rows on game_saves or other games are changed.
 -- Prerequisite: the shared game_saves schema owned by the account/save rollout.

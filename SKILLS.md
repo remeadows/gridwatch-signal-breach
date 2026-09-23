@@ -142,14 +142,16 @@ In addition to the UI lane:
 
 - Run `npm run verify:progress` to cover V1-to-V2 migration, malformed-storage
   recovery, storage unavailability, and campaign namespace isolation.
-- Run `npm run verify:content` to prove each authored chapter contains exactly
-  five levels and twenty-five waves, with all remaining chapters unauthored. Run
+- Run `npm run verify:content` to prove r4 contains exactly three authored
+  chapters split 8 / 8 / 9 levels (25 levels / 125 waves), with no placeholder
+  chapters or levels. Run
   `npm run expansion:content-report` to verify the literal immutable hashes.
 - Verify the normal title flow with no flag, then use `?expansion-nav=1` only
-  on localhost for acceptance QA. Check the campaign screen, six spoiler-safe
-  chapter cards, the five-card Chapter 1 screen, level unlock progression, and
+  on localhost for acceptance QA. Check the campaign screen, three spoiler-safe
+  chapter cards, the eight-card Chapter 1 screen, level unlock progression, and
   `?expansion-play=1&level=N` at mobile and desktop widths. Confirm public hosts
-  cannot activate either flag and expansion results expose no leaderboard path.
+  cannot activate either flag and expansion leaderboard requests stay disabled
+  until the separate server-first release latch is enabled.
 - Keyboard-check the expansion Canvas: Tab to the grid, use arrows to move the
   visible cell focus, press Space to place the selected tool, Delete/Backspace
   to sell, and Enter to launch the prepared wave. Confirm the expected
