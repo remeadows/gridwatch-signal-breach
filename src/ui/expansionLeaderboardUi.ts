@@ -18,6 +18,7 @@ export function createExpansionLeaderboardPanel(level: number, offer?: Expansion
   let message = "";
   let submitted = false;
   const ownerAtCreation = saveOwner();
+  let observedOwner = ownerAtCreation;
   const proof = offer && !offer.staged && offer.owner === ownerAtCreation ? offer.proof : undefined;
   let replacement: ExpansionReplayInput | undefined;
   if (proof && ownerAtCreation) {
@@ -127,7 +128,16 @@ export function createExpansionLeaderboardPanel(level: number, offer?: Expansion
     });
     return button;
   }
-  const changed = () => { generation++; message = ""; submitted = false; list.replaceChildren(); render(); };
+  const changed = () => {
+    const owner = saveOwner();
+    if (owner !== observedOwner) {
+      observedOwner = owner;
+      generation++; message = ""; submitted = false; list.replaceChildren();
+    }
+    // Token/profile refreshes update controls without discarding this owner's
+    // in-flight response or verified confirmation. Only an identity change fences it.
+    render();
+  };
   const unsubAccount = onAccountChange(changed);
   const unsubOwner = onSaveOwnerChange(changed);
   function dispose() { disposed = true; generation++; unsubAccount(); unsubOwner(); observer.disconnect(); }

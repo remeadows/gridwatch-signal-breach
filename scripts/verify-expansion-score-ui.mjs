@@ -76,6 +76,48 @@ panel.dispose(); body.replaceChildren(); panel = mount();
 assert.equal(stages, stagedCount, "Successful submission is never re-staged by overlay rebuild.");
 assert.equal(panel.element.textContent.includes("SUBMIT AS Alice"), false);
 panel.dispose(); body.replaceChildren();
+// A token/profile refresh is not an owner change. Keep in-flight results and
+// completed confirmation visible, but still reject another owner's completion.
+const originalSubmit = globalThis.__scoreUi.pending.submit;
+for (const result of [
+  { ok: true, runScore: 123, bestScore: 456, levelRank: 2 },
+  { ok: false, error: "Temporary score service failure. Retry this run." },
+]) {
+  let complete;
+  let requests = 0;
+  globalThis.__scoreUi.pending.submit = async () => {
+    requests++;
+    const response = await new Promise((resolve) => { complete = resolve; });
+    if (response.ok) stored.delete("alice");
+    return response;
+  };
+  panel = mount({ proof, owner: "alice", staged: false });
+  await click(panel, "SUBMIT AS Alice");
+  for (const listener of accountListeners) listener();
+  assert.match(panel.element.textContent, /Verifying score/, "Same-owner refresh must preserve in-flight feedback.");
+  await click(panel, "SUBMIT AS Alice");
+  assert.equal(requests, 1, "Refresh must not re-enable duplicate submission.");
+  complete(result);
+  for (let i = 0; i < 8; i++) await Promise.resolve();
+  const expected = result.ok ? /Verified 123 · Best 456 · Level rank #2/ : /Temporary score service failure/;
+  assert.match(panel.element.textContent, expected, "Same-owner refresh must not discard a submission result.");
+  for (const listener of accountListeners) listener();
+  assert.match(panel.element.textContent, expected, "A later profile refresh must preserve the completed result.");
+  assert.equal(stored.has("alice"), !result.ok, "Only failed submissions retain the proof for retry.");
+  panel.dispose(); body.replaceChildren();
+}
+let completeOldOwner;
+globalThis.__scoreUi.pending.submit = () => new Promise((resolve) => { completeOldOwner = resolve; });
+panel = mount({ proof, owner: "alice", staged: false });
+await click(panel, "SUBMIT AS Alice");
+owner = "bob";
+for (const listener of ownerListeners) listener();
+for (const listener of accountListeners) listener();
+completeOldOwner({ ok: true, runScore: 999, bestScore: 999, levelRank: 1 });
+for (let i = 0; i < 8; i++) await Promise.resolve();
+assert.doesNotMatch(panel.element.textContent, /Verified 999/, "An actual owner switch must still discard stale UI results.");
+panel.dispose(); body.replaceChildren(); owner = "alice";
+globalThis.__scoreUi.pending.submit = originalSubmit;
 stored.set("alice", { owner: "alice", proof: { ...proof, seed: "older" } });
 const replacement = { proof, owner: "alice", staged: false };
 panel = mount(replacement);
