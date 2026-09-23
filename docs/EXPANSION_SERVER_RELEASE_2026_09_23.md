@@ -23,14 +23,42 @@ game function or public client activation was changed.
 - Deployment timestamp: 2026-09-23 18:01:06 UTC.
 - Client rollback baseline: main `4f8c10f`, Pages deployment
   `5b79c0c5-e48b-4447-8fe1-e3812f00bd3c`, with expansion activation still off.
-- Exact version-9 file contents and metadata are retained in the task's local
-  visualization artifacts under `signal-breach-release-20260923/rollback-v9.json`.
-  A working copy is at `/private/tmp/breach-release-20260923/rollback-v9.json`.
-  The JSON file contents are exact; individually extracted temporary source
-  files have an extra terminal newline and are not the canonical backup.
+- Durable rollback source: the canonical GitHub repository, immutable commit
+  [`6e0506df83c5099601aa2448ef22986966cc0c6a`](https://github.com/remeadows/gridwatch-signal-breach/tree/6e0506df83c5099601aa2448ef22986966cc0c6a/supabase/functions/submit-gridwatch-score),
+  directory `supabase/functions/submit-gridwatch-score/`. All four runtime files
+  at this commit were compared byte-for-byte with the downloaded deployed
+  version-9 backup and match exactly. The commit is retained in main's history
+  and its retrieval from GitHub was verified. Local task artifacts are redundant
+  working copies, not a prerequisite for rollback.
 
-Rollback: redeploy only `submit-gridwatch-score` using the backup JSON's four
-source files, `index.ts` entrypoint and existing `verify_jwt=false`. This creates
+### Operator retrieval (no deployment)
+
+From a clone of `https://github.com/remeadows/gridwatch-signal-breach.git`, fetch
+the pinned commit and extract only these four files into a new working directory:
+
+```sh
+git fetch origin 6e0506df83c5099601aa2448ef22986966cc0c6a
+rollback_dir="$(mktemp -d)"
+git archive 6e0506df83c5099601aa2448ef22986966cc0c6a \
+  supabase/functions/submit-gridwatch-score/index.ts \
+  supabase/functions/submit-gridwatch-score/sim.bundle.js \
+  supabase/functions/submit-gridwatch-score/replayValidation.ts \
+  supabase/functions/submit-gridwatch-score/expansionReplayValidation.ts \
+  | tar -x -C "$rollback_dir"
+shasum -a 256 "$rollback_dir"/supabase/functions/submit-gridwatch-score/*
+```
+
+Compare every digest with this manifest before any separately authorized rollback:
+
+| File | SHA-256 |
+| --- | --- |
+| `index.ts` | `7b2caa0190a7fec2c8dd294bfc4633d89bfc9f477f6ca5465627ad43653477b1` |
+| `sim.bundle.js` | `48a3ecf68be9d05e57ccabb2c90e335669a1a1808fbda814ac7ea81a952dafa6` |
+| `replayValidation.ts` | `ad9503803d7d3e35fb317e38dc2e9dd7978eea2d480ff138cb95c6c94f1ce819` |
+| `expansionReplayValidation.ts` | `70bd20a7c1c2d76f4f1ab5210e5c5132a0fbe20708ecb9093e493d7fc2cb879d` |
+
+Rollback: redeploy only `submit-gridwatch-score` using those four extracted
+source files, `index.ts` entrypoint, no import map and existing `verify_jwt=false`. This creates
 a new function version restoring version-9 behavior; do not alter shared DB
 state. Keep public client activation off. After activation, roll back the client
 latches first if saves/submissions regress, preserving all user data.

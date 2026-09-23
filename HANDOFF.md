@@ -1,5 +1,19 @@
 # GridWatch Handoff
 
+## PR #86 review follow-up — 2026-09-23
+
+- Current head `e4e9f74`: build, CodeQL, Cloudflare preview and CodeRabbit status
+  passed; Codex completed with no major findings. CodeRabbit requested one fix:
+  durable rollback retrieval, not a CI failure.
+- Verified all four deployed version-9 runtime files exactly match immutable
+  repository commit `6e0506df83c5099601aa2448ef22986966cc0c6a`, available on GitHub
+  and retained in main history. Release documentation now provides its exact
+  retrieval command and per-file SHA-256 manifest; local task files are optional.
+  This is documentation-only remediation, with no deploy or production writes.
+- Publish the verified documentation fix, reply with evidence, resolve the
+  addressed conversation and request fresh Codex/CodeRabbit review. Owner merge
+  remains required; public activation and genuine account acceptance are pending.
+
 ## Public activation candidate — 2026-09-23
 
 - Owner approved proceeding with the activation PR after the version-10 server
