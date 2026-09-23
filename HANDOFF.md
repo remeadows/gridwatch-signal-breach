@@ -1,5 +1,54 @@
 # GridWatch Handoff
 
+## Expansion leaderboard package — locally complete, 2026-09-23
+
+- Owner requested finishing leaderboards next, followed by publication of the
+  complete game: refreshed original campaign plus all 25 expansion levels.
+  Current work is local; no push, Edge deployment or production score writes.
+- Added frozen r4 replay/score bundle and bounded HTTP path. Only completed
+  five-wave wins qualify. Require exact schema/campaign/ruleset/revision/hash;
+  canonicalize commands and derive score/identity server-side. Expansion returns
+  before all original/hub score writes and uses only
+  `expansion-v1:expansion-1-r4:level:N`, N=1..25. No shared DB migration needed.
+- Client has explicit reads/submissions, per-account durable retry, explicit
+  guest claim, account-switch guards, and a pending-run sign-in return notice.
+  One pending run per owner; replacing a different run requires a button, not
+  an automatic victory overwrite. Field Guide and victory expose rankings.
+  `EXPANSION_LEADERBOARDS_RELEASED=false` until server-first activation; public
+  expansion navigation is still gated. No auto submission/network read.
+- Tests passed so far: 25 client/frozen-server score matches; invalid identity,
+  hash, commands, terminal state and work/body budgets; auth/HTTP/CORS routing;
+  client stale token/owner/completion, retry, duplicate, response and storage
+  handling. Disposable PostgreSQL 16 verified exact-category ranking, ties,
+  duplicate/lower/higher keep-best, original/other-game sentinels and client
+  write denial using existing migration functions. This was NOT production DB.
+- Build/tool types, original golden replay (514), unchanged original validator,
+  save ownership/codec (100 boundaries), LAN isolation, preview policy and
+  original/expansion art fallback pass. npm install/audit: zero vulnerabilities,
+  no dependency changes. CodeRabbit's first pass found two issues: action focus
+  loss and failed-storage proof loss on victory-overlay rebuild. Both fixed with
+  UI lifecycle regressions. Follow-up completed with one minor finding (disable
+  pending notices while the release latch is off), fixed and regression-tested.
+  No known review finding remains. Final small fixes were checked by Codex and
+  tests; this is not remote current-head approval. See
+  `docs/reviews/EXPANSION_LEADERBOARD_REVIEW.md`. Browser QA also
+  found/fixed Field Guide badge clipping; its scrollable dialog is now anchored
+  to the viewport so rankings remain reachable independently of board size.
+- Local built preview 4393 QA: resumed the existing Wave 2 checkpoint, opened
+  Field Guide, explicitly requested rankings, observed truthful release-pending
+  copy, keyboard-tabbed to Back to Game and returned to the unchanged build
+  phase. Checked desktop 1280x720, 390x844, 320x740 and landscape 844x390; no
+  horizontal overflow or warning/error logs. Normal title route still renders.
+  Tested enabled submission/retry/handle-text rendering and disposal through an
+  isolated DOM-port harness, not a real authenticated browser score submission.
+  Dev 4391 and preview 4393 both return HTTP 200; no `.env*` files or unrelated
+  networking. No physical-device or full human five-wave clear repeated here.
+- Remaining release gates: protected GitHub PR/current-head reviews/checks and
+  conversations, server deployment/rollback baseline, public activation, real
+  Nexus-auth score acceptance and two-device cloud-save acceptance. Local Node
+  HTTP harness is not a Deno runtime/deployment test. Do not submit synthetic
+  fixture wins to production or label this package deployed.
+
 ## Original campaign Blender parity — tested locally, 2026-09-22
 
 - Owner requested the original three-sector campaign use the accepted expansion
@@ -30,7 +79,8 @@
   Documentation status updated afterward. Existing shared-save cleanup still
   needs its own current-head review before publication as noted below.
 - Local dev 4391 / built preview 4393 remain available; user preview tab kept.
-  No GitHub push, game deployment or shared DB change. Await owner visual check.
+  No GitHub push, game deployment or shared DB change. Owner subsequently
+  played locally and approved the direction before requesting leaderboards.
 
 ## Game-side shared saves — tested local checkpoint, 2026-09-22
 

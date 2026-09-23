@@ -34,6 +34,7 @@ import type { ExpansionAccountSave } from "./leaderboard/expansionAccountSave";
 import { renderExpansionNavigationSaveStatus } from "./ui/expansionNavigationSaveUi";
 import { createExpansionSavePrompt } from "./ui/expansionSavePrompt";
 import { savePendingRun, takePendingRun } from "./leaderboard/pendingRun";
+import { mountExpansionPendingScoreNotice } from "./ui/expansionLeaderboardUi";
 import type { GamePhase, GridPosition, PlayerTool, RecordedCommand, SimCommand } from "./sim";
 import { getCurrentWave } from "./sim/waves";
 
@@ -640,6 +641,7 @@ if (expansionNavigationEnabled) {
   });
   window.addEventListener("online", () => { void navigationSave?.retry().then(refreshExpansionProgress); });
 }
+mountExpansionPendingScoreNotice();
 void initAccount();
 
 requestAnimationFrame(drawFrame);

@@ -5,9 +5,11 @@ html[data-expansion-play="true"] .game-panel { align-self: center; }
    builder that assigns .overlay-root. Anchor its overlays explicitly. */
 html[data-expansion-play="true"] #overlay-root { position: absolute; inset: 0; display: grid; place-items: center; padding: 18px; pointer-events: none; z-index: 4; }
 html[data-expansion-play="true"] #overlay-root[data-overlay-key="save-choice"],
+html[data-expansion-play="true"] #overlay-root[data-overlay-key="guide"],
 html[data-expansion-play="true"] #overlay-root[data-overlay-key="won"],
 html[data-expansion-play="true"] #overlay-root[data-overlay-key="lost"] { position: fixed; inset: 0; z-index: 15; display: grid; overflow-y: auto; align-items: safe center; padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); background: rgba(3,7,11,.94); pointer-events: auto; }
-html[data-expansion-play="true"] #overlay-root .terminal-panel { width: min(530px, 100%); }
+html[data-expansion-play="true"] #overlay-root .terminal-panel,
+html[data-expansion-play="true"] #overlay-root .expansion-guide { width: min(530px, 100%); }
 /* Keep the native hidden contract authoritative over equally specific states. */
 html[data-expansion-play="true"] #overlay-root[hidden] { display: none; }
 html[data-expansion-play="true"] #game-canvas:focus-visible { outline: 2px solid #f3f7ff; outline-offset: 3px; }
@@ -27,7 +29,7 @@ html[data-expansion-play="true"] #game-canvas:focus-visible { outline: 2px solid
 .expansion-guide p { font-size: clamp(.85rem, 2vw, 1rem); line-height: 1.55; }
 .expansion-guide-roster { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 18px 0; }
 .expansion-guide-roster figure { display: grid; justify-items: center; gap: 5px; margin: 0; min-width: 0; }
-.expansion-guide-roster .expansion-tool-glyph { width: 64px; height: 64px; }
+.expansion-guide-roster .expansion-tool-glyph { grid-area: auto; width: min(64px, 100%); height: 64px; }
 .expansion-guide-roster figcaption { color: #d7fff7; font: 700 .68rem monospace; text-align: center; }
 .expansion-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
 @media (max-width: 760px) {

@@ -1,5 +1,14 @@
 # Expansion public release — 2026-09-13
 
+## Leaderboard package — 2026-09-23
+
+The owner confirmed the release includes both the original campaign with its
+new Blender artwork and the complete 25-level expansion. The leaderboard
+implementation is now local and under review; see
+`EXPANSION_LEADERBOARD_PACKAGE.md`. Existing shared DB functions suffice for
+exact per-level categories; no leaderboard migration or save reset is planned.
+Client activation stays closed until the compatible Edge Function is deployed.
+
 ## Shared-platform reconciliation — 2026-09-22
 
 Update: kit v0.2.5 and the compatible Nexus server are released/deployed.
@@ -68,9 +77,11 @@ become the next signed-in user's save. No destructive reset is required.
    verification scripts exist. Gameplay now captures replay-backed checkpoints
    and offers browser-only guest resume. Auth-aware sync/navigation integration
    is implemented locally; two-device production-auth QA remains incomplete.
-3. `assertExpansionContentPublished` in the server's expansion validation module
-   rejects every submission. A canonical immutable r4 registry, expansion replay
-   bundle, server-derived score path and client submission UI are required.
+3. The local Edge dispatcher now uses a separate r4 frozen bundle, exact content
+   hashes, server-derived scores and per-level categories, with matching client
+   submission/ranking UI. The deployed endpoint still needs server-first release.
+   `assertExpansionContentPublished` remains only in the historical protocol
+   fixture module, not the new active expansion dispatcher.
 4. The new stack has no GitHub review result yet. Local evidence is not remote
    CI, CodeRabbit approval, production auth or cloud persistence evidence.
 

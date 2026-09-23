@@ -1,6 +1,16 @@
 # GridWatch Skill Guide
 
-Last reviewed: 2026-09-22
+Last reviewed: 2026-09-23
+
+Current leaderboard package: run `verify:expansion-leaderboard`,
+`verify:expansion-score-client`, `verify:expansion-score-http`,
+`verify:expansion-score-ui` and disposable
+PostgreSQL `scripts/verify-expansion-score-database.sql`. Never run that fixture
+against GridWatchGamesDB. Regenerate `build:expansion-validator` and verify the
+original `build:validator` artifact remains unchanged. The r4 server-first client
+latch is intentionally false until release. Follow
+`docs/EXPANSION_LEADERBOARD_PACKAGE.md`; older blanket-rejection notes below
+describe the historical protocol harness, not the new r4 dispatcher.
 
 Current save package: the compatible Nexus server is deployed and the game now
 uses released account-kit v0.2.5 in a local owner-bound adapter. Run

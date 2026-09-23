@@ -2292,3 +2292,20 @@ html[data-effects-quality="low"] .screen-title::after {
   color: var(--neon-cyan);
   font-weight: 700;
 }
+:root .expansion-pending-score {
+  position: fixed;
+  z-index: 1100;
+  right: 12px;
+  bottom: 12px;
+  width: min(420px, calc(100vw - 24px));
+  max-height: 70vh;
+  overflow: auto;
+  padding: 16px;
+  background: #08151d;
+  border: 1px solid #22e0c4;
+}
+.expansion-pending-score[hidden] { display: none; }
+.expansion-pending-score h2 { font-size: 1rem; }
+.expansion-leaderboard { margin-top: 12px; }
+.expansion-leaderboard .account-actions { flex-wrap: wrap; }
+.expansion-leaderboard table { width: 100%; }

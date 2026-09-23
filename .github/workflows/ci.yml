@@ -53,6 +53,9 @@ jobs:
           docker exec signal-breach-save-test pg_isready -h 127.0.0.1 -U postgres
           docker exec signal-breach-save-test psql -U postgres -d postgres \
             -v ON_ERROR_STOP=1 -f /workspace/scripts/verify-expansion-save-database.sql
+          docker exec signal-breach-save-test createdb -U postgres expansion_score_test
+          docker exec signal-breach-save-test psql -U postgres -d expansion_score_test \
+            -v ON_ERROR_STOP=1 -f /workspace/scripts/verify-expansion-score-database.sql
 
       - name: Verify deterministic replay fixtures
         run: |
@@ -64,6 +67,10 @@ jobs:
           npm run verify:account-kit
           npm run verify:account-preview
           npm run verify:replays
+          npm run verify:expansion-leaderboard
+          npm run verify:expansion-score-client
+          npm run verify:expansion-score-http
+          npm run verify:expansion-score-ui
           npm run verify:latency-trap
           npm run verify:rusher
           npm run verify:sapper
@@ -100,5 +107,7 @@ jobs:
         # server-side anti-cheat can never silently diverge from the game.
         run: |
           npm run build:validator
+          npm run build:expansion-validator
+          git diff --exit-code -- supabase/functions/submit-gridwatch-score/expansion-r4.bundle.js
           git diff --exit-code -- supabase/functions/submit-gridwatch-score/sim.bundle.js \
             || (echo "::error::sim.bundle.js is stale — run 'npm run build:validator' and commit the result." && exit 1)

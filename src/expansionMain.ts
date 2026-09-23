@@ -20,6 +20,7 @@ import { createExpansionCloudSave } from "./leaderboard/expansionCloudClient";
 import type { ExpansionAccountSave } from "./leaderboard/expansionAccountSave";
 import { mayReconcileExpansionSave } from "./ui/expansionSavePolicy";
 import { createExpansionSavePrompt } from "./ui/expansionSavePrompt";
+import { createExpansionLeaderboardPanel, type ExpansionScoreOffer } from "./ui/expansionLeaderboardUi";
 
 const canvas = required<HTMLCanvasElement>("#game-canvas");
 const context = canvas.getContext("2d");
@@ -52,6 +53,7 @@ let paused = false;
 let lastTime = performance.now();
 let previousPhase = state.phase;
 let clearAttempted = false;
+const scoreOffers = new WeakMap<ExpansionRunSession, ExpansionScoreOffer>();
 let lowQuality = new URLSearchParams(window.location.search).get("quality") === "low" || saves.save.settings.lowEffects;
 const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 let reducedMotion = reducedMotionQuery.matches;
@@ -144,7 +146,13 @@ window.addEventListener("keydown", (event) => {
   if (saveUi.handleKey(event)) return;
   if (guideOpen) {
     if (event.key === "Escape") { event.preventDefault(); closeGuide(); }
-    if (event.key === "Tab") { event.preventDefault(); overlay.querySelector<HTMLButtonElement>("[data-close-guide]")?.focus(); }
+    if (event.key === "Tab") {
+      const controls = [...overlay.querySelectorAll<HTMLElement>("button:not(:disabled), a[href], input:not(:disabled)")];
+      const first = controls[0]; const last = controls[controls.length - 1];
+      if (!controls.includes(document.activeElement as HTMLElement)) { event.preventDefault(); (event.shiftKey ? last : first)?.focus(); }
+      else if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    }
     return;
   }
   if (event.key === "Escape" && rangePreview.enabled) { event.preventDefault(); exitRangePreview(); return; }
@@ -433,6 +441,7 @@ function renderOverlay(): void {
         roster?.append(figure);
       }
       const close = overlay.querySelector<HTMLButtonElement>("[data-close-guide]");
+      close?.before(createExpansionLeaderboardPanel(levelId).element);
       close?.addEventListener("click", closeGuide);
       close?.focus();
     }
@@ -474,6 +483,17 @@ function renderOverlay(): void {
   if (state.phase === "lost" && checkpoint?.replay.level === levelId) actions.append(action(`RETRY FROM WAVE ${checkpoint.completedWaves + 1}`, resumeSavedRun, true));
   actions.append(action("RETRY LEVEL", restart, true), action("LEVEL SELECT", openLevelSelect, false));
   panel.append(actions); overlay.innerHTML = ""; overlay.append(panel);
+  if (state.phase === "won") {
+    try {
+      let offer = scoreOffers.get(run);
+      if (!offer) {
+        offer = { proof: run.replay(), owner: saveOwner(), staged: false };
+        scoreOffers.set(run, offer);
+      }
+      panel.append(createExpansionLeaderboardPanel(levelId, offer).element);
+    }
+    catch { const note = document.createElement("p"); note.textContent = "Replay recording is incomplete; this run cannot be submitted."; panel.append(note); }
+  }
 }
 
 function saveLevelClear(): void {
