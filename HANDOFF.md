@@ -1,5 +1,20 @@
 # GridWatch Handoff
 
+## Server-first release — 2026-09-23
+
+- PR #84 is merged as `4f8c10f`; all PR reviews/conversations completed and the
+  monitor is paused. Older next-monitor instructions below are historical.
+- Owner approved proceeding with the server-first release. Only the reviewed
+  `submit-gridwatch-score` function was deployed to GridWatchGamesDB version 10.
+  Rollback version 9 is captured; no DB migration, data reset or other-game change.
+- Deno static/runtime preflight, replay/score regressions and unchanged-bundle
+  checks passed. Live Nexus CORS, 405/401 rejection and read-only category checks
+  passed. All deployed runtime source matches merged code.
+- Public expansion navigation and leaderboard latch remain off. Next: separately
+  reviewed activation PR, then genuine production score and two-device save QA.
+  No authenticated production write or human gameplay acceptance was performed.
+- Full evidence and rollback: `docs/EXPANSION_SERVER_RELEASE_2026_09_23.md`.
+
 ## PR #84 review follow-up — 2026-09-23
 
 - **Next monitor action:** publish the tested follow-ups `e3d4e1f` / `186c4de`
