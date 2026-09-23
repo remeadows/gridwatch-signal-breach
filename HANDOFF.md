@@ -1,5 +1,27 @@
 # GridWatch Handoff
 
+## Complete-game PR publication authorized — 2026-09-23
+
+- Owner explicitly approved publishing the PR covering the original campaign's
+  Blender art, complete 25-level expansion, shared-kit saves and leaderboards.
+  This is not approval to merge, deploy the Edge Function or enable public flags.
+- Refreshed origin/main is `7609592`; release branch was 29 commits ahead with
+  no missing upstream commits. Fresh build/tool types and all npm verification,
+  combat/balance/content/art/save/leaderboard CI lanes pass. Audit: zero issues;
+  original validator is byte-identical to main and both bundles regenerate clean.
+- Pre-publication cross-package inspection found save-status refresh overwrote
+  leaderboard-owned disabled states. Replaced blanket button enable/disable with
+  overlay-level inert while cloud operations are pending. The regression failed
+  before the fix and passes afterward, including busy-to-idle transitions.
+  Actual built browser resume -> Field Guide -> ranking gate remains functional
+  with no warning/error logs. No real authenticated score submitted.
+- Supplemental full-diff CodeRabbit review: first connection closed; retry is
+  running. Prior local package reviews/dispositions remain documented below.
+  The PR must receive current-head CodeRabbit/Codex reviews and resolve findings
+  before merge. Live rulesets require build/CodeRabbit and resolved threads;
+  their numeric approval count is currently zero (not the older one-approval
+  description in SKILLS). No protection settings changed by this publication.
+
 ## Expansion leaderboard package — locally complete, 2026-09-23
 
 - Owner requested finishing leaderboards next, followed by publication of the

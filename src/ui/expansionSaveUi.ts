@@ -68,7 +68,10 @@ export class ExpansionSaveUi {
     this.retry.hidden = this.open || !["error", "pending"].includes(cloud) || this.options.saves.status === "conflict";
     const busy = this.options.isBusy?.() ?? false;
     for (const element of this.options.background) element.inert = this.open || busy;
-    for (const button of this.options.overlay.querySelectorAll<HTMLButtonElement>("button")) button.disabled = busy;
+    // Child panels own their disabled state (release latch, pending requests).
+    // Block the overlay as a whole during cloud operations without enabling
+    // those controls again when syncing finishes.
+    this.options.overlay.inert = busy;
     if (this.wasBusy && !busy && this.open) this.options.overlay.querySelector<HTMLButtonElement>("button:not(:disabled)")?.focus();
     this.wasBusy = busy;
   }

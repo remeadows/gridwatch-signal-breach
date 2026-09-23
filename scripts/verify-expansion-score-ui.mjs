@@ -5,6 +5,7 @@ import { readFile } from "node:fs/promises";
 // Minimal DOM port for lifecycle/identity regressions; layout is checked in a
 // real local browser. No auth token, network or production persistence involved.
 class Element {
+  dataset = {};
   children = []; parent = null; listeners = new Map(); disabled = false; text = "";
   constructor(tag) { this.tagName = tag.toUpperCase(); }
   set textContent(value) { this.text = value; this.replaceChildren(); }
@@ -92,5 +93,25 @@ body.replaceChildren();
 mountExpansionPendingScoreNotice();
 assert.equal(body.children.length, 0, "Release latch suppresses pending notices in the original game.");
 assert.equal(accountListeners.size, 0); assert.equal(ownerListeners.size, 0);
+// Cross-package regression: save status must not enable leaderboard controls
+// disabled by the release latch or a pending request.
+globalThis.ResizeObserver = class { observe() {} };
+const saveUiBuild = await build({ entryPoints: ["src/ui/expansionSaveUi.ts"], bundle: true, write: false, platform: "node", format: "esm" });
+const { ExpansionSaveUi } = await import(`data:text/javascript;base64,${Buffer.from(saveUiBuild.outputFiles[0].text).toString("base64")}`);
+const saveOverlay = new Element("div");
+const disabledScore = new Element("button"); disabledScore.disabled = true;
+saveOverlay.append(disabledScore);
+let saveBusy = false;
+const saveUi = new ExpansionSaveUi({ saves: { save: { checkpoint: null }, status: "saved" }, isBusy: () => saveBusy,
+  levelId: 1, hud: new Element("div"), overlay: saveOverlay, canvas: new Element("canvas"), background: [],
+  onResume() {}, onStartNew() {}, onLevelSelect() {} });
+saveUi.updateStatus(false);
+assert.equal(disabledScore.disabled, true, "Save UI must preserve leaderboard-owned disabled state.");
+saveBusy = true; saveUi.updateStatus(false);
+assert.equal(saveOverlay.inert, true, "Cloud sync blocks interaction without rewriting child disabled state.");
+saveBusy = false; saveUi.updateStatus(false);
+assert.equal(saveOverlay.inert, false);
+assert.equal(disabledScore.disabled, true);
+delete globalThis.ResizeObserver;
 delete globalThis.__scoreUi; delete globalThis.HTMLElement; delete globalThis.document; delete globalThis.window; delete globalThis.MutationObserver;
 console.log("Expansion score UI: failed staging survives rebuild, successful proof never restaged, explicit replacement, owner isolation, focus restoration, text-only handles and disposal passed.");
