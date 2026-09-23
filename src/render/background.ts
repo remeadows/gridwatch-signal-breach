@@ -2,6 +2,7 @@ import { GRID_SIZE } from "../data/levels";
 import type { CanvasSize } from "./canvas";
 import { getBoardMetrics } from "./canvas";
 import { hashTile } from "./animator";
+import { getBoardFloorSprite, type BoardArtMode } from "./assetRegistry";
 import {
   getSectorVisualTheme,
   type EffectsQuality,
@@ -14,8 +15,11 @@ export function getBoardBackgroundLayer(
   size: CanvasSize,
   sectorId: number,
   quality: EffectsQuality,
+  artMode: BoardArtMode = "glyphs",
 ): HTMLCanvasElement {
-  const key = `${size.width}:${size.height}:${sectorId}:${quality}`;
+  const floor = getBoardFloorSprite(sectorId, artMode);
+  // Include readiness: a pending floor must not pin the procedural fallback.
+  const key = `${size.width}:${size.height}:${sectorId}:${quality}:${artMode}:${floor?.src ?? "fallback"}`;
   const cached = backgroundCache.get(key);
 
   if (cached) {
@@ -28,9 +32,10 @@ export function getBoardBackgroundLayer(
 
   const context = canvas.getContext("2d");
   if (context) {
-    drawBackgroundLayer(context, size, sectorId, quality);
+    drawBackgroundLayer(context, size, sectorId, quality, floor);
   }
 
+  if (backgroundCache.size >= 12) backgroundCache.clear();
   backgroundCache.set(key, canvas);
 
   return canvas;
@@ -45,13 +50,20 @@ function drawBackgroundLayer(
   size: CanvasSize,
   sectorId: number,
   quality: EffectsQuality,
+  floor: HTMLImageElement | null,
 ): void {
   const { originX, originY, boardSize, tileSize } = getBoardMetrics(size);
   const theme = getSectorVisualTheme(sectorId);
 
   drawBackdrop(context, size, theme);
-  drawSectorFloor(context, originX, originY, boardSize, tileSize, theme, quality);
-  drawCircuitTexture(context, originX, originY, tileSize, quality);
+  if (floor) {
+    for (let y = 0; y < GRID_SIZE; y++) for (let x = 0; x < GRID_SIZE; x++) {
+      context.drawImage(floor, originX + x * tileSize, originY + y * tileSize, tileSize, tileSize);
+    }
+  } else {
+    drawSectorFloor(context, originX, originY, boardSize, tileSize, theme, quality);
+    drawCircuitTexture(context, originX, originY, tileSize, quality);
+  }
   drawGridLines(context, originX, originY, boardSize, tileSize, theme);
   drawCornerBrackets(context, originX, originY, boardSize, tileSize, theme);
   drawVignette(context, size);

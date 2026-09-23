@@ -12,11 +12,13 @@ import {
   type ChapterDefinition,
 } from "../data/campaigns";
 import { SECTORS } from "../data/levels";
+import type { ExpansionR4Progress } from "./expansionProgressR4";
+import { getExpansionBriefingCopy } from "./expansionBriefingCopy";
 import { fetchLeaderboard, type LeaderboardEntry } from "../leaderboard/api";
 import { leaderboardConfig } from "../leaderboard/config";
 import type { IconName } from "../render/iconPaths";
 import { createAccountPanel } from "./account";
-import { svgIcon } from "./iconsSvg";
+import { createGameplayIcon } from "./gameplayIcon";
 import {
   getSignalBreachProgress,
   type GameProgress,
@@ -39,6 +41,7 @@ export type ScreenOptions = Readonly<{
   root: HTMLElement;
   screen: AppScreen;
   progress: GameProgress;
+  expansionProgress: ExpansionR4Progress;
   expansionNavigationEnabled: boolean;
   selectedExpansionChapterId: number;
   briefingMaxSector: number;
@@ -195,6 +198,10 @@ function renderTitleScreen(options: ScreenOptions): void {
 
   logo.append(title, subtitle, scanline);
   actions.append(startButton, briefingButton, leaderboardButton);
+  if (options.expansionNavigationEnabled) {
+    const expansionButton = createNavigationButton("EXPANSION CAMPAIGN", "secondary", () => options.onSelectCampaign("expansion-1"));
+    actions.append(expansionButton);
+  }
   screen.append(kicker, logo, tagline, actions, footer);
   root.append(screen);
 }
@@ -296,7 +303,7 @@ function renderCampaignSelectScreen(options: ScreenOptions): void {
   const header = createNavigationHeader(
     "CAMPAIGN ROUTER",
     "Select campaign",
-    "Signal Breach remains production-active. Expansion 1 Chapter 1 is available here only for localhost acceptance testing.",
+    "Choose the original campaign or Expansion 1: three chapters, 25 levels. Guest progress stays in this browser; signed-in progress can sync to your account when online services are available. Expansion online scoring is not enabled.",
   );
   const grid = document.createElement("div");
   const backButton = createNavigationButton("BACK", "secondary", onBackToTitle);
@@ -312,12 +319,12 @@ function renderCampaignSelectScreen(options: ScreenOptions): void {
     const button = createNavigationCard({
       index: isExpansion ? "EXPANSION 01" : "CURRENT CAMPAIGN",
       title: isExpansion ? "EXPANSION UPLINK" : "SIGNAL BREACH",
-      name: isExpansion ? "CHAPTER 1 LOCAL PLAYTEST" : "THREE SECTORS // TWELVE WAVES",
+      name: isExpansion ? "THREE CHAPTERS // 125 WAVES" : "THREE SECTORS // TWELVE WAVES",
       detail: isExpansion
-        ? "Five authored levels and 25 waves. Progress stays isolated; leaderboard submission remains disabled."
-        : "The frozen V2 campaign continues using its original sector progress and replay identity.",
-      meta: isExpansion ? "LEVELS 01–05" : "SECTORS 01–03",
-      status: isExpansion ? "LOCAL ONLY" : "ACTIVE",
+        ? "Twenty-five fresh tactical boards. Master delay, demolition spacing, and shield-breaking chain attacks."
+        : "Defend the original three-sector uplink. Your existing progress and leaderboard remain separate.",
+      meta: isExpansion ? "LEVELS 01–25" : "SECTORS 01–03",
+      status: isExpansion ? "LOCAL / OPTIONAL CLOUD" : "ACTIVE",
       disabled: false,
       onSelect: () => onSelectCampaign(campaign.id),
       testId: `campaign-${campaign.id}`,
@@ -333,7 +340,7 @@ function renderCampaignSelectScreen(options: ScreenOptions): void {
 
 function renderChapterSelectScreen(options: ScreenOptions): void {
   const { root, onBackToCampaignSelect, onSelectExpansionChapter } = options;
-  const expansionProgress = options.progress.campaigns["expansion-1"];
+  const expansionProgress = options.expansionProgress;
 
   if (root.dataset.screenKey === `chapterSelect-${expansionProgress.highestUnlockedLevel}`) {
     return;
@@ -344,7 +351,7 @@ function renderChapterSelectScreen(options: ScreenOptions): void {
   const header = createNavigationHeader(
     "EXPANSION ROUTER",
     "Select chapter",
-    "Six chapter slots are reserved. Latency Front is the only authored batch; Chapters 2–6 remain locked and spoiler-safe.",
+    "Three fronts, 25 levels. Clear eight levels in Latency Front, eight in Demolition Front, then nine in Shield Front. Each level starts fresh.",
   );
   const grid = document.createElement("div");
   const backButton = createNavigationButton("BACK", "secondary", onBackToCampaignSelect);
@@ -363,10 +370,14 @@ function renderChapterSelectScreen(options: ScreenOptions): void {
     const button = createNavigationCard({
       index: `CHAPTER ${String(chapter.id).padStart(2, "0")}`,
       title: isUnlocked ? chapter.codename : "ENCRYPTED CHAPTER",
-      name: isUnlocked ? "FIVE LEVELS // 25 WAVES" : "SIGNAL LOCKED",
+      name: isUnlocked ? `${chapter.levelIds.length} LEVELS // ${chapter.levelIds.length * 5} WAVES` : "SIGNAL LOCKED",
       detail: isUnlocked
-        ? "Local acceptance build with Latency Trap, Rusher, and fresh starting conditions per level."
-        : "This chapter stays spoiler-safe until an earlier chapter is cleared.",
+        ? chapter.id === 3
+          ? "Break Shield Drone links with Arc ICE, then combine coverage, spacing, and signal recovery."
+          : chapter.id === 2
+            ? "Read Sapper target locks. Isolate blast zones and protect your relay spine."
+            : "Catch fast Rushers with Latency Traps while keeping Source connected to Core."
+        : chapter.id <= 3 ? "Clear the preceding chapter to unlock this front." : "Future chapter. Not included in this three-chapter milestone.",
       meta: isUnlocked ? `LEVELS ${formatChapterLevels(chapter)}` : "LEVELS LOCKED",
       status: isUnlocked ? "LOCAL PLAYTEST" : "LOCKED",
       disabled: !isUnlocked,
@@ -385,7 +396,7 @@ function renderChapterSelectScreen(options: ScreenOptions): void {
 function renderLevelSelectScreen(options: ScreenOptions): void {
   const { root, selectedExpansionChapterId, onBackToChapterSelect, onSelectExpansionLevel } = options;
   const chapter = getExpansionNavigationChapter(selectedExpansionChapterId);
-  const expansionProgress = options.progress.campaigns["expansion-1"];
+  const expansionProgress = options.expansionProgress;
   const key = `levelSelect-${chapter.id}-${expansionProgress.highestUnlockedLevel}-${expansionProgress.clearedLevels.join(".")}`;
 
   if (root.dataset.screenKey === key) {
@@ -397,9 +408,7 @@ function renderLevelSelectScreen(options: ScreenOptions): void {
   const header = createNavigationHeader(
     "EXPANSION ROUTER",
     `${chapter.codename} // Levels`,
-    chapter.id === 1
-      ? "Five local-review levels. Each starts fresh and contains five waves; no score leaves this browser."
-      : "This chapter is reserved for a later reviewed content batch.",
+    `${chapter.levelIds.length} levels. Each starts fresh and contains five waves; no score leaves this browser.`,
   );
   const grid = document.createElement("div");
   const backButton = createNavigationButton("BACK", "secondary", onBackToChapterSelect);
@@ -420,7 +429,7 @@ function renderLevelSelectScreen(options: ScreenOptions): void {
       title: isUnlocked ? level?.codename ?? "ENCRYPTED LEVEL" : "ENCRYPTED LEVEL",
       name: isUnlocked ? level?.tagline ?? "LOCAL REVIEW" : level ? "CLEAR PREVIOUS LEVEL" : placeholder ? "NOT PLAYABLE" : "SIGNAL LOCKED",
       detail: isUnlocked
-        ? level?.briefing ?? "Local review content."
+        ? getExpansionBriefingCopy(EXPANSION_CAMPAIGN.contentRevision, level?.briefing ?? "Local review content.")
         : level
         ? "Authored and ready. Clear the previous level to unlock this route."
         : placeholder
@@ -861,7 +870,7 @@ function createGlyphNode(kind: IconName, label: string): HTMLElement {
   const caption = document.createElement("small");
 
   glyph.className = `briefing-glyph briefing-glyph-${kind}`;
-  glyph.insertAdjacentHTML("afterbegin", svgIcon(kind, 34, "briefing-icon"));
+  glyph.append(createGameplayIcon(kind, 34, "briefing-icon"));
   caption.textContent = label;
   glyph.append(caption);
 

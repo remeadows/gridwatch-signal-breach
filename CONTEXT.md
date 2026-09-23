@@ -34,8 +34,10 @@ root so the same build still serves at the old host root (Cloudflare Pages).
 
 ## Approved Expansion Envelope
 
-- `expansion-1` is a separate, owner-approved campaign: 30 standalone 8x8
-  levels in six chapters of five, each with five authored waves (150 total).
+- `expansion-1-r4` is the current owner-approved layout: 25 standalone 8x8
+  levels in three chapters of 8 / 8 / 9, each with five waves (125 total).
+  Retain r1/r2/r3 level meanings and hashes; the old six-chapter/30-level
+  roadmap is superseded by `docs/EXPANSION_25_LOCAL_PLAN.md`.
   Levels reset hardware, bandwidth, integrity, and any temporary state; there
   are no persistent stat upgrades.
 - Expansion code must identify a run by campaign and level, never by a new
@@ -58,3 +60,19 @@ root so the same build still serves at the old host root (Cloudflare Pages).
   compatible server-first order recorded in `HANDOFF.md`.
 - The `phase4-v1` client must not reach production before its additive migration
   and backward-compatible Edge Function have been deployed and verified.
+
+# Current local target — 2026-09-11
+
+Owner-approved expansion r4 is three chapters / 25 total levels, split 8/8/9,
+five waves per level. See `docs/EXPANSION_25_LOCAL_PLAN.md`. Preserve original V2,
+historical expansion revisions, old progress and shared leaderboard behavior.
+Local commits and CodeRabbit diff review only; no push or deployment.
+
+## Public-release override — 2026-09-13
+
+The owner now authorizes GitHub publication and requests cloud saves plus
+validated expansion leaderboards. The current Blender roster is accepted.
+Wave-boundary resume (not mid-wave) and synced unlocks/settings are approved.
+See `docs/EXPANSION_PUBLIC_RELEASE_PLAN.md`; this supersedes the local-only
+restriction above. Supabase cloud saves are now an optional sanctioned network
+feature; the game must remain offline-playable and other games isolated.

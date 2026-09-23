@@ -5,13 +5,21 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:phone": "vite --mode lan-preview --host 0.0.0.0 --port 4392 --strictPort",
+    "dev:local": "vite --host 127.0.0.1 --port 4391 --strictPort",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "build:validator": "esbuild src/sim/index.ts --bundle --format=esm --platform=neutral --target=es2022 --legal-comments=none --outfile=supabase/functions/submit-gridwatch-score/sim.bundle.js",
+    "build:expansion-validator": "esbuild scripts/expansion-score-validator-entry.ts --bundle --format=esm --platform=neutral --target=es2022 --legal-comments=none --outfile=supabase/functions/submit-gridwatch-score/expansion-r4.bundle.js",
+    "verify:expansion-leaderboard": "node scripts/run-typescript.mjs scripts/verify-expansion-leaderboard.ts",
+    "verify:expansion-score-client": "node scripts/run-typescript.mjs scripts/verify-expansion-score-client.ts",
+    "verify:expansion-score-http": "node scripts/verify-expansion-score-http.mjs",
+    "verify:expansion-score-ui": "node scripts/verify-expansion-score-ui.mjs",
     "balance:report": "node scripts/run-typescript.mjs scripts/balance-report.ts",
     "balance:search": "node scripts/run-typescript.mjs scripts/search-balance.ts",
     "expansion:content-report": "node scripts/run-typescript.mjs scripts/expansion-content-report.ts",
     "expansion:balance": "node scripts/run-typescript.mjs scripts/expansion-balance-report.ts",
+    "expansion:human-balance": "node scripts/run-typescript.mjs scripts/expansion-human-balance.ts",
     "typecheck:tools": "tsc -p tsconfig.tools.json",
     "verify:content": "node scripts/run-typescript.mjs scripts/verify-content.ts",
     "verify:latency-trap": "node scripts/run-typescript.mjs scripts/verify-latency-trap.ts",
@@ -20,9 +28,31 @@
     "verify:rusher": "node scripts/run-typescript.mjs scripts/verify-rusher.ts",
     "verify:sapper": "node scripts/run-typescript.mjs scripts/verify-sapper.ts",
     "verify:expansion-sim": "node scripts/run-typescript.mjs scripts/verify-expansion-sim.ts",
+    "verify:expansion-revisions": "node scripts/run-typescript.mjs scripts/verify-expansion-revisions.ts",
+    "verify:expansion-revision-lookup": "node scripts/run-typescript.mjs scripts/verify-expansion-revision-lookup.ts",
+    "verify:expansion-progress-r4": "node scripts/run-typescript.mjs scripts/verify-expansion-progress-r4.ts",
+    "verify:expansion-checkpoints": "node scripts/run-typescript.mjs scripts/verify-expansion-checkpoints.ts",
+    "verify:expansion-run-session": "node scripts/run-typescript.mjs scripts/verify-expansion-run-session.ts",
+    "verify:expansion-save-sync": "node scripts/run-typescript.mjs scripts/verify-expansion-save-sync.ts",
+    "verify:expansion-account-save": "node scripts/run-typescript.mjs scripts/verify-expansion-account-save.ts",
+    "verify:expansion-save-api": "node scripts/run-typescript.mjs scripts/verify-expansion-save-api.ts",
+    "verify:expansion-save-codec": "node scripts/run-typescript.mjs scripts/verify-expansion-save-codec.ts",
+    "check:expansion-save-contract": "node scripts/verify-expansion-save-contract.mjs",
+    "verify:expansion-r4-evidence": "node scripts/run-typescript.mjs scripts/verify-expansion-r4-evidence.ts",
+    "verify:expansion-r4-drafts": "node scripts/run-typescript.mjs scripts/verify-r4-drafts.ts",
+    "verify:expansion-canvas": "node scripts/run-typescript.mjs scripts/verify-expansion-canvas.ts",
+    "verify:expansion-retained-evidence": "node scripts/run-typescript.mjs scripts/verify-expansion-retained-evidence.ts",
+    "verify:expansion-visuals": "node scripts/run-typescript.mjs scripts/verify-expansion-visuals.ts",
+    "verify:shield-network": "node scripts/run-typescript.mjs scripts/verify-shield-network.ts",
+    "verify:shield-combat": "node scripts/run-typescript.mjs scripts/verify-shield-combat.ts",
+    "verify:preview-policy": "node scripts/run-typescript.mjs scripts/verify-preview-policy.ts",
     "verify:assets": "node scripts/verify-assets.mjs",
+    "verify:expansion-art": "node scripts/verify-expansion-art.mjs",
+    "verify:expansion-art-fallback": "node scripts/verify-expansion-art-fallback.mjs",
+    "verify:chapter03-human": "node scripts/run-typescript.mjs scripts/verify-chapter03-human-balance.ts",
     "verify:play-base": "node scripts/run-typescript.mjs scripts/verify-play-base.ts",
-    "verify:account-kit": "node scripts/run-typescript.mjs scripts/verify-account-kit.ts"
+    "verify:account-kit": "node scripts/run-typescript.mjs scripts/verify-account-kit.ts",
+    "verify:account-preview": "node scripts/verify-account-preview.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.28.2",
@@ -30,7 +60,7 @@
     "vite": "^8.3.0"
   },
   "dependencies": {
-    "@gridwatch/account-kit": "git+https://github.com/remeadows/gridwatch-account-kit.git#v0.1.2",
+    "@gridwatch/account-kit": "git+https://github.com/remeadows/gridwatch-account-kit.git#v0.2.5",
     "@supabase/supabase-js": "^2.116.0"
   }
 }

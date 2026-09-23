@@ -10,13 +10,19 @@ import type {
 
 export const EXPANSION_RULESET_ID = "expansion-v1";
 export const EXPANSION_CAMPAIGN_ID = "expansion-1";
-export const EXPANSION_CONTENT_REVISION = "expansion-1-r1";
+export const EXPANSION_R3_CONTENT_REVISION = "expansion-1-r3";
+export const EXPANSION_R4_CONTENT_REVISION = "expansion-1-r4";
+export const EXPANSION_CONTENT_REVISION = EXPANSION_R4_CONTENT_REVISION;
+export const EXPANSION_CHAPTER_01_CONTENT_REVISION = "expansion-1-r1";
+export const EXPANSION_CHAPTER_02_CONTENT_REVISION = "expansion-1-r2";
+export type ExpansionContentRevision = typeof EXPANSION_CHAPTER_01_CONTENT_REVISION | typeof EXPANSION_CHAPTER_02_CONTENT_REVISION | typeof EXPANSION_R3_CONTENT_REVISION | typeof EXPANSION_R4_CONTENT_REVISION;
 
 export const EXPANSION_TILE_KINDS = [
   "empty",
   "relay",
   "firewall",
   "turret",
+  "arcIce",
   "scrubber",
   "overclock",
   "latencyTrap",
@@ -26,9 +32,10 @@ export const EXPANSION_TILE_KINDS = [
 
 export type ExpansionTileKind = (typeof EXPANSION_TILE_KINDS)[number];
 export type ExpansionChapterId = 1 | 2 | 3 | 4 | 5 | 6;
-export type ExpansionHardwareKind = UnitKind | "latencyTrap";
+export type ExpansionHardwareKind = UnitKind | "latencyTrap" | "arcIce";
 export type ExpansionPlayerTool = ExpansionHardwareKind | "sell";
-export type ExpansionEnemyKind = EnemyKind | "rusher";
+export type ExpansionEnemyKind = EnemyKind | "rusher" | "sapper" | "shieldDrone";
+export type ExpansionRequiredMechanic = "latencyTrap" | "sapperSpacing" | "shieldNetwork";
 
 export type ExpansionTileState = Readonly<{
   kind: ExpansionTileKind;
@@ -49,7 +56,9 @@ export type ExpansionEnemyDefinition = Readonly<{
   spawnBatchSize: number;
   chewDamage: number;
   coreContactDamage: number;
-  targeting: "route" | "units";
+  targeting: "route" | "units" | "firewallThenHardware";
+  deathPulseDamage?: number;
+  deathPulseRange?: number;
   onDeathSpawn: Readonly<{
     kind: ExpansionEnemyKind;
     count: number;
@@ -85,7 +94,7 @@ export type ExpansionWaveDefinition = Readonly<{
   maxActiveIntrusions: number;
   maxSpawnedIntrusions: number;
   perimeterPickAttempts: number;
-  enemyWeights: Readonly<Record<ExpansionEnemyKind, number>>;
+  enemyWeights: Readonly<Partial<Record<ExpansionEnemyKind, number>>>;
   scriptedSpawns?: readonly Readonly<{
     waveTick: number;
     kind: ExpansionEnemyKind;
@@ -112,7 +121,7 @@ export type ExpansionLevelDefinition = Readonly<{
   toolsUnlocked: readonly ExpansionPlayerTool[];
   waves: readonly ExpansionWaveDefinition[];
   difficultyIndex: number;
-  requiredMechanic: "latencyTrap";
+  requiredMechanic: ExpansionRequiredMechanic;
 }>;
 
 export type ExpansionIntrusionCorruptionContact = Readonly<{
@@ -165,6 +174,9 @@ export type ExpansionSimEvent =
     }>
   | Readonly<{
       type: "turretHit";
+      weapon?: "arcIce";
+      /** Previous target for an Arc continuation; absent on the first beam. */
+      sourceIntrusionId?: number;
       tick: number;
       turretPosition: GridPosition;
       targetId: number;
@@ -176,6 +188,23 @@ export type ExpansionSimEvent =
       tick: number;
       intrusionId: number;
       position: GridPosition;
+    }>
+  | Readonly<{
+      type: "sapperDeathPulse";
+      tick: number;
+      intrusionId: number;
+      position: GridPosition;
+      damage: number;
+      range: number;
+      affectedHardware: number;
+    }>
+  | Readonly<{
+      type: "hardwareDestroyed";
+      tick: number;
+      intrusionId: number;
+      position: GridPosition;
+      unitKind: Exclude<ExpansionHardwareKind, "latencyTrap">;
+      cause: "chew" | "deathPulse";
     }>
   | Readonly<{
       type: "corruptionProgress";
@@ -196,7 +225,7 @@ export type ExpansionSimEvent =
       tick: number;
       intrusionId: number;
       position: GridPosition;
-      unitKind: UnitKind;
+      unitKind: Exclude<ExpansionHardwareKind, "latencyTrap">;
       hp: number;
     }>
   | Readonly<{
@@ -233,13 +262,13 @@ export type ExpansionSimEvent =
 export type ExpansionSimConfig = Readonly<{
   campaignId: typeof EXPANSION_CAMPAIGN_ID;
   ruleset: typeof EXPANSION_RULESET_ID;
-  contentRevision: typeof EXPANSION_CONTENT_REVISION;
+  contentRevision: ExpansionContentRevision;
   contentHash: string;
   levelId: number;
   chapterId: ExpansionChapterId;
   levelName: string;
   difficultyIndex: number;
-  requiredMechanic: "latencyTrap";
+  requiredMechanic: ExpansionRequiredMechanic;
   gridSize: 8;
   source: GridPosition;
   core: GridPosition;
@@ -314,7 +343,7 @@ export type ExpansionReplayInput = Readonly<{
   ruleset: typeof EXPANSION_RULESET_ID;
   campaign: typeof EXPANSION_CAMPAIGN_ID;
   level: number;
-  contentRevision: typeof EXPANSION_CONTENT_REVISION;
+  contentRevision: ExpansionContentRevision;
   contentHash: string;
   seed: string;
   commands: readonly ExpansionRecordedCommand[];

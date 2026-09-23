@@ -1,4 +1,5 @@
 import {
+  PLAY_RETURN_PATH,
   accountKit,
   accountState,
   currentEmail,
@@ -63,7 +64,7 @@ export function createAccountPanel(options: AccountPanelOptions): HTMLElement {
       actions.className = "account-actions";
       const link = document.createElement("a");
       link.className = "neon-button neon-button-primary account-button";
-      link.href = accountKit.config.nexusOrigin + "/play/breach/";
+      link.href = accountKit.config.nexusOrigin + PLAY_RETURN_PATH;
       link.textContent = "Play on Nexus";
       actions.append(link);
       root.append(actions);

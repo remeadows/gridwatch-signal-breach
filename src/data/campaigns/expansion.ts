@@ -4,31 +4,11 @@ import type {
   ExpansionCampaignLevelDefinition,
 } from "./types";
 import { EXPANSION_CAMPAIGN_ID, EXPANSION_CONTENT_REVISION, EXPANSION_RULESET_ID } from "../../sim/expansion/types";
-import { CHAPTER_01_LEVELS } from "./expansion/chapter01";
+import { getRetainedExpansionLevel } from "./expansion/retained";
+import { EXPANSION_R4_CHAPTERS, EXPANSION_R4_LEVELS } from "./expansion/r4";
 
-const EXPANSION_CHAPTER_COUNT = 6;
-const LEVELS_PER_EXPANSION_CHAPTER = 5;
-
-/**
- * Navigation metadata is intentionally distinct from authored level data. It
- * lets the disabled Phase 7B shell show six spoiler-safe chapter slots without
- * implying that any of their 30 level definitions exist yet.
- */
-export const EXPANSION_NAVIGATION_CHAPTERS: readonly ChapterDefinition[] =
-  Array.from({ length: EXPANSION_CHAPTER_COUNT }, (_, index) => {
-    const chapterId = index + 1;
-    const firstLevelId = index * LEVELS_PER_EXPANSION_CHAPTER + 1;
-
-    return {
-      id: chapterId,
-      codename: chapterId === 1 ? "LATENCY FRONT" : `CHAPTER ${String(chapterId).padStart(2, "0")}`,
-      levelIds: Array.from(
-        { length: LEVELS_PER_EXPANSION_CHAPTER },
-        (_, levelIndex) => firstLevelId + levelIndex,
-      ),
-      visualThemeId: chapterId === 1 ? "latency-front" : "pending",
-    };
-  });
+/** Current r4 navigation. Historical replay identity lives in retained.ts. */
+export const EXPANSION_NAVIGATION_CHAPTERS: readonly ChapterDefinition[] = EXPANSION_R4_CHAPTERS;
 
 export type ExpansionNavigationPlaceholderLevel = Readonly<{
   id: number;
@@ -40,11 +20,8 @@ export type ExpansionNavigationPlaceholderLevel = Readonly<{
 /** Retained only as a compatibility surface for the retired Phase 7B shell. */
 export const EXPANSION_NAVIGATION_PLACEHOLDER_LEVELS: readonly ExpansionNavigationPlaceholderLevel[] = [];
 
-/**
- * Chapter 1 contains the first five authored expansion levels. Later reviewed
- * chapter batches append their own immutable expansion-only records.
- */
-export const EXPANSION_LEVELS: readonly ExpansionCampaignLevelDefinition[] = CHAPTER_01_LEVELS;
+/** Current local campaign: three chapters, 25 levels, 125 waves. */
+export const EXPANSION_LEVELS: readonly ExpansionCampaignLevelDefinition[] = EXPANSION_R4_LEVELS;
 
 export const EXPANSION_CAMPAIGN: ExpansionCampaignDefinition = {
   id: EXPANSION_CAMPAIGN_ID,
@@ -56,8 +33,10 @@ export const EXPANSION_CAMPAIGN: ExpansionCampaignDefinition = {
 
 export function getExpansionLevelDefinition(
   levelId: number,
+  contentRevision: string = EXPANSION_CONTENT_REVISION,
 ): ExpansionCampaignLevelDefinition | undefined {
-  return EXPANSION_LEVELS.find((candidate) => candidate.id === levelId);
+  if (contentRevision === "expansion-1-r4") return EXPANSION_R4_LEVELS.find((level) => level.id === levelId);
+  return getRetainedExpansionLevel(levelId, contentRevision);
 }
 
 export function isExpansionChapterAuthored(chapterId: number): boolean {

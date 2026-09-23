@@ -1,0 +1,4193 @@
+{
+  "schema": 2,
+  "campaign": "expansion-1",
+  "ruleset": "expansion-v1",
+  "contentRevision": "expansion-1-r3",
+  "chapters": [
+    1,
+    2,
+    3
+  ],
+  "levelCount": 15,
+  "waveCount": 75,
+  "dockToolLimit": 6,
+  "threatBudgetModel": "v2-weighted-enemy-pressure-targeting-pulse-concurrency-edges-cadence-scripts-minus-economy",
+  "campaignHash": "df1b0920da63f189bd7c83f745b4a511877db6162f3f92f47ee0afdc0eb58957",
+  "levelHashes": {
+    "1": "f35da0796b40ab420ea3f341479f96b1afe3020623cfdb860669a0c0c4cc7aaa",
+    "2": "5c72a1ce4c8a930292d6038afab3e22c19fe6dd4664e4bcfe8181e24747725cd",
+    "3": "40141ce01f88b09273dd02e8bacf60319a986a77bbf26922cc68cf1fae24032e",
+    "4": "159d86b40eb5bb6bbc3f26b05880836279eea1cd7a2d9556472d95b36ad366db",
+    "5": "ca93798b40d8d69637d5c38349bcb2b227a610b385ad99c21b8fd41ee341a584",
+    "6": "9b97bd2f40a3da0f10df8f52be8908450c3071934830c6d2cf1596dc132f6917",
+    "7": "ab072f4b3bc463c1bd2f6552eada8b5ff2f204e4b2304aef151e0d4874d36fbc",
+    "8": "9ae65b56441e702a9ec6bca6e3d8402c9e7fe4fc1164579194474c43e2c329da",
+    "9": "b1689464bc53d69c9fb5462b897ea74d39f3eec6918a22dc5953210cc6b88189",
+    "10": "91284b14429bd25c626eea8e1925f2ff0b367fead03b0bd7a894cfc5a8782449",
+    "11": "4d179d245bdaff8972de44ce4aef0d95649a0c087e5670de097a33a6498e8c01",
+    "12": "faffd83329928d5d9a02c1862c64189a8d41246cf708e6462e0b66f7809dbe85",
+    "13": "f2fb1fb4513914141f85f5a80621ccd9fcb3a516f1285a6ef0e23fc776c9b967",
+    "14": "eaea3b61081c0747716fe83d9b197efa9b1911703112c10a2fa09c98eab62751",
+    "15": "3ee45632978317eae12d8fae7b88f72c1d6d1905e124a7437f81e1e9048a1ec6"
+  },
+  "levels": [
+    {
+      "campaign": "expansion-1",
+      "chapterId": 1,
+      "id": 1,
+      "codename": "FIRST CONTACT",
+      "contentHash": "f35da0796b40ab420ea3f341479f96b1afe3020623cfdb860669a0c0c4cc7aaa",
+      "difficultyIndex": 110,
+      "requiredMechanic": "latencyTrap",
+      "threatBudget": 2166,
+      "waveCount": 5,
+      "gridSize": 8,
+      "source": {
+        "x": 0,
+        "y": 4
+      },
+      "core": {
+        "x": 7,
+        "y": 4
+      },
+      "voidTiles": [],
+      "initialTiles": [
+        {
+          "position": {
+            "x": 2,
+            "y": 4
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 4,
+            "y": 4
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 6,
+            "y": 4
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 3,
+            "y": 3
+          },
+          "kind": "turret"
+        }
+      ],
+      "toolsUnlocked": [
+        "relay",
+        "firewall",
+        "turret",
+        "latencyTrap",
+        "sell"
+      ],
+      "toolCount": 5,
+      "waves": [
+        {
+          "campaign": "expansion-1",
+          "chapterId": 1,
+          "levelId": 1,
+          "id": 1,
+          "label": "Quick Ping",
+          "spawnEdges": [
+            "west"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 2,
+            "crawler": 0,
+            "spoof": 0,
+            "hunter": 0,
+            "splitter": 0,
+            "goliath": 0,
+            "rusher": 4
+          },
+          "maxActiveIntrusions": 1,
+          "maxSpawnedIntrusions": 2,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 11,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 48,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 136
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 1,
+          "levelId": 1,
+          "id": 2,
+          "label": "Double Time",
+          "spawnEdges": [
+            "west",
+            "north"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 3,
+            "crawler": 0,
+            "spoof": 0,
+            "hunter": 0,
+            "splitter": 0,
+            "goliath": 0,
+            "rusher": 5
+          },
+          "maxActiveIntrusions": 2,
+          "maxSpawnedIntrusions": 4,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 9,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 19,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 335
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 1,
+          "levelId": 1,
+          "id": 3,
+          "label": "Redline",
+          "spawnEdges": [
+            "west",
+            "north"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 2,
+            "crawler": 0,
+            "spoof": 0,
+            "hunter": 0,
+            "splitter": 0,
+            "goliath": 0,
+            "rusher": 6
+          },
+          "maxActiveIntrusions": 3,
+          "maxSpawnedIntrusions": 5,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 7,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 18,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 443
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 1,
+          "levelId": 1,
+          "id": 4,
+          "label": "Mixed Clock",
+          "spawnEdges": [
+            "west",
+            "north",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 2,
+            "crawler": 1,
+            "spoof": 0,
+            "hunter": 0,
+            "splitter": 0,
+            "goliath": 0,
+            "rusher": 5
+          },
+          "maxActiveIntrusions": 3,
+          "maxSpawnedIntrusions": 6,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 7,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 18,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 537
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 1,
+          "levelId": 1,
+          "id": 5,
+          "label": "Latency Check",
+          "spawnEdges": [
+            "west",
+            "north",
+            "east",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 2,
+            "crawler": 1,
+            "spoof": 0,
+            "hunter": 0,
+            "splitter": 0,
+            "goliath": 0,
+            "rusher": 6
+          },
+          "maxActiveIntrusions": 4,
+          "maxSpawnedIntrusions": 8,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 6,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 20,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 715
+        }
+      ]
+    },
+    {
+      "campaign": "expansion-1",
+      "chapterId": 1,
+      "id": 2,
+      "codename": "SWITCHBACK",
+      "contentHash": "5c72a1ce4c8a930292d6038afab3e22c19fe6dd4664e4bcfe8181e24747725cd",
+      "difficultyIndex": 135,
+      "requiredMechanic": "latencyTrap",
+      "threatBudget": 3281,
+      "waveCount": 5,
+      "gridSize": 8,
+      "source": {
+        "x": 0,
+        "y": 6
+      },
+      "core": {
+        "x": 7,
+        "y": 1
+      },
+      "voidTiles": [
+        {
+          "x": 2,
+          "y": 2
+        },
+        {
+          "x": 3,
+          "y": 2
+        },
+        {
+          "x": 5,
+          "y": 3
+        },
+        {
+          "x": 2,
+          "y": 5
+        },
+        {
+          "x": 4,
+          "y": 5
+        }
+      ],
+      "initialTiles": [
+        {
+          "position": {
+            "x": 1,
+            "y": 5
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 2,
+            "y": 4
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 3,
+            "y": 3
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 4,
+            "y": 2
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 6,
+            "y": 2
+          },
+          "kind": "relay"
+        }
+      ],
+      "toolsUnlocked": [
+        "relay",
+        "firewall",
+        "turret",
+        "scrubber",
+        "latencyTrap",
+        "sell"
+      ],
+      "toolCount": 6,
+      "waves": [
+        {
+          "campaign": "expansion-1",
+          "chapterId": 1,
+          "levelId": 2,
+          "id": 1,
+          "label": "Hairpin",
+          "spawnEdges": [
+            "west",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 3,
+            "crawler": 0,
+            "spoof": 0,
+            "hunter": 0,
+            "splitter": 0,
+            "goliath": 0,
+            "rusher": 4
+          },
+          "maxActiveIntrusions": 2,
+          "maxSpawnedIntrusions": 4,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 9,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 45,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 301
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 1,
+          "levelId": 2,
+          "id": 2,
+          "label": "Blind Corner",
+          "spawnEdges": [
+            "west",
+            "north",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 2,
+            "crawler": 0,
+            "spoof": 2,
+            "hunter": 0,
+            "splitter": 0,
+            "goliath": 0,
+            "rusher": 4
+          },
+          "maxActiveIntrusions": 3,
+          "maxSpawnedIntrusions": 6,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 8,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 22,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 498
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 1,
+          "levelId": 2,
+          "id": 3,
+          "label": "Cross Traffic",
+          "spawnEdges": [
+            "west",
+            "north",
+            "east",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 2,
+            "crawler": 1,
+            "spoof": 0,
+            "hunter": 0,
+            "splitter": 0,
+            "goliath": 0,
+            "rusher": 5
+          },
+          "maxActiveIntrusions": 4,
+          "maxSpawnedIntrusions": 7,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 7,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 20,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 634
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 1,
+          "levelId": 2,
+          "id": 4,
+          "label": "Fast Detour",
+          "spawnEdges": [
+            "west",
+            "north",
+            "east",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 0,
+            "crawler": 1,
+            "spoof": 2,
+            "hunter": 0,
+            "splitter": 0,
+            "goliath": 0,
+            "rusher": 6
+          },
+          "maxActiveIntrusions": 5,
+          "maxSpawnedIntrusions": 9,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 6,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 20,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 833
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 1,
+          "levelId": 2,
+          "id": 5,
+          "label": "Switchback Surge",
+          "spawnEdges": [
+            "west",
+            "north",
+            "east",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 0,
+            "crawler": 2,
+            "spoof": 2,
+            "hunter": 0,
+            "splitter": 0,
+            "goliath": 0,
+            "rusher": 7
+          },
+          "maxActiveIntrusions": 5,
+          "maxSpawnedIntrusions": 11,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 5,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 22,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 1015
+        }
+      ]
+    },
+    {
+      "campaign": "expansion-1",
+      "chapterId": 1,
+      "id": 3,
+      "codename": "CROSSTALK",
+      "contentHash": "40141ce01f88b09273dd02e8bacf60319a986a77bbf26922cc68cf1fae24032e",
+      "difficultyIndex": 165,
+      "requiredMechanic": "latencyTrap",
+      "threatBudget": 4223,
+      "waveCount": 5,
+      "gridSize": 8,
+      "source": {
+        "x": 7,
+        "y": 6
+      },
+      "core": {
+        "x": 1,
+        "y": 1
+      },
+      "voidTiles": [
+        {
+          "x": 2,
+          "y": 3
+        },
+        {
+          "x": 3,
+          "y": 3
+        },
+        {
+          "x": 5,
+          "y": 2
+        },
+        {
+          "x": 4,
+          "y": 5
+        },
+        {
+          "x": 5,
+          "y": 5
+        }
+      ],
+      "initialTiles": [
+        {
+          "position": {
+            "x": 6,
+            "y": 5
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 5,
+            "y": 4
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 4,
+            "y": 3
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 3,
+            "y": 2
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 2,
+            "y": 1
+          },
+          "kind": "relay"
+        }
+      ],
+      "toolsUnlocked": [
+        "relay",
+        "firewall",
+        "turret",
+        "scrubber",
+        "latencyTrap",
+        "sell"
+      ],
+      "toolCount": 6,
+      "waves": [
+        {
+          "campaign": "expansion-1",
+          "chapterId": 1,
+          "levelId": 3,
+          "id": 1,
+          "label": "Echo Pair",
+          "spawnEdges": [
+            "east",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 2,
+            "crawler": 0,
+            "spoof": 0,
+            "hunter": 0,
+            "splitter": 0,
+            "goliath": 0,
+            "rusher": 5
+          },
+          "maxActiveIntrusions": 3,
+          "maxSpawnedIntrusions": 6,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 8,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 50,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 480
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 1,
+          "levelId": 3,
+          "id": 2,
+          "label": "Hunter Noise",
+          "spawnEdges": [
+            "west",
+            "east",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 1,
+            "crawler": 0,
+            "spoof": 0,
+            "hunter": 2,
+            "splitter": 0,
+            "goliath": 0,
+            "rusher": 5
+          },
+          "maxActiveIntrusions": 4,
+          "maxSpawnedIntrusions": 7,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 7,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 24,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 650
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 1,
+          "levelId": 3,
+          "id": 3,
+          "label": "Phase Collision",
+          "spawnEdges": [
+            "west",
+            "north",
+            "east",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 0,
+            "crawler": 0,
+            "spoof": 2,
+            "hunter": 2,
+            "splitter": 0,
+            "goliath": 0,
+            "rusher": 6
+          },
+          "maxActiveIntrusions": 5,
+          "maxSpawnedIntrusions": 9,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 6,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 22,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 831
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 1,
+          "levelId": 3,
+          "id": 4,
+          "label": "Noisy Channel",
+          "spawnEdges": [
+            "west",
+            "north",
+            "east",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 0,
+            "crawler": 2,
+            "spoof": 0,
+            "hunter": 2,
+            "splitter": 0,
+            "goliath": 0,
+            "rusher": 7
+          },
+          "maxActiveIntrusions": 6,
+          "maxSpawnedIntrusions": 11,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 5,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 22,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 1069
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 1,
+          "levelId": 3,
+          "id": 5,
+          "label": "Crosstalk Storm",
+          "spawnEdges": [
+            "west",
+            "north",
+            "east",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 0,
+            "crawler": 1,
+            "spoof": 2,
+            "hunter": 2,
+            "splitter": 0,
+            "goliath": 0,
+            "rusher": 8
+          },
+          "maxActiveIntrusions": 6,
+          "maxSpawnedIntrusions": 13,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 5,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 24,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 1193
+        }
+      ]
+    },
+    {
+      "campaign": "expansion-1",
+      "chapterId": 1,
+      "id": 4,
+      "codename": "OVERCLOCK ALLEY",
+      "contentHash": "159d86b40eb5bb6bbc3f26b05880836279eea1cd7a2d9556472d95b36ad366db",
+      "difficultyIndex": 200,
+      "requiredMechanic": "latencyTrap",
+      "threatBudget": 5254,
+      "waveCount": 5,
+      "gridSize": 8,
+      "source": {
+        "x": 0,
+        "y": 1
+      },
+      "core": {
+        "x": 7,
+        "y": 6
+      },
+      "voidTiles": [
+        {
+          "x": 2,
+          "y": 3
+        },
+        {
+          "x": 2,
+          "y": 4
+        },
+        {
+          "x": 4,
+          "y": 1
+        },
+        {
+          "x": 5,
+          "y": 3
+        },
+        {
+          "x": 6,
+          "y": 4
+        }
+      ],
+      "initialTiles": [
+        {
+          "position": {
+            "x": 2,
+            "y": 1
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 3,
+            "y": 2
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 4,
+            "y": 3
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 5,
+            "y": 4
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 6,
+            "y": 5
+          },
+          "kind": "relay"
+        }
+      ],
+      "toolsUnlocked": [
+        "relay",
+        "firewall",
+        "turret",
+        "scrubber",
+        "latencyTrap",
+        "sell"
+      ],
+      "toolCount": 6,
+      "waves": [
+        {
+          "campaign": "expansion-1",
+          "chapterId": 1,
+          "levelId": 4,
+          "id": 1,
+          "label": "Hot Lane",
+          "spawnEdges": [
+            "west",
+            "north"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 0,
+            "crawler": 2,
+            "spoof": 0,
+            "hunter": 0,
+            "splitter": 0,
+            "goliath": 0,
+            "rusher": 6
+          },
+          "maxActiveIntrusions": 4,
+          "maxSpawnedIntrusions": 7,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 7,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 58,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 629
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 1,
+          "levelId": 4,
+          "id": 2,
+          "label": "Split Clock",
+          "spawnEdges": [
+            "west",
+            "north",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 1,
+            "crawler": 0,
+            "spoof": 0,
+            "hunter": 0,
+            "splitter": 2,
+            "goliath": 0,
+            "rusher": 6
+          },
+          "maxActiveIntrusions": 5,
+          "maxSpawnedIntrusions": 9,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 6,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 26,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 792
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 1,
+          "levelId": 4,
+          "id": 3,
+          "label": "Packet Burst",
+          "spawnEdges": [
+            "west",
+            "north",
+            "east",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 0,
+            "crawler": 0,
+            "spoof": 2,
+            "hunter": 0,
+            "splitter": 2,
+            "goliath": 0,
+            "rusher": 8
+          },
+          "maxActiveIntrusions": 6,
+          "maxSpawnedIntrusions": 12,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 5,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 24,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 1072
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 1,
+          "levelId": 4,
+          "id": 4,
+          "label": "Heat Sink",
+          "spawnEdges": [
+            "west",
+            "north",
+            "east",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 0,
+            "crawler": 1,
+            "spoof": 0,
+            "hunter": 2,
+            "splitter": 2,
+            "goliath": 0,
+            "rusher": 9
+          },
+          "maxActiveIntrusions": 7,
+          "maxSpawnedIntrusions": 14,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 4,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 24,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 1307
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 1,
+          "levelId": 4,
+          "id": 5,
+          "label": "Alley Burn",
+          "spawnEdges": [
+            "west",
+            "north",
+            "east",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 0,
+            "crawler": 0,
+            "spoof": 2,
+            "hunter": 2,
+            "splitter": 3,
+            "goliath": 0,
+            "rusher": 10
+          },
+          "maxActiveIntrusions": 8,
+          "maxSpawnedIntrusions": 16,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 4,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 27,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 1454
+        }
+      ]
+    },
+    {
+      "campaign": "expansion-1",
+      "chapterId": 1,
+      "id": 5,
+      "codename": "DEADLINE",
+      "contentHash": "ca93798b40d8d69637d5c38349bcb2b227a610b385ad99c21b8fd41ee341a584",
+      "difficultyIndex": 245,
+      "requiredMechanic": "latencyTrap",
+      "threatBudget": 7167,
+      "waveCount": 5,
+      "gridSize": 8,
+      "source": {
+        "x": 7,
+        "y": 7
+      },
+      "core": {
+        "x": 0,
+        "y": 0
+      },
+      "voidTiles": [
+        {
+          "x": 1,
+          "y": 4
+        },
+        {
+          "x": 2,
+          "y": 4
+        },
+        {
+          "x": 3,
+          "y": 1
+        },
+        {
+          "x": 4,
+          "y": 6
+        },
+        {
+          "x": 5,
+          "y": 3
+        },
+        {
+          "x": 6,
+          "y": 3
+        }
+      ],
+      "initialTiles": [
+        {
+          "position": {
+            "x": 6,
+            "y": 6
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 5,
+            "y": 5
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 4,
+            "y": 4
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 3,
+            "y": 3
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 2,
+            "y": 2
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 1,
+            "y": 1
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 1,
+            "y": 2
+          },
+          "kind": "turret"
+        }
+      ],
+      "toolsUnlocked": [
+        "relay",
+        "firewall",
+        "turret",
+        "scrubber",
+        "latencyTrap",
+        "sell"
+      ],
+      "toolCount": 6,
+      "waves": [
+        {
+          "campaign": "expansion-1",
+          "chapterId": 1,
+          "levelId": 5,
+          "id": 1,
+          "label": "Closing Bell",
+          "spawnEdges": [
+            "west",
+            "north",
+            "east",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 2,
+            "crawler": 1,
+            "spoof": 0,
+            "hunter": 0,
+            "splitter": 0,
+            "goliath": 0,
+            "rusher": 7
+          },
+          "maxActiveIntrusions": 5,
+          "maxSpawnedIntrusions": 9,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 6,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 66,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 769
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 1,
+          "levelId": 5,
+          "id": 2,
+          "label": "Hard Limit",
+          "spawnEdges": [
+            "west",
+            "north",
+            "east",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 0,
+            "crawler": 1,
+            "spoof": 2,
+            "hunter": 2,
+            "splitter": 0,
+            "goliath": 0,
+            "rusher": 8
+          },
+          "maxActiveIntrusions": 6,
+          "maxSpawnedIntrusions": 12,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 5,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 28,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 1104
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 1,
+          "levelId": 5,
+          "id": 3,
+          "label": "Zero Slack",
+          "spawnEdges": [
+            "west",
+            "north",
+            "east",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 0,
+            "crawler": 0,
+            "spoof": 2,
+            "hunter": 2,
+            "splitter": 2,
+            "goliath": 0,
+            "rusher": 10
+          },
+          "maxActiveIntrusions": 8,
+          "maxSpawnedIntrusions": 15,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 4,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 27,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 1370
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 1,
+          "levelId": 5,
+          "id": 4,
+          "label": "Final Notice",
+          "spawnEdges": [
+            "west",
+            "north",
+            "east",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 0,
+            "crawler": 2,
+            "spoof": 0,
+            "hunter": 2,
+            "splitter": 3,
+            "goliath": 0,
+            "rusher": 11
+          },
+          "maxActiveIntrusions": 9,
+          "maxSpawnedIntrusions": 18,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 4,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 28,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 1667
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 1,
+          "levelId": 5,
+          "id": 5,
+          "label": "Deadline",
+          "spawnEdges": [
+            "west",
+            "north",
+            "east",
+            "south"
+          ],
+          "scriptedSpawns": [
+            {
+              "waveTick": 8,
+              "kind": "goliath"
+            }
+          ],
+          "enemyWeights": {
+            "probe": 0,
+            "crawler": 0,
+            "spoof": 2,
+            "hunter": 2,
+            "splitter": 3,
+            "goliath": 0,
+            "rusher": 12
+          },
+          "maxActiveIntrusions": 10,
+          "maxSpawnedIntrusions": 20,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 4,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 34,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 2257
+        }
+      ]
+    },
+    {
+      "campaign": "expansion-1",
+      "chapterId": 2,
+      "id": 6,
+      "codename": "STANDOFF",
+      "contentHash": "9b97bd2f40a3da0f10df8f52be8908450c3071934830c6d2cf1596dc132f6917",
+      "difficultyIndex": 280,
+      "requiredMechanic": "sapperSpacing",
+      "threatBudget": 7221,
+      "waveCount": 5,
+      "gridSize": 8,
+      "source": {
+        "x": 0,
+        "y": 4
+      },
+      "core": {
+        "x": 7,
+        "y": 4
+      },
+      "voidTiles": [
+        {
+          "x": 3,
+          "y": 1
+        },
+        {
+          "x": 3,
+          "y": 6
+        }
+      ],
+      "initialTiles": [
+        {
+          "position": {
+            "x": 2,
+            "y": 4
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 4,
+            "y": 4
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 6,
+            "y": 4
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 4,
+            "y": 2
+          },
+          "kind": "firewall"
+        },
+        {
+          "position": {
+            "x": 2,
+            "y": 2
+          },
+          "kind": "turret"
+        }
+      ],
+      "toolsUnlocked": [
+        "relay",
+        "firewall",
+        "turret",
+        "scrubber",
+        "latencyTrap",
+        "sell"
+      ],
+      "toolCount": 6,
+      "waves": [
+        {
+          "campaign": "expansion-1",
+          "chapterId": 2,
+          "levelId": 6,
+          "id": 1,
+          "label": "Marked Charge",
+          "spawnEdges": [
+            "north"
+          ],
+          "scriptedSpawns": [
+            {
+              "waveTick": 4,
+              "kind": "sapper"
+            }
+          ],
+          "enemyWeights": {
+            "probe": 3,
+            "crawler": 0,
+            "spoof": 0,
+            "hunter": 0,
+            "splitter": 0,
+            "goliath": 0,
+            "rusher": 2,
+            "sapper": 0
+          },
+          "maxActiveIntrusions": 3,
+          "maxSpawnedIntrusions": 9,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 10,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 172,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 751
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 2,
+          "levelId": 6,
+          "id": 2,
+          "label": "Safe Radius",
+          "spawnEdges": [
+            "north",
+            "west"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 3,
+            "crawler": 0,
+            "spoof": 0,
+            "hunter": 0,
+            "splitter": 0,
+            "goliath": 0,
+            "rusher": 2,
+            "sapper": 3
+          },
+          "maxActiveIntrusions": 5,
+          "maxSpawnedIntrusions": 12,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 8,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 144,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 1000
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 2,
+          "levelId": 6,
+          "id": 3,
+          "label": "Cross Fuse",
+          "spawnEdges": [
+            "north",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 0,
+            "crawler": 1,
+            "spoof": 0,
+            "hunter": 0,
+            "splitter": 0,
+            "goliath": 0,
+            "rusher": 3,
+            "sapper": 4
+          },
+          "maxActiveIntrusions": 6,
+          "maxSpawnedIntrusions": 15,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 7,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 144,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 1492
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 2,
+          "levelId": 6,
+          "id": 4,
+          "label": "Loose Formation",
+          "spawnEdges": [
+            "north",
+            "west",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 0,
+            "crawler": 0,
+            "spoof": 0,
+            "hunter": 2,
+            "splitter": 0,
+            "goliath": 0,
+            "rusher": 3,
+            "sapper": 5
+          },
+          "maxActiveIntrusions": 7,
+          "maxSpawnedIntrusions": 18,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 6,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 145,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 1836
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 2,
+          "levelId": 6,
+          "id": 5,
+          "label": "Standoff",
+          "spawnEdges": [
+            "west",
+            "north",
+            "east",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 0,
+            "crawler": 0,
+            "spoof": 0,
+            "hunter": 2,
+            "splitter": 0,
+            "goliath": 0,
+            "rusher": 4,
+            "sapper": 6
+          },
+          "maxActiveIntrusions": 8,
+          "maxSpawnedIntrusions": 21,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 6,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 148,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 2142
+        }
+      ]
+    },
+    {
+      "campaign": "expansion-1",
+      "chapterId": 2,
+      "id": 7,
+      "codename": "DECOUPLER",
+      "contentHash": "ab072f4b3bc463c1bd2f6552eada8b5ff2f204e4b2304aef151e0d4874d36fbc",
+      "difficultyIndex": 325,
+      "requiredMechanic": "sapperSpacing",
+      "threatBudget": 8446,
+      "waveCount": 5,
+      "gridSize": 8,
+      "source": {
+        "x": 0,
+        "y": 1
+      },
+      "core": {
+        "x": 7,
+        "y": 6
+      },
+      "voidTiles": [
+        {
+          "x": 2,
+          "y": 3
+        },
+        {
+          "x": 2,
+          "y": 4
+        },
+        {
+          "x": 5,
+          "y": 3
+        },
+        {
+          "x": 6,
+          "y": 4
+        }
+      ],
+      "initialTiles": [
+        {
+          "position": {
+            "x": 2,
+            "y": 1
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 3,
+            "y": 2
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 4,
+            "y": 3
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 5,
+            "y": 4
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 6,
+            "y": 5
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 4,
+            "y": 6
+          },
+          "kind": "firewall"
+        }
+      ],
+      "toolsUnlocked": [
+        "relay",
+        "firewall",
+        "turret",
+        "scrubber",
+        "latencyTrap",
+        "sell"
+      ],
+      "toolCount": 6,
+      "waves": [
+        {
+          "campaign": "expansion-1",
+          "chapterId": 2,
+          "levelId": 7,
+          "id": 1,
+          "label": "Air Gap",
+          "spawnEdges": [
+            "west",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 2,
+            "crawler": 0,
+            "spoof": 0,
+            "hunter": 0,
+            "splitter": 0,
+            "goliath": 0,
+            "rusher": 3,
+            "sapper": 4
+          },
+          "maxActiveIntrusions": 5,
+          "maxSpawnedIntrusions": 11,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 8,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 178,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 943
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 2,
+          "levelId": 7,
+          "id": 2,
+          "label": "Hard Coupling",
+          "spawnEdges": [
+            "west",
+            "north",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 0,
+            "crawler": 0,
+            "spoof": 0,
+            "hunter": 3,
+            "splitter": 0,
+            "goliath": 0,
+            "rusher": 3,
+            "sapper": 5
+          },
+          "maxActiveIntrusions": 6,
+          "maxSpawnedIntrusions": 14,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 7,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 146,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 1395
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 2,
+          "levelId": 7,
+          "id": 3,
+          "label": "Split Rail",
+          "spawnEdges": [
+            "west",
+            "north",
+            "east",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 0,
+            "crawler": 0,
+            "spoof": 3,
+            "hunter": 0,
+            "splitter": 0,
+            "goliath": 0,
+            "rusher": 3,
+            "sapper": 6
+          },
+          "maxActiveIntrusions": 7,
+          "maxSpawnedIntrusions": 17,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 6,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 146,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 1637
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 2,
+          "levelId": 7,
+          "id": 4,
+          "label": "Cascade Check",
+          "spawnEdges": [
+            "west",
+            "north",
+            "east",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 0,
+            "crawler": 2,
+            "spoof": 0,
+            "hunter": 3,
+            "splitter": 0,
+            "goliath": 0,
+            "rusher": 3,
+            "sapper": 7
+          },
+          "maxActiveIntrusions": 8,
+          "maxSpawnedIntrusions": 20,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 5,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 147,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 2045
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 2,
+          "levelId": 7,
+          "id": 5,
+          "label": "Decoupler",
+          "spawnEdges": [
+            "west",
+            "north",
+            "east",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 0,
+            "crawler": 0,
+            "spoof": 2,
+            "hunter": 3,
+            "splitter": 0,
+            "goliath": 0,
+            "rusher": 4,
+            "sapper": 8
+          },
+          "maxActiveIntrusions": 10,
+          "maxSpawnedIntrusions": 24,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 5,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 150,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 2426
+        }
+      ]
+    },
+    {
+      "campaign": "expansion-1",
+      "chapterId": 2,
+      "id": 8,
+      "codename": "FALSE WALL",
+      "contentHash": "9ae65b56441e702a9ec6bca6e3d8402c9e7fe4fc1164579194474c43e2c329da",
+      "difficultyIndex": 375,
+      "requiredMechanic": "sapperSpacing",
+      "threatBudget": 9792,
+      "waveCount": 5,
+      "gridSize": 8,
+      "source": {
+        "x": 7,
+        "y": 1
+      },
+      "core": {
+        "x": 0,
+        "y": 6
+      },
+      "voidTiles": [
+        {
+          "x": 2,
+          "y": 2
+        },
+        {
+          "x": 3,
+          "y": 2
+        },
+        {
+          "x": 4,
+          "y": 5
+        },
+        {
+          "x": 5,
+          "y": 5
+        }
+      ],
+      "initialTiles": [
+        {
+          "position": {
+            "x": 6,
+            "y": 2
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 5,
+            "y": 3
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 4,
+            "y": 4
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 3,
+            "y": 5
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 2,
+            "y": 6
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 6,
+            "y": 6
+          },
+          "kind": "firewall"
+        },
+        {
+          "position": {
+            "x": 4,
+            "y": 2
+          },
+          "kind": "turret"
+        },
+        {
+          "position": {
+            "x": 7,
+            "y": 4
+          },
+          "kind": "turret"
+        },
+        {
+          "position": {
+            "x": 5,
+            "y": 4
+          },
+          "kind": "turret"
+        },
+        {
+          "position": {
+            "x": 3,
+            "y": 3
+          },
+          "kind": "turret"
+        },
+        {
+          "position": {
+            "x": 1,
+            "y": 3
+          },
+          "kind": "turret"
+        },
+        {
+          "position": {
+            "x": 3,
+            "y": 7
+          },
+          "kind": "turret"
+        }
+      ],
+      "toolsUnlocked": [
+        "relay",
+        "firewall",
+        "turret",
+        "scrubber",
+        "latencyTrap",
+        "sell"
+      ],
+      "toolCount": 6,
+      "waves": [
+        {
+          "campaign": "expansion-1",
+          "chapterId": 2,
+          "levelId": 8,
+          "id": 1,
+          "label": "Bait Signal",
+          "spawnEdges": [
+            "east",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 3,
+            "crawler": 0,
+            "spoof": 0,
+            "hunter": 0,
+            "splitter": 0,
+            "goliath": 0,
+            "rusher": 3,
+            "sapper": 6
+          },
+          "maxActiveIntrusions": 6,
+          "maxSpawnedIntrusions": 13,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 7,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 182,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 1157
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 2,
+          "levelId": 8,
+          "id": 2,
+          "label": "Priority Lock",
+          "spawnEdges": [
+            "east",
+            "north",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 0,
+            "crawler": 0,
+            "spoof": 0,
+            "hunter": 3,
+            "splitter": 0,
+            "goliath": 0,
+            "rusher": 3,
+            "sapper": 7
+          },
+          "maxActiveIntrusions": 7,
+          "maxSpawnedIntrusions": 16,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 6,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 148,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 1641
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 2,
+          "levelId": 8,
+          "id": 3,
+          "label": "Wall Feint",
+          "spawnEdges": [
+            "west",
+            "north",
+            "east",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 0,
+            "crawler": 0,
+            "spoof": 3,
+            "hunter": 0,
+            "splitter": 0,
+            "goliath": 0,
+            "rusher": 4,
+            "sapper": 8
+          },
+          "maxActiveIntrusions": 8,
+          "maxSpawnedIntrusions": 19,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 5,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 148,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 1884
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 2,
+          "levelId": 8,
+          "id": 4,
+          "label": "Double Bluff",
+          "spawnEdges": [
+            "west",
+            "north",
+            "east",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 0,
+            "crawler": 2,
+            "spoof": 0,
+            "hunter": 4,
+            "splitter": 0,
+            "goliath": 0,
+            "rusher": 4,
+            "sapper": 9
+          },
+          "maxActiveIntrusions": 10,
+          "maxSpawnedIntrusions": 23,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 5,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 149,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 2395
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 2,
+          "levelId": 8,
+          "id": 5,
+          "label": "False Wall",
+          "spawnEdges": [
+            "west",
+            "north",
+            "east",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 0,
+            "crawler": 0,
+            "spoof": 3,
+            "hunter": 4,
+            "splitter": 0,
+            "goliath": 0,
+            "rusher": 5,
+            "sapper": 10
+          },
+          "maxActiveIntrusions": 11,
+          "maxSpawnedIntrusions": 27,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 4,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 152,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 2715
+        }
+      ]
+    },
+    {
+      "campaign": "expansion-1",
+      "chapterId": 2,
+      "id": 9,
+      "codename": "BLAST GRID",
+      "contentHash": "b1689464bc53d69c9fb5462b897ea74d39f3eec6918a22dc5953210cc6b88189",
+      "difficultyIndex": 435,
+      "requiredMechanic": "sapperSpacing",
+      "threatBudget": 11783,
+      "waveCount": 5,
+      "gridSize": 8,
+      "source": {
+        "x": 1,
+        "y": 7
+      },
+      "core": {
+        "x": 6,
+        "y": 0
+      },
+      "voidTiles": [
+        {
+          "x": 2,
+          "y": 1
+        },
+        {
+          "x": 2,
+          "y": 2
+        },
+        {
+          "x": 2,
+          "y": 5
+        },
+        {
+          "x": 5,
+          "y": 2
+        },
+        {
+          "x": 5,
+          "y": 5
+        },
+        {
+          "x": 5,
+          "y": 6
+        }
+      ],
+      "initialTiles": [
+        {
+          "position": {
+            "x": 2,
+            "y": 6
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 3,
+            "y": 5
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 4,
+            "y": 4
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 5,
+            "y": 3
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 6,
+            "y": 2
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 3,
+            "y": 1
+          },
+          "kind": "firewall"
+        },
+        {
+          "position": {
+            "x": 0,
+            "y": 4
+          },
+          "kind": "turret"
+        },
+        {
+          "position": {
+            "x": 7,
+            "y": 4
+          },
+          "kind": "turret"
+        },
+        {
+          "position": {
+            "x": 4,
+            "y": 7
+          },
+          "kind": "turret"
+        },
+        {
+          "position": {
+            "x": 4,
+            "y": 0
+          },
+          "kind": "turret"
+        },
+        {
+          "position": {
+            "x": 1,
+            "y": 4
+          },
+          "kind": "turret"
+        }
+      ],
+      "toolsUnlocked": [
+        "relay",
+        "firewall",
+        "turret",
+        "scrubber",
+        "latencyTrap",
+        "sell"
+      ],
+      "toolCount": 6,
+      "waves": [
+        {
+          "campaign": "expansion-1",
+          "chapterId": 2,
+          "levelId": 9,
+          "id": 1,
+          "label": "Four Point",
+          "spawnEdges": [
+            "west",
+            "north",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 0,
+            "crawler": 2,
+            "spoof": 0,
+            "hunter": 0,
+            "splitter": 0,
+            "goliath": 0,
+            "rusher": 4,
+            "sapper": 7
+          },
+          "maxActiveIntrusions": 7,
+          "maxSpawnedIntrusions": 15,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 6,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 186,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 1498
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 2,
+          "levelId": 9,
+          "id": 2,
+          "label": "Blast Lane",
+          "spawnEdges": [
+            "west",
+            "north",
+            "east",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 0,
+            "crawler": 3,
+            "spoof": 0,
+            "hunter": 3,
+            "splitter": 0,
+            "goliath": 0,
+            "rusher": 4,
+            "sapper": 8
+          },
+          "maxActiveIntrusions": 8,
+          "maxSpawnedIntrusions": 19,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 5,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 150,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 1939
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 2,
+          "levelId": 9,
+          "id": 3,
+          "label": "Tight Pattern",
+          "spawnEdges": [
+            "west",
+            "north",
+            "east",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 0,
+            "crawler": 0,
+            "spoof": 0,
+            "hunter": 3,
+            "splitter": 3,
+            "goliath": 0,
+            "rusher": 5,
+            "sapper": 9
+          },
+          "maxActiveIntrusions": 10,
+          "maxSpawnedIntrusions": 23,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 4,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 150,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 2307
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 2,
+          "levelId": 9,
+          "id": 4,
+          "label": "Grid Shock",
+          "spawnEdges": [
+            "west",
+            "north",
+            "east",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 0,
+            "crawler": 3,
+            "spoof": 0,
+            "hunter": 0,
+            "splitter": 3,
+            "goliath": 0,
+            "rusher": 5,
+            "sapper": 10
+          },
+          "maxActiveIntrusions": 11,
+          "maxSpawnedIntrusions": 27,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 4,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 151,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 2743
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 2,
+          "levelId": 9,
+          "id": 5,
+          "label": "Blast Grid",
+          "spawnEdges": [
+            "west",
+            "north",
+            "east",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 0,
+            "crawler": 0,
+            "spoof": 0,
+            "hunter": 4,
+            "splitter": 3,
+            "goliath": 0,
+            "rusher": 6,
+            "sapper": 12
+          },
+          "maxActiveIntrusions": 13,
+          "maxSpawnedIntrusions": 32,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 4,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 155,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 3296
+        }
+      ]
+    },
+    {
+      "campaign": "expansion-1",
+      "chapterId": 2,
+      "id": 10,
+      "codename": "DEMOLITION LINE",
+      "contentHash": "91284b14429bd25c626eea8e1925f2ff0b367fead03b0bd7a894cfc5a8782449",
+      "difficultyIndex": 505,
+      "requiredMechanic": "sapperSpacing",
+      "threatBudget": 12018,
+      "waveCount": 5,
+      "gridSize": 8,
+      "source": {
+        "x": 0,
+        "y": 7
+      },
+      "core": {
+        "x": 7,
+        "y": 0
+      },
+      "voidTiles": [
+        {
+          "x": 1,
+          "y": 2
+        },
+        {
+          "x": 2,
+          "y": 2
+        },
+        {
+          "x": 3,
+          "y": 2
+        },
+        {
+          "x": 4,
+          "y": 5
+        },
+        {
+          "x": 5,
+          "y": 5
+        },
+        {
+          "x": 6,
+          "y": 5
+        }
+      ],
+      "initialTiles": [
+        {
+          "position": {
+            "x": 1,
+            "y": 6
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 2,
+            "y": 5
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 3,
+            "y": 4
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 4,
+            "y": 3
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 5,
+            "y": 2
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 6,
+            "y": 1
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 6,
+            "y": 3
+          },
+          "kind": "firewall"
+        },
+        {
+          "position": {
+            "x": 2,
+            "y": 3
+          },
+          "kind": "turret"
+        },
+        {
+          "position": {
+            "x": 0,
+            "y": 3
+          },
+          "kind": "turret"
+        },
+        {
+          "position": {
+            "x": 7,
+            "y": 4
+          },
+          "kind": "turret"
+        },
+        {
+          "position": {
+            "x": 3,
+            "y": 7
+          },
+          "kind": "turret"
+        },
+        {
+          "position": {
+            "x": 4,
+            "y": 0
+          },
+          "kind": "turret"
+        },
+        {
+          "position": {
+            "x": 1,
+            "y": 4
+          },
+          "kind": "turret"
+        }
+      ],
+      "toolsUnlocked": [
+        "relay",
+        "firewall",
+        "turret",
+        "scrubber",
+        "latencyTrap",
+        "sell"
+      ],
+      "toolCount": 6,
+      "waves": [
+        {
+          "campaign": "expansion-1",
+          "chapterId": 2,
+          "levelId": 10,
+          "id": 1,
+          "label": "Demo Team",
+          "spawnEdges": [
+            "west",
+            "north",
+            "east"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 0,
+            "crawler": 3,
+            "spoof": 0,
+            "hunter": 0,
+            "splitter": 0,
+            "goliath": 0,
+            "rusher": 4,
+            "sapper": 8
+          },
+          "maxActiveIntrusions": 7,
+          "maxSpawnedIntrusions": 14,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 6,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 192,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 1387
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 2,
+          "levelId": 10,
+          "id": 2,
+          "label": "Breach Stack",
+          "spawnEdges": [
+            "west",
+            "north",
+            "east",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 0,
+            "crawler": 3,
+            "spoof": 0,
+            "hunter": 4,
+            "splitter": 0,
+            "goliath": 0,
+            "rusher": 5,
+            "sapper": 10
+          },
+          "maxActiveIntrusions": 9,
+          "maxSpawnedIntrusions": 18,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 5,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 152,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 1844
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 2,
+          "levelId": 10,
+          "id": 3,
+          "label": "Cross Charge",
+          "spawnEdges": [
+            "west",
+            "north",
+            "east",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "probe": 0,
+            "crawler": 0,
+            "spoof": 4,
+            "hunter": 0,
+            "splitter": 3,
+            "goliath": 0,
+            "rusher": 6,
+            "sapper": 11
+          },
+          "maxActiveIntrusions": 10,
+          "maxSpawnedIntrusions": 21,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 4,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 152,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 2042
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 2,
+          "levelId": 10,
+          "id": 4,
+          "label": "Heavy Cover",
+          "spawnEdges": [
+            "west",
+            "north",
+            "east",
+            "south"
+          ],
+          "scriptedSpawns": [
+            {
+              "waveTick": 8,
+              "kind": "goliath"
+            }
+          ],
+          "enemyWeights": {
+            "probe": 0,
+            "crawler": 3,
+            "spoof": 0,
+            "hunter": 4,
+            "splitter": 0,
+            "goliath": 0,
+            "rusher": 6,
+            "sapper": 12
+          },
+          "maxActiveIntrusions": 12,
+          "maxSpawnedIntrusions": 24,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 4,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 155,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 2972
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 2,
+          "levelId": 10,
+          "id": 5,
+          "label": "Demolition Line",
+          "spawnEdges": [
+            "west",
+            "north",
+            "east",
+            "south"
+          ],
+          "scriptedSpawns": [
+            {
+              "waveTick": 6,
+              "kind": "goliath"
+            },
+            {
+              "waveTick": 24,
+              "kind": "goliath"
+            }
+          ],
+          "enemyWeights": {
+            "probe": 0,
+            "crawler": 0,
+            "spoof": 0,
+            "hunter": 4,
+            "splitter": 4,
+            "goliath": 0,
+            "rusher": 7,
+            "sapper": 14
+          },
+          "maxActiveIntrusions": 13,
+          "maxSpawnedIntrusions": 28,
+          "prepTicks": 18,
+          "spawnFirstTick": 3,
+          "spawnEveryTicks": 3,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 160,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 3773
+        }
+      ]
+    },
+    {
+      "campaign": "expansion-1",
+      "chapterId": 3,
+      "id": 11,
+      "codename": "LINK BREAK",
+      "contentHash": "4d179d245bdaff8972de44ce4aef0d95649a0c087e5670de097a33a6498e8c01",
+      "difficultyIndex": 545,
+      "requiredMechanic": "shieldNetwork",
+      "threatBudget": 8196,
+      "waveCount": 5,
+      "gridSize": 8,
+      "source": {
+        "x": 0,
+        "y": 4
+      },
+      "core": {
+        "x": 7,
+        "y": 4
+      },
+      "voidTiles": [
+        {
+          "x": 0,
+          "y": 0
+        },
+        {
+          "x": 1,
+          "y": 0
+        },
+        {
+          "x": 2,
+          "y": 0
+        },
+        {
+          "x": 5,
+          "y": 0
+        },
+        {
+          "x": 6,
+          "y": 0
+        },
+        {
+          "x": 7,
+          "y": 0
+        },
+        {
+          "x": 3,
+          "y": 6
+        }
+      ],
+      "initialTiles": [
+        {
+          "position": {
+            "x": 2,
+            "y": 4
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 4,
+            "y": 4
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 6,
+            "y": 4
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 2,
+            "y": 3
+          },
+          "kind": "turret"
+        },
+        {
+          "position": {
+            "x": 6,
+            "y": 3
+          },
+          "kind": "turret"
+        }
+      ],
+      "toolsUnlocked": [
+        "relay",
+        "firewall",
+        "turret",
+        "arcIce",
+        "scrubber",
+        "sell"
+      ],
+      "toolCount": 6,
+      "waves": [
+        {
+          "campaign": "expansion-1",
+          "chapterId": 3,
+          "levelId": 11,
+          "id": 1,
+          "label": "Visible Link",
+          "spawnEdges": [
+            "north"
+          ],
+          "scriptedSpawns": [
+            {
+              "waveTick": 4,
+              "kind": "shieldDrone"
+            },
+            {
+              "waveTick": 4,
+              "kind": "probe"
+            }
+          ],
+          "enemyWeights": {
+            "probe": 2,
+            "rusher": 2
+          },
+          "maxActiveIntrusions": 4,
+          "maxSpawnedIntrusions": 12,
+          "prepTicks": 18,
+          "spawnFirstTick": 6,
+          "spawnEveryTicks": 9,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 120,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 1038
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 3,
+          "levelId": 11,
+          "id": 2,
+          "label": "Cut The Link",
+          "spawnEdges": [
+            "north"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "shieldDrone": 3,
+            "rusher": 5,
+            "probe": 2
+          },
+          "maxActiveIntrusions": 5,
+          "maxSpawnedIntrusions": 16,
+          "prepTicks": 18,
+          "spawnFirstTick": 6,
+          "spawnEveryTicks": 8,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 44,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 1160
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 3,
+          "levelId": 11,
+          "id": 3,
+          "label": "West Approach",
+          "spawnEdges": [
+            "north",
+            "west"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "shieldDrone": 4,
+            "crawler": 3,
+            "rusher": 5
+          },
+          "maxActiveIntrusions": 6,
+          "maxSpawnedIntrusions": 20,
+          "prepTicks": 18,
+          "spawnFirstTick": 6,
+          "spawnEveryTicks": 7,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 48,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 1583
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 3,
+          "levelId": 11,
+          "id": 4,
+          "label": "Shared Canopy",
+          "spawnEdges": [
+            "north",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "shieldDrone": 4,
+            "hunter": 3,
+            "rusher": 6
+          },
+          "maxActiveIntrusions": 7,
+          "maxSpawnedIntrusions": 25,
+          "prepTicks": 18,
+          "spawnFirstTick": 6,
+          "spawnEveryTicks": 6,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 52,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 1974
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 3,
+          "levelId": 11,
+          "id": 5,
+          "label": "Link Break",
+          "spawnEdges": [
+            "north",
+            "east",
+            "south",
+            "west"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "shieldDrone": 5,
+            "hunter": 3,
+            "crawler": 3,
+            "rusher": 7
+          },
+          "maxActiveIntrusions": 8,
+          "maxSpawnedIntrusions": 30,
+          "prepTicks": 18,
+          "spawnFirstTick": 6,
+          "spawnEveryTicks": 6,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 56,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 2441
+        }
+      ]
+    },
+    {
+      "campaign": "expansion-1",
+      "chapterId": 3,
+      "id": 12,
+      "codename": "ARC TURN",
+      "contentHash": "faffd83329928d5d9a02c1862c64189a8d41246cf708e6462e0b66f7809dbe85",
+      "difficultyIndex": 590,
+      "requiredMechanic": "shieldNetwork",
+      "threatBudget": 9247,
+      "waveCount": 5,
+      "gridSize": 8,
+      "source": {
+        "x": 0,
+        "y": 6
+      },
+      "core": {
+        "x": 7,
+        "y": 1
+      },
+      "voidTiles": [
+        {
+          "x": 1,
+          "y": 2
+        },
+        {
+          "x": 2,
+          "y": 2
+        },
+        {
+          "x": 4,
+          "y": 4
+        },
+        {
+          "x": 5,
+          "y": 4
+        },
+        {
+          "x": 6,
+          "y": 4
+        }
+      ],
+      "initialTiles": [
+        {
+          "position": {
+            "x": 2,
+            "y": 6
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 3,
+            "y": 5
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 3,
+            "y": 3
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 4,
+            "y": 2
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 6,
+            "y": 2
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 1,
+            "y": 4
+          },
+          "kind": "turret"
+        },
+        {
+          "position": {
+            "x": 5,
+            "y": 5
+          },
+          "kind": "turret"
+        }
+      ],
+      "toolsUnlocked": [
+        "relay",
+        "firewall",
+        "turret",
+        "arcIce",
+        "scrubber",
+        "sell"
+      ],
+      "toolCount": 6,
+      "waves": [
+        {
+          "campaign": "expansion-1",
+          "chapterId": 3,
+          "levelId": 12,
+          "id": 1,
+          "label": "Outside Bend",
+          "spawnEdges": [
+            "west",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "shieldDrone": 3,
+            "rusher": 5,
+            "probe": 2
+          },
+          "maxActiveIntrusions": 4,
+          "maxSpawnedIntrusions": 14,
+          "prepTicks": 18,
+          "spawnFirstTick": 6,
+          "spawnEveryTicks": 8,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 126,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 934
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 3,
+          "levelId": 12,
+          "id": 2,
+          "label": "Jump Reach",
+          "spawnEdges": [
+            "west",
+            "north"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "shieldDrone": 4,
+            "spoof": 3,
+            "rusher": 5
+          },
+          "maxActiveIntrusions": 5,
+          "maxSpawnedIntrusions": 19,
+          "prepTicks": 18,
+          "spawnFirstTick": 6,
+          "spawnEveryTicks": 7,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 46,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 1384
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 3,
+          "levelId": 12,
+          "id": 3,
+          "label": "Elbow Room",
+          "spawnEdges": [
+            "west",
+            "north",
+            "east"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "shieldDrone": 4,
+            "crawler": 3,
+            "hunter": 2,
+            "rusher": 6
+          },
+          "maxActiveIntrusions": 6,
+          "maxSpawnedIntrusions": 24,
+          "prepTicks": 18,
+          "spawnFirstTick": 6,
+          "spawnEveryTicks": 6,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 50,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 1945
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 3,
+          "levelId": 12,
+          "id": 4,
+          "label": "Broken Span",
+          "spawnEdges": [
+            "north",
+            "east",
+            "south",
+            "west"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "shieldDrone": 5,
+            "spoof": 3,
+            "hunter": 3,
+            "rusher": 7
+          },
+          "maxActiveIntrusions": 8,
+          "maxSpawnedIntrusions": 29,
+          "prepTicks": 18,
+          "spawnFirstTick": 6,
+          "spawnEveryTicks": 6,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 54,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 2248
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 3,
+          "levelId": 12,
+          "id": 5,
+          "label": "Arc Turn",
+          "spawnEdges": [
+            "north",
+            "east",
+            "south",
+            "west"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "shieldDrone": 6,
+            "crawler": 3,
+            "hunter": 3,
+            "rusher": 8
+          },
+          "maxActiveIntrusions": 9,
+          "maxSpawnedIntrusions": 34,
+          "prepTicks": 18,
+          "spawnFirstTick": 6,
+          "spawnEveryTicks": 5,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 58,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 2736
+        }
+      ]
+    },
+    {
+      "campaign": "expansion-1",
+      "chapterId": 3,
+      "id": 13,
+      "codename": "TWIN CANOPY",
+      "contentHash": "f2fb1fb4513914141f85f5a80621ccd9fcb3a516f1285a6ef0e23fc776c9b967",
+      "difficultyIndex": 640,
+      "requiredMechanic": "shieldNetwork",
+      "threatBudget": 10162,
+      "waveCount": 5,
+      "gridSize": 8,
+      "source": {
+        "x": 0,
+        "y": 3
+      },
+      "core": {
+        "x": 7,
+        "y": 3
+      },
+      "voidTiles": [
+        {
+          "x": 3,
+          "y": 0
+        },
+        {
+          "x": 3,
+          "y": 7
+        },
+        {
+          "x": 3,
+          "y": 3
+        },
+        {
+          "x": 4,
+          "y": 3
+        }
+      ],
+      "initialTiles": [
+        {
+          "position": {
+            "x": 1,
+            "y": 2
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 3,
+            "y": 2
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 5,
+            "y": 2
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 1,
+            "y": 4
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 3,
+            "y": 4
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 5,
+            "y": 4
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 6,
+            "y": 3
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 1,
+            "y": 1
+          },
+          "kind": "turret"
+        },
+        {
+          "position": {
+            "x": 6,
+            "y": 5
+          },
+          "kind": "turret"
+        }
+      ],
+      "toolsUnlocked": [
+        "relay",
+        "firewall",
+        "turret",
+        "arcIce",
+        "scrubber",
+        "sell"
+      ],
+      "toolCount": 6,
+      "waves": [
+        {
+          "campaign": "expansion-1",
+          "chapterId": 3,
+          "levelId": 13,
+          "id": 1,
+          "label": "Upper Shield",
+          "spawnEdges": [
+            "north"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "shieldDrone": 4,
+            "rusher": 6,
+            "probe": 2
+          },
+          "maxActiveIntrusions": 5,
+          "maxSpawnedIntrusions": 16,
+          "prepTicks": 18,
+          "spawnFirstTick": 6,
+          "spawnEveryTicks": 8,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 132,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 1072
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 3,
+          "levelId": 13,
+          "id": 2,
+          "label": "Lower Shield",
+          "spawnEdges": [
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "shieldDrone": 5,
+            "crawler": 3,
+            "rusher": 6
+          },
+          "maxActiveIntrusions": 6,
+          "maxSpawnedIntrusions": 21,
+          "prepTicks": 18,
+          "spawnFirstTick": 6,
+          "spawnEveryTicks": 7,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 48,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 1631
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 3,
+          "levelId": 13,
+          "id": 3,
+          "label": "Two Networks",
+          "spawnEdges": [
+            "north",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "shieldDrone": 6,
+            "hunter": 3,
+            "rusher": 7
+          },
+          "maxActiveIntrusions": 7,
+          "maxSpawnedIntrusions": 26,
+          "prepTicks": 18,
+          "spawnFirstTick": 6,
+          "spawnEveryTicks": 6,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 52,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 1999
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 3,
+          "levelId": 13,
+          "id": 4,
+          "label": "Split Cloud",
+          "spawnEdges": [
+            "north",
+            "east",
+            "south",
+            "west"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "shieldDrone": 6,
+            "splitter": 3,
+            "hunter": 3,
+            "rusher": 8
+          },
+          "maxActiveIntrusions": 9,
+          "maxSpawnedIntrusions": 32,
+          "prepTicks": 18,
+          "spawnFirstTick": 6,
+          "spawnEveryTicks": 5,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 56,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 2518
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 3,
+          "levelId": 13,
+          "id": 5,
+          "label": "Twin Canopy",
+          "spawnEdges": [
+            "north",
+            "east",
+            "south",
+            "west"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "shieldDrone": 7,
+            "splitter": 4,
+            "crawler": 3,
+            "rusher": 9
+          },
+          "maxActiveIntrusions": 10,
+          "maxSpawnedIntrusions": 38,
+          "prepTicks": 18,
+          "spawnFirstTick": 6,
+          "spawnEveryTicks": 5,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 60,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 2942
+        }
+      ]
+    },
+    {
+      "campaign": "expansion-1",
+      "chapterId": 3,
+      "id": 14,
+      "codename": "FUSE FIELD",
+      "contentHash": "eaea3b61081c0747716fe83d9b197efa9b1911703112c10a2fa09c98eab62751",
+      "difficultyIndex": 700,
+      "requiredMechanic": "shieldNetwork",
+      "threatBudget": 13142,
+      "waveCount": 5,
+      "gridSize": 8,
+      "source": {
+        "x": 7,
+        "y": 6
+      },
+      "core": {
+        "x": 0,
+        "y": 1
+      },
+      "voidTiles": [
+        {
+          "x": 2,
+          "y": 4
+        },
+        {
+          "x": 3,
+          "y": 4
+        },
+        {
+          "x": 4,
+          "y": 1
+        },
+        {
+          "x": 5,
+          "y": 1
+        },
+        {
+          "x": 5,
+          "y": 6
+        }
+      ],
+      "initialTiles": [
+        {
+          "position": {
+            "x": 6,
+            "y": 5
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 5,
+            "y": 4
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 4,
+            "y": 3
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 3,
+            "y": 2
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 1,
+            "y": 2
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 6,
+            "y": 1
+          },
+          "kind": "firewall"
+        },
+        {
+          "position": {
+            "x": 2,
+            "y": 1
+          },
+          "kind": "turret"
+        },
+        {
+          "position": {
+            "x": 1,
+            "y": 5
+          },
+          "kind": "turret"
+        },
+        {
+          "position": {
+            "x": 6,
+            "y": 3
+          },
+          "kind": "turret"
+        }
+      ],
+      "toolsUnlocked": [
+        "relay",
+        "firewall",
+        "turret",
+        "arcIce",
+        "scrubber",
+        "sell"
+      ],
+      "toolCount": 6,
+      "waves": [
+        {
+          "campaign": "expansion-1",
+          "chapterId": 3,
+          "levelId": 14,
+          "id": 1,
+          "label": "Marked Canopy",
+          "spawnEdges": [
+            "north",
+            "east"
+          ],
+          "scriptedSpawns": [
+            {
+              "waveTick": 20,
+              "kind": "sapper"
+            }
+          ],
+          "enemyWeights": {
+            "shieldDrone": 4,
+            "rusher": 6,
+            "crawler": 2
+          },
+          "maxActiveIntrusions": 5,
+          "maxSpawnedIntrusions": 18,
+          "prepTicks": 18,
+          "spawnFirstTick": 6,
+          "spawnEveryTicks": 8,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 140,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 1540
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 3,
+          "levelId": 14,
+          "id": 2,
+          "label": "Charged Bait",
+          "spawnEdges": [
+            "north",
+            "east",
+            "south"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "shieldDrone": 4,
+            "sapper": 3,
+            "hunter": 2,
+            "rusher": 6
+          },
+          "maxActiveIntrusions": 6,
+          "maxSpawnedIntrusions": 24,
+          "prepTicks": 18,
+          "spawnFirstTick": 6,
+          "spawnEveryTicks": 7,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 52,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 2087
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 3,
+          "levelId": 14,
+          "id": 3,
+          "label": "Fuse Gap",
+          "spawnEdges": [
+            "north",
+            "east",
+            "south",
+            "west"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "shieldDrone": 5,
+            "sapper": 4,
+            "hunter": 3,
+            "rusher": 7
+          },
+          "maxActiveIntrusions": 8,
+          "maxSpawnedIntrusions": 30,
+          "prepTicks": 18,
+          "spawnFirstTick": 6,
+          "spawnEveryTicks": 6,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 56,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 2621
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 3,
+          "levelId": 14,
+          "id": 4,
+          "label": "Broken Circuit",
+          "spawnEdges": [
+            "north",
+            "east",
+            "south",
+            "west"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "shieldDrone": 5,
+            "sapper": 5,
+            "splitter": 3,
+            "rusher": 8
+          },
+          "maxActiveIntrusions": 9,
+          "maxSpawnedIntrusions": 36,
+          "prepTicks": 18,
+          "spawnFirstTick": 6,
+          "spawnEveryTicks": 5,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 60,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 3142
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 3,
+          "levelId": 14,
+          "id": 5,
+          "label": "Fuse Field",
+          "spawnEdges": [
+            "north",
+            "east",
+            "south",
+            "west"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "shieldDrone": 6,
+            "sapper": 6,
+            "hunter": 3,
+            "rusher": 9
+          },
+          "maxActiveIntrusions": 11,
+          "maxSpawnedIntrusions": 42,
+          "prepTicks": 18,
+          "spawnFirstTick": 6,
+          "spawnEveryTicks": 5,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 64,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 3752
+        }
+      ]
+    },
+    {
+      "campaign": "expansion-1",
+      "chapterId": 3,
+      "id": 15,
+      "codename": "SHIELD FRONT",
+      "contentHash": "3ee45632978317eae12d8fae7b88f72c1d6d1905e124a7437f81e1e9048a1ec6",
+      "difficultyIndex": 770,
+      "requiredMechanic": "shieldNetwork",
+      "threatBudget": 15184,
+      "waveCount": 5,
+      "gridSize": 8,
+      "source": {
+        "x": 0,
+        "y": 7
+      },
+      "core": {
+        "x": 7,
+        "y": 0
+      },
+      "voidTiles": [
+        {
+          "x": 2,
+          "y": 1
+        },
+        {
+          "x": 3,
+          "y": 1
+        },
+        {
+          "x": 4,
+          "y": 1
+        },
+        {
+          "x": 3,
+          "y": 6
+        },
+        {
+          "x": 4,
+          "y": 6
+        },
+        {
+          "x": 5,
+          "y": 6
+        }
+      ],
+      "initialTiles": [
+        {
+          "position": {
+            "x": 1,
+            "y": 6
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 2,
+            "y": 5
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 3,
+            "y": 4
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 4,
+            "y": 3
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 5,
+            "y": 2
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 6,
+            "y": 1
+          },
+          "kind": "relay"
+        },
+        {
+          "position": {
+            "x": 0,
+            "y": 3
+          },
+          "kind": "firewall"
+        },
+        {
+          "position": {
+            "x": 1,
+            "y": 3
+          },
+          "kind": "turret"
+        },
+        {
+          "position": {
+            "x": 6,
+            "y": 4
+          },
+          "kind": "turret"
+        },
+        {
+          "position": {
+            "x": 4,
+            "y": 7
+          },
+          "kind": "turret"
+        },
+        {
+          "position": {
+            "x": 5,
+            "y": 4
+          },
+          "kind": "arcIce"
+        }
+      ],
+      "toolsUnlocked": [
+        "relay",
+        "firewall",
+        "turret",
+        "arcIce",
+        "scrubber",
+        "sell"
+      ],
+      "toolCount": 6,
+      "waves": [
+        {
+          "campaign": "expansion-1",
+          "chapterId": 3,
+          "levelId": 15,
+          "id": 1,
+          "label": "Frontline Link",
+          "spawnEdges": [
+            "north",
+            "east",
+            "south",
+            "west"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "shieldDrone": 5,
+            "sapper": 3,
+            "crawler": 3,
+            "rusher": 7
+          },
+          "maxActiveIntrusions": 6,
+          "maxSpawnedIntrusions": 20,
+          "prepTicks": 18,
+          "spawnFirstTick": 6,
+          "spawnEveryTicks": 8,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 172,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 1590
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 3,
+          "levelId": 15,
+          "id": 2,
+          "label": "Crossed Orders",
+          "spawnEdges": [
+            "north",
+            "east",
+            "south",
+            "west"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "shieldDrone": 5,
+            "sapper": 4,
+            "hunter": 3,
+            "rusher": 8
+          },
+          "maxActiveIntrusions": 7,
+          "maxSpawnedIntrusions": 26,
+          "prepTicks": 18,
+          "spawnFirstTick": 6,
+          "spawnEveryTicks": 7,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 56,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 2271
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 3,
+          "levelId": 15,
+          "id": 3,
+          "label": "Recovery Window",
+          "spawnEdges": [
+            "north",
+            "east",
+            "south",
+            "west"
+          ],
+          "scriptedSpawns": [],
+          "enemyWeights": {
+            "shieldDrone": 6,
+            "sapper": 5,
+            "splitter": 3,
+            "rusher": 9
+          },
+          "maxActiveIntrusions": 9,
+          "maxSpawnedIntrusions": 32,
+          "prepTicks": 18,
+          "spawnFirstTick": 6,
+          "spawnEveryTicks": 6,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 62,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 2731
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 3,
+          "levelId": 15,
+          "id": 4,
+          "label": "Heavy Front",
+          "spawnEdges": [
+            "north",
+            "east",
+            "south",
+            "west"
+          ],
+          "scriptedSpawns": [
+            {
+              "waveTick": 20,
+              "kind": "goliath"
+            }
+          ],
+          "enemyWeights": {
+            "shieldDrone": 6,
+            "sapper": 5,
+            "hunter": 3,
+            "rusher": 10
+          },
+          "maxActiveIntrusions": 10,
+          "maxSpawnedIntrusions": 38,
+          "prepTicks": 18,
+          "spawnFirstTick": 6,
+          "spawnEveryTicks": 5,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 68,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 3768
+        },
+        {
+          "campaign": "expansion-1",
+          "chapterId": 3,
+          "levelId": 15,
+          "id": 5,
+          "label": "Shield Front",
+          "spawnEdges": [
+            "north",
+            "east",
+            "south",
+            "west"
+          ],
+          "scriptedSpawns": [
+            {
+              "waveTick": 20,
+              "kind": "goliath"
+            },
+            {
+              "waveTick": 60,
+              "kind": "goliath"
+            }
+          ],
+          "enemyWeights": {
+            "shieldDrone": 7,
+            "sapper": 6,
+            "splitter": 4,
+            "rusher": 11
+          },
+          "maxActiveIntrusions": 12,
+          "maxSpawnedIntrusions": 46,
+          "prepTicks": 18,
+          "spawnFirstTick": 6,
+          "spawnEveryTicks": 5,
+          "perimeterPickAttempts": 16,
+          "economy": {
+            "bandwidthGrant": 74,
+            "bandwidthTricklePerTick": 1,
+            "bandwidthTrickleEveryTicks": 6
+          },
+          "threatBudget": 4824
+        }
+      ]
+    }
+  ]
+}

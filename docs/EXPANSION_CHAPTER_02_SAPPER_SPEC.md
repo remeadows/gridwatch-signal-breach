@@ -1,6 +1,7 @@
 # Expansion 1 Chapter 2 Sapper Mechanic Proof
 
-Status: local prototype approved; Blender visual intake authorized; candidate visual and production mechanic not yet approved
+Status: local prototype and source art accepted; production integration authorized
+and implemented locally; final contextual desktop/mobile acceptance pending.
 Owner approval to prototype: 2026-07-19
 Owner approval for Blender visual intake: 2026-09-08
 Campaign: `expansion-1`
@@ -91,6 +92,13 @@ The prototype executes one active tick in this order:
 No browser time, random source, object iteration order, or animation state may
 affect the result.
 
+Production Core-contact clarification (2026-09-10): a Sapper that reaches the
+Core persists and deals two damage each active tick, like other expansion
+intrusions, until neutralized. The original lab's one-hit exit is a simplified
+demonstration boundary, not a claim of exact Core persistence parity. Production
+tests cover three consecutive contact ticks. A Core hit does not create a death
+pulse or award a neutralization.
+
 ## 4. Counter and failure mode
 
 ### Counter: standoff formation
@@ -147,7 +155,7 @@ without production art. Acceptance authorizes a separate Sapper visual-intake
 batch; it does not authorize Chapter 2 content, Honeypot, Jammer, backend work,
 or publication by itself.
 
-## 7. Phase 9B visual-intake boundary
+## 7. Historical Phase 9B visual-intake boundary
 
 The owner authorized a separate Blender-authored Sapper visual-intake batch on
 2026-09-08 and authorized GitHub publication after local verification. That
@@ -160,3 +168,26 @@ the owner accepts it at desktop and mobile board scale. This authorization does
 not add `sapper` to playable types or content and does not approve Levels 6-10,
 Honeypot, Jammer, a boss, replay/validator changes, Supabase work, leaderboard
 categories, or any GridWatchGamesDB write.
+
+## 8. Phase 9C production-integration authorization
+
+The owner accepted the Blender Sapper visual and authorized implementation of
+the Chapter 2 plan on 2026-09-10. The production batch may register the sprite in the expansion-only
+Canvas2D renderer, promote the exact approved mechanic contract into the pure
+expansion simulator, and author Levels 6-10 as 25 reviewed waves.
+
+Source-art approval and integration authorization are recorded separately from
+contextual desktop/mobile acceptance. Keep the release `ownerApproved` field
+false until that final in-game acceptance is recorded.
+
+This promotion uses additive content revision `expansion-1-r2`; Chapter 1's
+five definitions and per-level hashes remain byte-identical to
+`expansion-1-r1`. The Sapper target lock is procedural and readable on the
+board, while the death pulse illuminates only the four affected orthogonal
+directions. The focused prototype laboratory remains as a regression harness.
+
+The production batch still does not authorize Honeypot, Jammer, a boss, public
+expansion exposure, Supabase migration, Edge Function deployment, leaderboard
+categories, score submission, or any GridWatchGamesDB write. Chapters 1-2 stay
+hostname-gated for local acceptance until the separate server-first release
+gate is approved.

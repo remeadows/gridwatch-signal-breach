@@ -1,6 +1,6 @@
 import type { Session } from "@supabase/supabase-js";
 import { createAccountKit, type AccountKit } from "@gridwatch/account-kit";
-import { MAX_HANDLE_LENGTH } from "./config";
+import { accountNetworkingEnabled, MAX_HANDLE_LENGTH } from "./config";
 
 // Where this game lives on the Nexus origin; sign-in on Nexus returns the player here.
 export const PLAY_RETURN_PATH = "/play/breach/";
@@ -13,6 +13,26 @@ let session: Session | null = null;
 let handle: string | null = null;
 let ready = false;
 const listeners = new Set<() => void>();
+const ownerListeners = new Set<() => void>();
+let ownerReady = false;
+let notifiedOwner: string | undefined;
+
+/** Auth identity notification is synchronous; profile reads must not delay save fencing. */
+export function saveOwner(): string | undefined { return ownerReady ? session?.user.id ?? "guest" : undefined; }
+export function onSaveOwnerChange(listener: () => void): () => void {
+  ownerListeners.add(listener);
+  return () => ownerListeners.delete(listener);
+}
+function notifyOwner(): void {
+  ownerReady = true;
+  const owner = saveOwner();
+  if (owner === notifiedOwner) return;
+  notifiedOwner = owner;
+  for (const listener of ownerListeners) {
+    try { listener(); }
+    catch (error) { console.warn("[signal-breach] save-owner listener failed:", error instanceof Error ? error.message : String(error)); }
+  }
+}
 
 // Each profile read gets a generation number; a slower, older read must never overwrite a
 // newer one's result (mirrors the kit's own header bar — see dist/header.js `refresh`).
@@ -22,7 +42,7 @@ let generation = 0;
 // an account switch can never surface another player's handle.
 let lastKnownProfile: { userId: string; handle: string | null } | null = null;
 
-// "disabled" is kept for API compatibility; the kit is always configured so it is never returned.
+// Dedicated LAN previews deliberately disable all account networking.
 export type AccountState = "disabled" | "loading" | "signed-out" | "needs-handle" | "ready";
 
 function notify(): void {
@@ -36,6 +56,7 @@ export function onAccountChange(listener: () => void): () => void {
 }
 
 export function accountState(): AccountState {
+  if (!accountNetworkingEnabled) return "disabled";
   if (!ready) return "loading";
   if (!session) return "signed-out";
   if (!handle) return "needs-handle";
@@ -65,6 +86,7 @@ export function signInHref(): string {
 // every auth event, so each event costs two reads (bar + this module). Known and
 // accepted duplication, not a bug.
 export async function initAccount(): Promise<void> {
+  if (!accountNetworkingEnabled) { ready = true; notifyOwner(); notify(); return; }
   // Registered BEFORE the initial load so an auth event that arrives while that load is
   // still in flight (e.g. a fast round-trip back from Nexus sign-in) is never missed. The
   // generation guard in loadHandle() below keeps the two reads' results correctly ordered.
@@ -75,6 +97,7 @@ export async function initAccount(): Promise<void> {
     // handle (same-user token refreshes are not a switch, so they keep the handle as-is).
     if (nextSession?.user.id !== session?.user.id) handle = null;
     session = nextSession;
+    notifyOwner();
     // Never await a Supabase call inside the auth callback (kit contract); defer the read.
     setTimeout(() => {
       void loadHandle().then(notify);
@@ -88,6 +111,7 @@ export async function initAccount(): Promise<void> {
   const initial = await accountKit.getSession(); // never rejects
   if (mine === generation) {
     session = initial; // no change event arrived while we waited
+    notifyOwner();
   } // else: onChange already installed the newer session; keep it
   await loadHandle(); // loadHandle takes its own generation and reads `session` now
   ready = true;
@@ -116,6 +140,7 @@ async function loadHandle(): Promise<void> {
 }
 
 export async function signOut(): Promise<void> {
+  if (!accountNetworkingEnabled) return;
   try {
     await accountKit.signOut();
   } catch (error) {
@@ -123,6 +148,7 @@ export async function signOut(): Promise<void> {
     return;
   }
   session = null;
+  notifyOwner();
   handle = null;
   lastKnownProfile = null;
   notify();

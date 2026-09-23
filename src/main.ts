@@ -1,7 +1,9 @@
 import { SECTORS } from "./data/levels";
+import { isExpansionChapterAvailable } from "./data/campaigns/expansion";
+import { loadPlayableExpansionR4Progress } from "./ui/expansionProgressR4";
 import { installPointerInput } from "./input/pointer";
 import { drawAmbientBackdrop, drawGrid } from "./render/renderer";
-import { getBoardArtMode, preloadPhase6BoardSprites } from "./render/assetRegistry";
+import { getBoardArtMode, preloadBoardSprites } from "./render/assetRegistry";
 import { getEffectsQuality } from "./render/visualTheme";
 import { applyCommand, createGameState, SIM_RULESET_ID, tick } from "./sim";
 import { createAudioEngine } from "./ui/audio";
@@ -25,8 +27,14 @@ import { renderUnitPicker } from "./ui/unitPicker";
 import { getCommandFeedback } from "./ui/toolInfo";
 import { leaderboardConfig } from "./leaderboard/config";
 import { submitScore } from "./leaderboard/api";
-import { accessToken, accountState, initAccount, onAccountChange } from "./leaderboard/account";
+import { accessToken, accountState, initAccount, onAccountChange, onSaveOwnerChange, saveOwner } from "./leaderboard/account";
+import { ExpansionLocalSave } from "./ui/expansionLocalSave";
+import { createExpansionCloudSave } from "./leaderboard/expansionCloudClient";
+import type { ExpansionAccountSave } from "./leaderboard/expansionAccountSave";
+import { renderExpansionNavigationSaveStatus } from "./ui/expansionNavigationSaveUi";
+import { createExpansionSavePrompt } from "./ui/expansionSavePrompt";
 import { savePendingRun, takePendingRun } from "./leaderboard/pendingRun";
+import { mountExpansionPendingScoreNotice } from "./ui/expansionLeaderboardUi";
 import type { GamePhase, GridPosition, PlayerTool, RecordedCommand, SimCommand } from "./sim";
 import { getCurrentWave } from "./sim/waves";
 
@@ -64,9 +72,7 @@ let reducedMotion = reducedMotionQuery.matches;
 
 document.documentElement.dataset.effectsQuality = effectsQuality;
 document.documentElement.dataset.artMode = boardArtMode;
-if (boardArtMode === "phase6") {
-  preloadPhase6BoardSprites();
-}
+preloadBoardSprites(boardArtMode);
 reducedMotionQuery.addEventListener("change", (event) => {
   reducedMotion = event.matches;
 });
@@ -94,14 +100,23 @@ function dispatch(command: SimCommand): void {
 }
 
 let progress: GameProgress = loadGameProgress();
+let expansionProgress = loadPlayableExpansionR4Progress(null);
+let navigationSave: ExpansionAccountSave | null = null;
+let navigationOwner: string | undefined;
 let currentSector = getInitialSector(getSignalBreachProgress(progress));
-let selectedExpansionChapterId = 1;
+const navigationQuery = new URLSearchParams(window.location.search);
+const requestedChapter = Number(navigationQuery.get("chapter"));
+let pendingRequestedChapter = navigationQuery.get("expansion-nav") === "1";
+const requestedChapterAvailable = isExpansionChapterAvailable(requestedChapter, expansionProgress.highestUnlockedLevel);
+let selectedExpansionChapterId = requestedChapterAvailable ? requestedChapter : 1;
 document.documentElement.dataset.sector = String(currentSector);
 let currentSeed = "";
 let recordedCommands: RecordedCommand[] = [];
 let state = createRunState();
 let selectedTool: PlayerTool = getDefaultTool(state);
-let screen: AppScreen = "title";
+let screen: AppScreen = expansionNavigationEnabled && navigationQuery.get("expansion-nav") === "1"
+  ? requestedChapterAvailable ? "levelSelect" : "chapterSelect"
+  : "title";
 let briefingReturn: AppScreen = "sectorSelect";
 let leaderboardReturn: AppScreen = "title";
 let hoverTile: GridPosition | null = null;
@@ -294,7 +309,9 @@ function selectExpansionChapter(chapterId: number): void {
 
 function selectExpansionLevel(levelId: number): void {
   const url = new URL(window.location.href);
+  const retained = ["art", "quality"].map((key) => [key, url.searchParams.get(key)] as const);
   url.search = "";
+  for (const [key, value] of retained) if (value) url.searchParams.set(key, value);
   url.searchParams.set("expansion-play", "1");
   url.searchParams.set("level", String(levelId));
   window.location.assign(url.toString());
@@ -550,6 +567,7 @@ function drawFrame(now: number): void {
     root: screenContainer,
     screen,
     progress,
+    expansionProgress,
     expansionNavigationEnabled,
     selectedExpansionChapterId,
     briefingMaxSector: getSignalBreachProgress(progress).highestUnlockedSector,
@@ -578,7 +596,24 @@ function drawFrame(now: number): void {
     leaderboardNotice,
   });
 
+  renderNavigationSaveStatus();
   requestAnimationFrame(drawFrame);
+}
+
+function renderNavigationSaveStatus(): void {
+  if (!expansionNavigationEnabled || !["chapterSelect", "levelSelect"].includes(screen)) return;
+  renderExpansionNavigationSaveStatus(screenContainer, navigationOwner, navigationSave, () => { void navigationSave?.retry().then(refreshExpansionProgress); });
+}
+
+function refreshExpansionProgress(): void {
+  expansionProgress = loadPlayableExpansionR4Progress(undefined, navigationOwner ?? "guest");
+  if (pendingRequestedChapter && isExpansionChapterAvailable(requestedChapter, expansionProgress.highestUnlockedLevel)) {
+    selectedExpansionChapterId = requestedChapter;
+    if (screen === "chapterSelect") screen = "levelSelect";
+    pendingRequestedChapter = false;
+  }
+  if (!isExpansionChapterAvailable(selectedExpansionChapterId, expansionProgress.highestUnlockedLevel)) selectedExpansionChapterId = 1;
+  screenContainer.dataset.screenKey = "";
 }
 
 // Restore any existing session and complete a pending Nexus sign-in navigation
@@ -588,6 +623,25 @@ function drawFrame(now: number): void {
 onAccountChange(() => {
   void maybeAutoSubmitPendingRun();
 });
+if (expansionNavigationEnabled) {
+  onSaveOwnerChange(() => {
+    const owner = saveOwner();
+    if (owner === undefined || owner === navigationOwner) return;
+    navigationSave?.dispose();
+    navigationSave = null;
+    navigationOwner = owner;
+    let storage: Storage | null = null;
+    try { storage = window.localStorage; } catch { /* Offline in-memory play remains available. */ }
+    if (owner !== "guest") {
+      try { navigationSave = createExpansionCloudSave(new ExpansionLocalSave(storage, owner), owner, refreshExpansionProgress, createExpansionSavePrompt()); }
+      catch { /* Keep this owner's local progress, never the disposed account's adapter. */ }
+    }
+    refreshExpansionProgress();
+    void navigationSave?.retry().then(refreshExpansionProgress);
+  });
+  window.addEventListener("online", () => { void navigationSave?.retry().then(refreshExpansionProgress); });
+}
+mountExpansionPendingScoreNotice();
 void initAccount();
 
 requestAnimationFrame(drawFrame);

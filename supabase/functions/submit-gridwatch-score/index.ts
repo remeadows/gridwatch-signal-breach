@@ -30,10 +30,8 @@ import {
   type CanonicalCommand,
   type ResolvedRuleset,
 } from "./replayValidation.ts";
-import {
-  assertExpansionContentPublished,
-  canonicalizeExpansionReplay,
-} from "./expansionReplayValidation.ts";
+import { handleExpansionScore } from "./expansionScoreHandler.ts";
+import { readReplayBody } from "./requestBody.ts";
 
 const GAME_SLUG = "gridwatch-signal-breach";
 const MAX_COMMANDS = 5000;
@@ -41,6 +39,7 @@ const MAX_SCORE = 100000;
 const VALID_SECTORS = new Set([1, 2, 3]);
 
 const ALLOWED_ORIGINS = new Set([
+  "https://nexus.warsignallabs.net",
   "https://GridWatch-SignalBreach.warsignallabs.net",
   "https://gridwatch-signalbreach.warsignallabs.net",
   "http://localhost:5173",
@@ -116,31 +115,31 @@ Deno.serve(async (req: Request) => {
 
   let payload: Record<string, unknown>;
   try {
-    payload = await req.json();
-  } catch {
-    return json({ ok: false, error: "Invalid JSON body." }, 400, origin);
+    payload = await readReplayBody(req) as Record<string, unknown>;
+  } catch (error) {
+    const oversized = error instanceof Error && error.message === "Replay body too large.";
+    return json({ ok: false, error: oversized ? "Replay body too large." : "Invalid JSON body." }, oversized ? 413 : 400, origin);
   }
 
   if (typeof payload !== "object" || payload === null || Array.isArray(payload)) {
     return json({ ok: false, error: "Invalid replay payload." }, 400, origin);
   }
 
-  // Expansion is intentionally server-recognized before any browser client can
-  // submit it. It is schema-validated then rejected before replay/database work
-  // because Phase 7C has no published content registry or simulator bundle.
-  // All non-expansion payloads retain the legacy validation order below.
+  // A separate frozen r4 validator/category path. Always return here: expansion
+  // must never enter the original sector or hub-alignment writes below.
   if (payload.ruleset === EXPANSION_RULESET_ID) {
-    try {
-      resolveRuleset(payload.ruleset, SIM_RULESET_ID, [EXPANSION_RULESET_ID]);
-      const expansionReplay = canonicalizeExpansionReplay(payload, MAX_COMMANDS);
-      assertExpansionContentPublished(expansionReplay);
-    } catch (err) {
-      if (err instanceof ReplayValidationError) {
-        const status = err.message === "Expansion content is not published." ? 422 : 400;
-        return json({ ok: false, error: err.message }, status, origin);
-      }
-      return json({ ok: false, error: "Invalid replay payload." }, 400, origin);
-    }
+    const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, { auth: { persistSession: false } });
+    const result = await handleExpansionScore(payload, user.id, {
+      profile: async (userId) => {
+        const { data, error } = await admin.from("profiles").select("handle").eq("user_id", userId).maybeSingle();
+        return { handle: data?.handle ?? null, error: Boolean(error) };
+      },
+      record: async (input) => {
+        const { data, error } = await admin.rpc("record_score", input);
+        return error || !data?.length ? null : data[0];
+      },
+    });
+    return json(result.body, result.status, origin);
   }
 
   const seed = payload.seed;

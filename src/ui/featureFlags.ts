@@ -1,9 +1,10 @@
-/**
- * The expansion shell is off for normal players. The query flag exists solely
- * for local/preview navigation QA; it never enables a playable expansion run.
- */
+import { isExpansionPreviewHost } from "./previewHostPolicy";
+
+declare const __EXPANSION_LAN_PREVIEW__: boolean;
+
+/** Query flags stay local; private-LAN testing requires a dedicated dev mode. */
 export function isExpansionNavigationEnabled(): boolean {
-  return isLocalExpansionHost() && new URLSearchParams(window.location.search).get("expansion-nav") === "1";
+  return isLocalExpansionHost() && new URLSearchParams(window.location.search).get("expansion-nav") !== "0";
 }
 
 export function isExpansionPlayEnabled(): boolean {
@@ -11,5 +12,5 @@ export function isExpansionPlayEnabled(): boolean {
 }
 
 function isLocalExpansionHost(): boolean {
-  return window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost";
+  return isExpansionPreviewHost(window.location.hostname, __EXPANSION_LAN_PREVIEW__);
 }

@@ -142,9 +142,19 @@ expectEqual(
 expectEqual(
   isExpansionChapterAvailable(2, chapterOneCleared.campaigns["expansion-1"].highestUnlockedLevel),
   false,
-  "Clearing Level 5 must not expose unauthored Chapter 2.",
+  "Historical progress IDs must not be used as remapped r4 chapter access.",
 );
 const storedBeforeInvalidExpansionClear = legacyStorage.getItem(PROGRESS_STORAGE_KEY);
+const chapterStorage = new MemoryStorage();
+const chapterTwoCleared = markExpansionLevelCleared(chapterOneCleared, 10, chapterStorage);
+expectEqual(chapterTwoCleared.campaigns["expansion-1"].highestUnlockedLevel, 11, "Clearing Level 10 must unlock Level 11.");
+expectEqual(isExpansionChapterAvailable(3, chapterTwoCleared.campaigns["expansion-1"].highestUnlockedLevel), false, "Historical progress needs r4 migration before Chapter 3 navigation.");
+expectDeepEqual(loadGameProgress(chapterStorage), chapterTwoCleared, "Chapter 3 unlock did not survive storage reload.");
+const milestoneCleared = markExpansionLevelCleared(chapterTwoCleared, 15, chapterStorage);
+expectEqual(milestoneCleared.campaigns["expansion-1"].highestUnlockedLevel, 16, "Milestone completion must preserve the next sequential identity.");
+expectEqual(isExpansionChapterAvailable(4, milestoneCleared.campaigns["expansion-1"].highestUnlockedLevel), false, "Milestone completion must not expose unauthored Chapter 4.");
+expectDeepEqual(milestoneCleared.campaigns["signal-breach"], DEFAULT_GAME_PROGRESS.campaigns["signal-breach"], "Chapter 3 completion changed legacy progress.");
+expectDeepEqual(loadGameProgress(chapterStorage), milestoneCleared, "Milestone completion did not survive storage reload.");
 for (const invalidLevelId of [Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY]) {
   expectEqual(
     markExpansionLevelCleared(DEFAULT_GAME_PROGRESS, invalidLevelId, legacyStorage),

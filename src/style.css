@@ -67,6 +67,9 @@ body {
     #090f14;
 }
 
+/* No header is mounted in the deliberately network-free phone preview. */
+:root.account-network-disabled { --gw-account-bar-height: 0px; }
+
 .game-logo {
   margin: 0;
   color: rgba(215, 255, 247, 0.88);
@@ -1611,8 +1614,8 @@ html[data-effects-quality="low"] .screen-title::after {
 
   .app-shell {
     width: 100%;
-    height: 100dvh;
-    min-height: 100dvh;
+    height: calc(100dvh - var(--gw-account-bar-height, 0px));
+    min-height: calc(100dvh - var(--gw-account-bar-height, 0px));
     align-content: stretch;
     gap: 0;
     padding:
@@ -1647,7 +1650,7 @@ html[data-effects-quality="low"] .screen-title::after {
   .game-panel {
     grid-column: 1;
     grid-row: 2;
-    width: min(100%, calc(100dvh - 230px));
+    width: min(100%, calc(100dvh - var(--gw-account-bar-height, 0px) - 230px));
     min-width: 0;
     min-height: 0;
     justify-self: center;
@@ -1974,7 +1977,7 @@ html[data-effects-quality="low"] .screen-title::after {
   }
 
   .game-layout {
-    grid-template-columns: minmax(116px, 1fr) minmax(240px, calc(100dvh - 24px)) minmax(116px, 1fr);
+    grid-template-columns: minmax(116px, 1fr) minmax(240px, calc(100dvh - var(--gw-account-bar-height, 0px) - 24px)) minmax(116px, 1fr);
     grid-template-rows: minmax(0, 1fr);
     gap: 6px;
   }
@@ -2289,3 +2292,20 @@ html[data-effects-quality="low"] .screen-title::after {
   color: var(--neon-cyan);
   font-weight: 700;
 }
+:root .expansion-pending-score {
+  position: fixed;
+  z-index: 1100;
+  right: 12px;
+  bottom: 12px;
+  width: min(420px, calc(100vw - 24px));
+  max-height: 70vh;
+  overflow: auto;
+  padding: 16px;
+  background: #08151d;
+  border: 1px solid #22e0c4;
+}
+.expansion-pending-score[hidden] { display: none; }
+.expansion-pending-score h2 { font-size: 1rem; }
+.expansion-leaderboard { margin-top: 12px; }
+.expansion-leaderboard .account-actions { flex-wrap: wrap; }
+.expansion-leaderboard table { width: 100%; }

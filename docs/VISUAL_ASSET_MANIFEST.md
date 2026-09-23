@@ -1,6 +1,6 @@
 # GridWatch Visual Foundation Manifest
 
-Last reviewed: 2026-07-18
+Last reviewed: 2026-09-10
 
 ## Shipping Policy
 
@@ -28,7 +28,7 @@ source license and crop-safe master have not yet been documented.
 | Phase 6 Source, Core, Relay, Firewall, ICE turret, Scrubber, Overclock, Probe, Crawler, Spoof, Hunter, Splitter, Goliath | OpenAI ImageGen source masters; local chroma-key extraction; prompt/hash manifest | Local PNG/WebP + Canvas2D | Default board presentation (`?art=glyphs` rollback) | 768 KiB runtime cap |
 | Expansion 1 Rusher (owner approved) | OpenAI ImageGen source master; approved Probe/Hunter style references; local chroma-key extraction; prompt/hash manifest | Local PNG + Canvas2D QA preview | Query-gated `?rusher-preview=1` visual intake only; not live gameplay | 90 KiB asset cap; 25,829 bytes actual |
 | Expansion 1 Latency Trap (owner approved) | OpenAI ImageGen source master; approved Firewall/Overclock style references; local chroma-key extraction; prompt/hash manifest | Local PNG + Canvas2D QA preview | Query-gated `?latency-trap-preview=1` visual intake only; not live gameplay | 90 KiB asset cap; 77,820 bytes actual |
-| Expansion 1 Sapper (owner review pending) | Locally scripted Blender 5.1 scene; editable `.blend`; approved Probe/Hunter/Rusher visual references; native-alpha renders; brief/script/model/image hashes | Local `.blend` + Python build script + PNG + Canvas2D QA preview | Query-gated `?sapper-preview=1` visual intake only; not live gameplay | 90 KiB asset cap; 43,607 bytes actual |
+| Expansion 1 Sapper (source approved; integration authorized) | Locally scripted Blender 5.1 scene; editable `.blend`; approved Probe/Hunter/Rusher visual references; native-alpha renders; brief/script/model/image hashes | Local `.blend` + Python build script + PNG + Canvas2D gameplay rendering | Expansion Chapter 2 local acceptance build plus retained `?sapper-preview=1` lab; contextual owner release acceptance remains pending | 90 KiB asset cap; 43,607 bytes actual |
 
 ## Palette and Tactical Semantics
 
@@ -187,9 +187,10 @@ scene. Exact references, constraints, command, and hashes are recorded in
 `art/prompts/expansion1/gw-expansion1-sapper-prompt-v1.md` and the machine
 manifest.
 
-The candidate appears only in the responsive `?sapper-preview=1` mechanic lab,
-including 55/43/32 CSS-pixel scale samples and the procedural glyph fallback.
-It is not registered in playable expansion content, the public renderer,
-replays, validator, leaderboard, Supabase, or GridWatchGamesDB. The manifest
-keeps `ownerApproved: false` until the owner accepts the contextual desktop and
-mobile presentation.
+The owner accepted the source artwork and authorized integration. Contextual
+desktop/mobile acceptance is pending, so the manifest records source approval
+and integration authorization separately and keeps `ownerApproved: false`.
+Chapter 2 uses the sprite in local expansion
+gameplay with procedural target-lock and death-pulse layers; the responsive
+`?sapper-preview=1` laboratory remains available for focused visual regression.
+No Sapper score, leaderboard, Supabase, or GridWatchGamesDB path is enabled.

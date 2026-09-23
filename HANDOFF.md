@@ -1,5 +1,744 @@
 # GridWatch Handoff
 
+## PR #84 review follow-up — 2026-09-23
+
+- **Next monitor action:** publish the tested follow-ups `e3d4e1f` / `186c4de`
+  with this administrative handoff update, then reply/resolve Codex conversation
+  `PRRT_kwDOSue4ts6lKOy1` / comment `4082698494` and CodeRabbit conversation
+  `PRRT_kwDOSue4ts6lKd3P` / comment `4082792059` only after verifying publication.
+  Request current-head Codex review and wait for automatic CodeRabbit review,
+  all current-head checks and any new conversations. Do not recreate the fixes.
+  The fourth local CodeRabbit attempt completed successfully with zero findings
+  across HANDOFF, SKILLS, the score UI and its regression harness against base
+  `e625935`. Earlier connection failures were not treated as passing reviews.
+  No credential changes, merge, production deployment or release activation.
+- Current-head Codex follow-up found the panel's general account listener still
+  discarded a successful score result on same-owner profile/token refresh. UI
+  generations now advance only on an actual owner change; refreshes still update
+  controls. The new regression failed before the fix and passes for success,
+  failure/retry, later refresh, duplicate-click prevention and true owner switches.
+  Account, score-client/UI, cloud-save, build and type checks pass. Local built
+  preview 4393: existing Wave 2 checkpoint -> Field Guide -> ranking release gate
+  -> unchanged build phase, correct focus and no warning/error logs. No live score
+  submission or save mutation; authenticated behavior used isolated test ports.
+- GitHub CodeRabbit posted seven conversations; Codex posted the overlapping
+  migration P1. Follow-up also fixes same-owner token refresh notifications:
+  the regression reproduced a duplicate owner event before the fix and now
+  proves token refresh retains the owner while actual switches/sign-out notify.
+  Account, score-client and cloud-save regressions pass. Campaign copy now
+  distinguishes guest-local from account-cloud saves. Historical r3 generator
+  output warns against applying its hashes to r4; its regenerated fixture is
+  unchanged. Prototype transport/sync files are explicitly labeled test-only.
+- The first small local CodeRabbit follow-up returned four stale-baseline
+  findings: three requested restoring the superseded 30-level/six-chapter layout,
+  and one claimed the current level array has only five entries. Rejected using
+  current AGENTS owner overrides and passing 25-level content checks. A further
+  scoped review used commit `4b1c5b7` and current AGENTS guidance as context;
+  completed with one minor copy finding. Fixed by qualifying cloud sync as
+  dependent on online-service availability and labeling it optional, preserving
+  the offline/LAN-preview contract. Build/types and LAN isolation checks pass.
+- Working on owner-authorized CI/review remediation for PR #84. Monitoring is
+  active; do not merge, deploy, enable release flags or change protection rules.
+- Codex P1: removed the obsolete standalone save RPC from the deployable
+  migration chain. It now lives in `scripts/fixtures/historical-expansion-save-rpc.sql`
+  for disposable historical tests only. CI rejects either old RPC name in release
+  migrations. The regression failed before the move and passes afterward.
+  Local PostgreSQL 16 save/score isolation tests pass; no production writes.
+- Full-diff local CodeRabbit review completed with nine findings (including a
+  duplicate Blender finding), two unreviewed files and binary exclusions. Fixed
+  stale chapter documentation, resolver coverage (Levels 1/9/17 plus chapter
+  identities), validator-drift annotation and the Docker documentation link.
+- Blender verifier now accepts boolean owner-approval metadata instead of
+  rejecting accepted art; regression and all 21 artifact integrity checks pass.
+  The generator remains unchanged: every rebuilt asset conservatively requires
+  fresh approval, even if its bytes match. This avoids restamping accepted art
+  with a generator hash that did not produce it. README documents that contract.
+- Misleading combat copy is corrected in the UI presentation layer. Normal ICE
+  hits all in-range enemies, so Hunters/heavies do not divert its attacks.
+  Frozen r4 definitions, hashes, saves and both validator bundles stay unchanged.
+- Fresh build/tool types, content/copy checks, account-save integration, score UI,
+  preview-host policy and Blender verification pass. Local built browser chapter
+  navigation shows corrected Level 5 copy; desktop interaction and keyboard
+  return pass without app warnings/errors. Mobile-width DOM has no horizontal
+  overflow; physical-device testing was not repeated. Current-head remote review
+  and CI must still finish after the corrective push.
+
+## Complete-game PR publication authorized — 2026-09-23
+
+- Owner explicitly approved publishing the PR covering the original campaign's
+  Blender art, complete 25-level expansion, shared-kit saves and leaderboards.
+  This is not approval to merge, deploy the Edge Function or enable public flags.
+- Refreshed origin/main is `7609592`; release branch was 29 commits ahead with
+  no missing upstream commits. Fresh build/tool types and all npm verification,
+  combat/balance/content/art/save/leaderboard CI lanes pass. Audit: zero issues;
+  original validator is byte-identical to main and both bundles regenerate clean.
+- Pre-publication cross-package inspection found save-status refresh overwrote
+  leaderboard-owned disabled states. Replaced blanket button enable/disable with
+  overlay-level inert while cloud operations are pending. The regression failed
+  before the fix and passes afterward, including busy-to-idle transitions.
+  Actual built browser resume -> Field Guide -> ranking gate remains functional
+  with no warning/error logs. No real authenticated score submitted.
+- Supplemental full-diff CodeRabbit review: first connection closed; retry is
+  running. Prior local package reviews/dispositions remain documented below.
+  The PR must receive current-head CodeRabbit/Codex reviews and resolve findings
+  before merge. Live rulesets require build/CodeRabbit and resolved threads;
+  their numeric approval count is currently zero (not the older one-approval
+  description in SKILLS). No protection settings changed by this publication.
+
+## Expansion leaderboard package — locally complete, 2026-09-23
+
+- Owner requested finishing leaderboards next, followed by publication of the
+  complete game: refreshed original campaign plus all 25 expansion levels.
+  Current work is local; no push, Edge deployment or production score writes.
+- Added frozen r4 replay/score bundle and bounded HTTP path. Only completed
+  five-wave wins qualify. Require exact schema/campaign/ruleset/revision/hash;
+  canonicalize commands and derive score/identity server-side. Expansion returns
+  before all original/hub score writes and uses only
+  `expansion-v1:expansion-1-r4:level:N`, N=1..25. No shared DB migration needed.
+- Client has explicit reads/submissions, per-account durable retry, explicit
+  guest claim, account-switch guards, and a pending-run sign-in return notice.
+  One pending run per owner; replacing a different run requires a button, not
+  an automatic victory overwrite. Field Guide and victory expose rankings.
+  `EXPANSION_LEADERBOARDS_RELEASED=false` until server-first activation; public
+  expansion navigation is still gated. No auto submission/network read.
+- Tests passed so far: 25 client/frozen-server score matches; invalid identity,
+  hash, commands, terminal state and work/body budgets; auth/HTTP/CORS routing;
+  client stale token/owner/completion, retry, duplicate, response and storage
+  handling. Disposable PostgreSQL 16 verified exact-category ranking, ties,
+  duplicate/lower/higher keep-best, original/other-game sentinels and client
+  write denial using existing migration functions. This was NOT production DB.
+- Build/tool types, original golden replay (514), unchanged original validator,
+  save ownership/codec (100 boundaries), LAN isolation, preview policy and
+  original/expansion art fallback pass. npm install/audit: zero vulnerabilities,
+  no dependency changes. CodeRabbit's first pass found two issues: action focus
+  loss and failed-storage proof loss on victory-overlay rebuild. Both fixed with
+  UI lifecycle regressions. Follow-up completed with one minor finding (disable
+  pending notices while the release latch is off), fixed and regression-tested.
+  No known review finding remains. Final small fixes were checked by Codex and
+  tests; this is not remote current-head approval. See
+  `docs/reviews/EXPANSION_LEADERBOARD_REVIEW.md`. Browser QA also
+  found/fixed Field Guide badge clipping; its scrollable dialog is now anchored
+  to the viewport so rankings remain reachable independently of board size.
+- Local built preview 4393 QA: resumed the existing Wave 2 checkpoint, opened
+  Field Guide, explicitly requested rankings, observed truthful release-pending
+  copy, keyboard-tabbed to Back to Game and returned to the unchanged build
+  phase. Checked desktop 1280x720, 390x844, 320x740 and landscape 844x390; no
+  horizontal overflow or warning/error logs. Normal title route still renders.
+  Tested enabled submission/retry/handle-text rendering and disposal through an
+  isolated DOM-port harness, not a real authenticated browser score submission.
+  Dev 4391 and preview 4393 both return HTTP 200; no `.env*` files or unrelated
+  networking. No physical-device or full human five-wave clear repeated here.
+- Remaining release gates: protected GitHub PR/current-head reviews/checks and
+  conversations, server deployment/rollback baseline, public activation, real
+  Nexus-auth score acceptance and two-device cloud-save acceptance. Local Node
+  HTTP harness is not a Deno runtime/deployment test. Do not submit synthetic
+  fixture wins to production or label this package deployed.
+
+## Original campaign Blender parity — tested locally, 2026-09-22
+
+- Owner requested the original three-sector campaign use the accepted expansion
+  Blender style too. Updated the board, placement ghosts, picker and
+  briefing portraits; reuse the existing 13 matching sprite families and map
+  sectors 1/2/3 to the three authored floors. No new art generation or sim/data,
+  score, save, auth, DB or deployment changes are in this package.
+- Preserve `?art=phase6` and `?art=glyphs`; failed/pending sprites use glyphs,
+  failed floors retain the procedural board. Same shared URL/cache as expansion.
+- Build/tool types, original replay/content/progress, asset provenance,
+  base-path, preview policy, LAN account isolation, expansion visual timeline
+  and original/expansion art fallback tests pass. The new art regression failed
+  first on the old default, then passed after implementation; it renders every
+  original family in all three sectors in all art modes, checks render purity,
+  floor cache readiness, pending/error fallback and no repeated failed requests.
+  Validator regenerated unchanged; npm audit reports zero vulnerabilities.
+- In-app browser QA at `/play/breach/` on preview 4393: original tutorial
+  arsenal/threat portraits load Blender URLs; desktop 1280x720 and mobile
+  390x844/320x740 board/picker remain legible with no horizontal overflow.
+  Placed ICE (30 to 16 bandwidth), keyboard-launched Wave 1, naturally cleared
+  it and reached Wave 2 (42 bandwidth, 150 core, one neutralized). No console
+  warning/error logs. Landscape 844x390 inspected; viewport reset afterward.
+  Later sectors/all enemies are covered by renderer tests, not a new full human
+  campaign clear. Physical-phone/performance and disconnected-browser QA were
+  not repeated. No production save/score writes or account login.
+- Local CodeRabbit `--uncommitted --include-untracked --agent` completed with
+  zero findings across all 12 package files; local Codex diff inspection passed.
+  Documentation status updated afterward. Existing shared-save cleanup still
+  needs its own current-head review before publication as noted below.
+- Local dev 4391 / built preview 4393 remain available; user preview tab kept.
+  No GitHub push, game deployment or shared DB change. Owner subsequently
+  played locally and approved the direction before requesting leaderboards.
+
+## Game-side shared saves — tested local checkpoint, 2026-09-22
+
+- Working on the owner-approved next package in `codex/expansion-25-local`.
+  Installed the released account-kit v0.2.5; the runtime codec now uses its
+  registered Breach schema. Nexus's compatible server was deployed in the
+  preceding checkpoint below. No game push/deployment or production save/score
+  write was performed for this local package.
+- Added an immutable-owner save adapter using the kit's public saves client,
+  transport, CAS/conflict prompts, refresh and retry implementation. Its auth
+  getter is owner-bound; auth identity changes notify synchronously, dispose the
+  old client, and load a separate account cache. Guest data never uploads.
+- Kit bookkeeping is per session, seeded from the account cache's durable
+  revision/dirty envelope. Confirmations persist with their matching payload;
+  a background/older acknowledgment cannot clear newer edits. Failed cloud
+  adoption stops the client until reload so an already-confirmed kit revision
+  cannot silently overwrite the cloud copy with stale local data.
+- Gameplay and navigation now expose guest/account sync status, explicit retry,
+  conflict choices and wave-boundary resume. Gameplay input/simulation pauses
+  while a foreground save/reconciliation is pending. Local play and account
+  caches remain available on network errors; initialization failure falls back
+  to that account's local cache, never a disposed previous account's cache.
+- Verification so far: build/tool typecheck, account/account-LAN checks,
+  progress/r4 progress, replay, preview policy, play base, save codec/contract,
+  local run session and shared-kit adapter tests pass. All 100 checkpoints
+  round-trip and continue to identical wins; isolated two-device CAS tests
+  cover offline edits and both conflict choices. A fake-auth/fetch-tripwire
+  test proves an account switch during session lookup sends no request.
+  Audit reports zero vulnerabilities. The original validator regenerates
+  byte-identically. No `.env*` files; network changes stay in the sanctioned
+  account/save boundary.
+- Browser QA through the in-app browser: local preview at
+  `http://127.0.0.1:4393/play/breach/?expansion-play=1&level=1`, desktop,
+  320x740, 390x844 and 844x390. Guest settings survive reload, navigation reads
+  existing guest clears, and an actual Wave 1 clear saves/restores Wave 2
+  (70 bandwidth, 180 core). No warning/error logs observed. This touched only
+  the local guest checkpoint, not an authenticated cloud save.
+- CodeRabbit: first tracked-file pass reported four findings representing two
+  duplicates (busy choice buttons; deep-linked chapter restoration), fixed.
+  The full staged-file pass completed with seven findings representing five
+  unique issues, all fixed (UI module placement, listener containment, shared retry refresh,
+  navigation/gameplay cloud-init fallbacks). Third full pass found one valid
+  issue twice: reconnect reconciliation could replace an active run. Fixed by
+  deferring automatic/manual retry until a saved wave boundary; edited build
+  phases are protected too, with policy regressions. Its other suggestion to
+  add `status: discarded` is not applicable to kit v0.2.5: the released union
+  returns `status: error, error.message: discarded`, already handled, now
+  explicitly tested. The lighter follow-up completed with six findings covering
+  three unique items: README network scope, stale release-plan status and UI
+  prompt construction. All are fixed; prompts are now injected from `src/ui/`.
+  Post-fix build, tool types, adapter/account/LAN tests and Codex inspection pass.
+  The last CodeRabbit response predates that final small cleanup: do not call
+  this a zero-findings head review or bypass fresh PR checks before publication.
+- Remaining gates: owner local acceptance and fresh publication reviews, real signed-in two-device
+  acceptance through a reviewed Nexus-served build, isolated replay-validated
+  expansion leaderboards, full release checks and public client activation.
+  Localhost sign-in still returns to the canonical Nexus path; mocked
+  two-device tests are not production-auth/cross-device acceptance evidence.
+  Expansion public feature flags remain closed; shared DB and other games
+  are unchanged.
+
+## Nexus production rollout complete — 2026-09-22
+
+- Owner explicitly approved deploying Nexus `a7cb5c9`. Deployed the exact clean
+  detached revision from `/tmp/signal-breach-nexus-20260922` with Wrangler 4.136.1,
+  the verified Cloudflare account, explicit production environment (`--env ''`),
+  and `--keep-vars`. No game client changes, DB migration/reset/write or secret
+  changes. Clean install, full audit (zero vulnerabilities), all 132 unit tests,
+  production build/shell/environment/bundle checks and dry-run passed again.
+- Deployment succeeded at `2026-09-22T06:50:09Z`. Independently confirmed active
+  version `fab82dec-eb86-4379-a25a-e5d3bb9c0e8e` at 100%, deployment
+  `e29021cb-c32e-4ba0-b524-d7408fbf66c5`. Rollback baseline remains
+  `e5f1f376-2943-45d0-a60f-a6968aa38bfc`; no rollback was needed.
+- All 12 immediate read-only HTTP smoke checks pass: Breach r4 GET now 401
+  unauthorized (previously 404 unknown_game), r1/r2/r3/original campaign 404
+  unknown_slot, Match campaign still 401, Match/Breach-slot crossover 404,
+  Nexus home/sign-in/Breach/Match/Drift proxied pages all 200.
+- In-app browser: live Nexus renders at desktop, Sign in opens the actual
+  sign-in page, 375px sign-in renders with no horizontal overflow (375/375),
+  no blank/error overlay or console warnings/errors. Screenshots captured in
+  tool output; no credentials entered, OAuth flow or cloud writes performed.
+  This is an immediate smoke check, not a 15-minute metrics observation or
+  authenticated/cross-device persistence acceptance.
+- Header observation for later Nexus audit: sign-in is `Cache-Control: no-store`,
+  but live `Referrer-Policy` is `strict-origin-when-cross-origin` while Worker
+  source specifies `no-referrer`. No header code changed in this release;
+  edge override/baseline attribution is unverified, so do not claim parity.
+- NEXT: implement the game-side kit v0.2.5 adapter, account-owned reconciliation,
+  truthful sync status and conflict handling locally, then review/test it.
+  Server schema gate is deployed, but game saves remain browser-only and public
+  expansion leaderboards plus authenticated/two-device acceptance are unfinished.
+
+## Nexus server readiness verified — 2026-09-22
+
+- Read-only readiness pass for merged Nexus main `a7cb5c9`. Fresh main CI is
+  successful; it remains the reviewed/tested tree with kit v0.2.5 and the clean
+  dependency audit. No new code, deployment or DB mutation in this pass.
+- Confirmed Supabase project `mggxfzzxrpjgpzhwiwqi` is healthy GridWatchGamesDB.
+  Migration `20260921165036_cloud_saves_generic` is applied. All three generic
+  RPC body MD5s match the reviewed repository migration exactly. Functions are
+  postgres-owned SECURITY DEFINER, empty search_path, service_role execute only
+  (anon/authenticated execution denied). Both tables have RLS; no anon or
+  authenticated DML grants or policies. Request-table service DML is revoked;
+  the pre-existing game_saves service access remains unchanged.
+- Existing game rows include Breach, Match, Drift and Zero. No registration
+  insert or migration is required. Inspected schema metadata only, not player
+  save payloads; no RPC save/score writes or synthetic score tests occurred.
+- Confirmed existing Nexus Worker in Cloudflare account
+  `210e77c9da5741b3aa1b6199a082d70b`. Production secret name
+  `SUPABASE_SERVICE_ROLE_KEY` exists; its value was not read. Latest deployed
+  version/rollback baseline: `e5f1f376-2943-45d0-a60f-a6968aa38bfc` (100%,
+  2026-09-21T22:09:29Z), deployment `715f4aa1-88d6-409c-9dd6-60a6c3d104c3`.
+- Production baseline: home HTTP 200; unauthenticated Match save GET 401;
+  Breach r4 GET 404 unknown_game, so new schema is not deployed yet.
+- NEXT owner gate: approve Nexus-only rollout of `a7cb5c9`, using the verified
+  account and explicit production environment. Rebuild/test/dry-run from the
+  clean merged tree before uploading. Then require Breach r4 unauthenticated
+  GET 401, historical slots 404, Match still 401, home/sign-in/game routes healthy.
+  Stop/roll back to the captured version on unexpected auth/proxy/save failures;
+  never delete shared data or disable the shared save secret as routine rollback.
+  Leave the game client unchanged. Authenticated save/reload and cross-device
+  acceptance still require the upcoming account-owned game integration.
+
+## Nexus PR #17 review completed — 2026-09-22
+
+- Owner merged PR #17 as `a7cb5c9`; post-merge CI passed. Its tree is identical
+  to reviewed/tested `86d5a85` and includes account-kit v0.2.5 from PR #29.
+- GitHub CodeRabbit remained a skipped bot review despite manual requests.
+  Completed authenticated CLI review of the exact committed diff from
+  `00a949cb51f0978ca138b15ed68ecccb05d97f92` to `86d5a85`, without `--light`.
+  Result: `review_completed`, zero findings, both `package.json` and
+  `package-lock.json` reviewed. Recorded evidence on Nexus PR #17; this does not
+  claim the skipped GitHub check ran or change any protection settings.
+- Codex GitHub review completed on `86d5a85` with no major issues. Fresh full
+  audit reports zero vulnerabilities; full CI passes all 132 unit tests plus
+  production build/typecheck, shell, environment and bundle checks. No fixes
+  needed. No production deployment, DB mutation or save activation performed.
+- NEXT: verify shared server migration/game registration/secret readiness and
+  authorize Nexus rollout before enabling the game account-owned save adapter.
+  Dependency and review gaps are closed; live save acceptance is still pending.
+
+## Nexus PR #17 conflict verification — 2026-09-22
+
+- Owner merged Nexus PR #29 as `00a949c`; post-merge validation passed.
+- PR #17 initially conflicted, but Dependabot refreshed it to `86d5a85` before
+  manual edits were needed. Verified `00a949c` is an ancestor and GitHub reports
+  MERGEABLE. Account-kit remains v0.2.5 at `f188d348` with all Breach tests intact.
+- The fix upgrades Wrangler 4.119.0 to 4.136.1 and its Miniflare/workerd/sharp
+  dependencies (sharp 0.35.4). It does not add a sharp override or edit app code.
+- In isolated `/tmp/signal-breach-nexus-20260922`, branch
+  `codex/verify-nexus-pr17`: clean install, full audit (zero vulnerabilities),
+  full CI (132 unit tests plus build/shell/production checks), diff check and
+  Wrangler no-upload packaging dry run all pass. Working tree is unchanged.
+- PR #17's initial green CodeRabbit status was a skipped bot review, not an
+  approval. Requested actual CodeRabbit and Codex reviews of `86d5a85` and posted
+  verification evidence. Review completion remains pending; no review threads
+  existed when inspected. No manual conflict commit/push, merge or deploy.
+- NEXT: finish the actual PR #17 reviews, then owner merge. Verify merged-main
+  audit/CI and server readiness before separately authorized Nexus rollout and
+  account-owned game save integration. Production and game saves are unchanged.
+
+## Nexus schema adoption published — 2026-09-22
+
+- Owner merged account-kit PR #7 as `f188d348`. Post-merge CI passed and its
+  tree matches reviewed `9d8643a`; created/verified release tag `v0.2.5` there.
+- Prepared isolated Nexus branch `codex/breach-save-schema-v025` in
+  `/tmp/signal-breach-nexus-20260922`, commit `acdfb81`, and published
+  https://github.com/remeadows/gridwatch-command-nexus/pull/29. Only the released
+  dependency/lock pin, eight save-handler regressions and handoff changed.
+  No Worker runtime source, migration, auth settings or deploy config changes.
+- Seven new tests failed as expected under v0.2.4; all pass under v0.2.5.
+  Nexus `npm run ci` passes: production build/typecheck, 132 unit tests, three
+  shell tests, environment guard and bundle contract. Local CodeRabbit: zero
+  findings. Desktop/375px browser smoke passes preview open/close and mobile
+  navigation, no horizontal overflow or console warnings/errors. Handler tests
+  mock all auth/RPCs; static Vite QA is not authenticated save acceptance.
+- Current-head GitHub reviews on PR #29 are complete: CodeRabbit reports no
+  actionable comments and five passed pre-merge checks; Codex found no major
+  issues at `acdfb81`. Nexus validation is successful. Zero review conversations
+  exist; the PR is open for owner merge.
+- Deployment hold: Nexus full audit has the pre-existing sharp <0.35.4 advisory
+  through Miniflare/Wrangler (three high entries); production-only audit is clean.
+  Existing Nexus Dependabot PR #17 targets it. Resolve/re-audit before deploying;
+  no unrelated/forced toolchain upgrade was bundled into the schema PR.
+- Game remains kit v0.2.4 with browser-only expansion saves. No game push,
+  Nexus deploy, DB migration, production save/score write or automatic merge.
+- NEXT: owner merges PR #29; clear Nexus #17 audit gate.
+  Separately verify generic RPC migration, existing game row and secret readiness
+  and authorize server rollout before enabling account-owned game save sync.
+
+## Shared-kit publication — 2026-09-22
+
+- Owner approved proceeding from the local schema/codec checkpoint. Refreshed
+  upstream: kit main/tag v0.2.4 still `30848922`; Nexus main `9bc257ae` pins it.
+- Published only the companion kit branch and opened
+  https://github.com/remeadows/gridwatch-account-kit/pull/7 at `9d8643a`.
+  It contains reviewed schema commit `ef5d859` plus v0.2.5 candidate metadata.
+  The v0.2.5 tag does not exist yet; the game's dependency remains v0.2.4.
+- Requested both `@codex review` and `@coderabbitai review`. Initial `329db64`
+  review: Codex found no major issues; CodeRabbit had no actionable findings and
+  one docstring warning. Added JSDoc to the test helper in `9d8643a`, reran all
+  306 tests/typecheck/check:dist, and requested both reviews on that head. Both
+  CI runs pass. Final current-head reviews are complete: CodeRabbit successful
+  with no actionable comments; Codex reports no major issues on `9d8643a`.
+  Zero review conversations exist. PR is open and ready for owner merge.
+  CodeRabbit's separate advisory docstring-coverage warning still appears after
+  documenting the test helper; recorded explicitly on the PR, not suppressed.
+  Its native check is successful; this advisory is not an unresolved thread.
+  Kit main currently has neither rulesets nor legacy branch protection; no
+  security settings were changed and the owner review gate remains in force.
+- Fresh local verification: kit 306 tests/typecheck/reproducible dist pass;
+  game cross-repo contract still passes all 102 payloads and 100 round trips.
+- Read-only production route checks: Breach r4 GET returns 404 `unknown_game`;
+  Match campaign GET returns 401 `unauthorized` without credentials. This proves
+  routing/auth gates only, not authenticated save persistence or DB readiness.
+- Inspected unmodified Nexus checkout `/tmp/signal-breach-nexus-20260922`.
+  Fresh install, typecheck and all 124 unit tests pass without source changes.
+  A temporary mocked integration smoke (`/tmp/breach-nexus-candidate-smoke.mjs`)
+  aliases only the built candidate schema into the unchanged handler: Breach
+  GET/PUT user/game/slot parameters, 401, historical-slot 404, malformed/cross-game
+  payload rejection and CAS 409 all pass. This is not a deployed server or live
+  authenticated save test; every auth/RPC call was mocked.
+  Its generic handler resolves alias/slot/schema from the pinned kit and scopes
+  RPCs by verified user, game slug and slot. After kit merge/tag, add a released
+  dependency pin and mocked handler tests for Breach GET/PUT, no-auth rejection,
+  unknown historical slots, malformed payloads, CAS conflict and Match isolation.
+  Verify generic RPC migration/secret readiness separately before server rollout.
+- No game branch push, Nexus code change, release tag, merge, migration,
+  deployment or production save/score write occurred in this publication step.
+- NEXT: owner merges account-kit PR #7; verify the merged commit and CI before
+  tagging v0.2.5. Then prepare the Nexus released dependency update and route
+  regressions, review, and separately verify/authorize the server rollout before
+  enabling the game's authenticated save adapter.
+
+## Shared save schema/codec candidate — 2026-09-22
+
+- Working on the next bounded release package: compact r4 wire codec plus an
+  additive shared-kit registry entry for `breach` / `gridwatch-signal-breach` /
+  `expansion-1-r4`, schema v1. The installed game kit remains released v0.2.4;
+  this code is not wired to gameplay and does not enable network writes.
+- See `docs/EXPANSION_SHARED_SAVE_CONTRACT.md`. All 100 wave boundaries across
+  25 levels round-trip exactly and continue to wins. Worst structural request:
+  46,677 / 65,536 bytes. Existing 96,000-byte local limit remains enforced.
+  Unencodable no-op coordinates fail explicitly; no history is dropped.
+- Companion kit checkout `/tmp/signal-breach-account-kit-20260922` has the
+  additive schema, regenerated distribution and 306 passing tests. Game/kit
+  schema descriptors match exactly and 102 payload fixtures pass the candidate
+  registry while remaining invalid for Match. Companion local commit `ef5d859`;
+  a recovery patch lives in `docs/companion-patches/` (instructions in contract).
+- Final checks: build, tools typecheck, all 30 game verifiers, cross-repo contract,
+  audit (zero vulnerabilities), and byte-identical original validator pass. Kit
+  tests/typecheck/build and `check:dist` pass. Codex self-review added malformed
+  Unicode/future-unit guards. CodeRabbit: final game diff and companion kit diff
+  both zero findings; these are local reviews, not GitHub approvals.
+- In-app browser QA on the rebuilt 4393 preview: chapter screen -> Chapter 1
+  level selection works; screenshot shows content, no blank/error overlay and
+  no console warnings/errors. No auth, cross-device or new mobile acceptance is
+  claimed by this smoke check. Existing local clears were preserved.
+- NEXT after local review: reviewed kit release and Nexus dependency/server
+  compatibility first; then account-owned reconciliation and honest sync UI.
+  No push, release tag, deployment, migration or production DB write in this work.
+
+## Account-kit v0.2.4 adoption — 2026-09-22
+
+- Upstream reconciliation is committed locally as `380763d`. Follow-on package
+  pins shared account-kit v0.2.4 / `30848922` and adds a regression asserting
+  browser-local sign-out and no premature cloud-save activation.
+- Build, tools typecheck and all 29 game verification scripts pass. Repeated
+  browser QA at five desktop/mobile viewports passes; settings reload, wave
+  launch, guide and LAN network isolation still work with the upgraded kit.
+- The isolated kit checkout `/tmp/signal-breach-account-kit-20260922` passed
+  all 302 upstream tests and typecheck. It has no schema changes or remote
+  writes. Its local branch is `codex/breach-expansion-save-schema`.
+- CodeRabbit upgrade review: one scope finding on the release plan requested
+  removing authenticated saves. Rejected: the owner's 2026-09-13 release
+  override explicitly approves them, reinforced by the 2026-09-22 instruction
+  to proceed in the shared-platform order. No code findings in that review.
+- NEXT: prepare the Breach schema/codec contract in the shared kit and game,
+  including the 64 KiB request limit, review the companion kit/Nexus changes,
+  then wire account-owned reconciliation. See the updated public release plan.
+  Do not ship the older standalone RPC prototype. Saves remain browser-only;
+  production activation, cloud writes and expansion leaderboard release are
+  unfinished. No push/deploy/DB write occurred in these local checkpoints.
+
+## Upstream reconciliation — 2026-09-22
+
+- Working on `codex/expansion-25-local` to integrate upstream `7609592`
+  (shared account kit and `/play/breach/`) without losing the 25-level campaign.
+- Preserve offline/LAN testing and the local checkpoint contract. Next, adapt
+  saves to the shared kit/Nexus service; the old local-only expansion RPC
+  migration is not approved for rollout unchanged. No production write or push.
+- Resolved four merge conflicts, retaining both CI verification suites and the
+  development-only LAN gate. Account networking is explicitly disabled in LAN
+  preview; the shared account header height is reserved in mobile game layouts.
+- Local build, tools typecheck, all 28 merged verifiers and the new dedicated
+  LAN-account regression pass (29 total). Audit: zero vulnerabilities. Original
+  validator regenerated byte-identically. Playwright: desktop 1280x900, portrait
+  390x844/320x700/528x782, landscape 844x390; no horizontal overflow or console
+  errors. Quality persists on reload, wave launches, guide opens. LAN mode makes
+  no outbound requests on expansion or title. Not physical-phone/auth acceptance.
+- Preview: `http://127.0.0.1:4393/play/breach/?expansion-nav=1`.
+- CodeRabbit reviewed all 30 reconciliation files: two duplicate trivial
+  findings about one hard-coded return path. Replaced it with `PLAY_RETURN_PATH`
+  and reran account verifiers. Local review is not a GitHub approval.
+
+## Playable local checkpoint integration — 2026-09-13
+
+- Implemented the next bounded local package on `codex/expansion-25-local`:
+  `ExpansionRunSession` owns command capture and frozen-build ticking;
+  `ExpansionLocalSave` persists the existing canonical save envelope. The game
+  saves at active-to-build boundaries, offers explicit resume/discard on reload,
+  resumes the original seed/command prefix, and preserves settings and clears.
+- The adapter is deliberately guest/browser-only. It never initializes auth,
+  calls an RPC or uploads guest progress. Account-aware cloud sync, navigation
+  integration and validated expansion leaderboards remain release work.
+- Invalid saves require explicit discard; inaccessible storage is reported as
+  memory-only. Stale-tab byte comparison blocks observed conflicting writes
+  (best effort, not an atomic cross-tab CAS). The tested server CAS remains the
+  intended cloud-write boundary. Replay capture is bounded without stopping play.
+- New `verify:expansion-run-session` exercises all 100 completed-wave reloads
+  across 25 levels, exact continued winning replays, saved settings/clears,
+  owner isolation, invalid data, storage failure and stale-tab protection.
+- Production build, tools typecheck and all 26 current `verify:*` commands pass
+  (including the new run-session lane and `verify:chapter03-human`). The original
+  score-validator bundle remains unchanged; dependency audit is clean.
+- Browser checks: real Level 1 Wave 1 clear, reload/resume at Wave 2, identical
+  23 bandwidth / 180 core / 2 neutralized; low-effects setting survives reload.
+  A post-checkpoint sale changed bandwidth to 37; reload correctly restores 23.
+  Desktop 1280x900, portrait 390x844 and 320x700, landscape 844x390; modal focus
+  stays trapped, background controls inert, no horizontal overflow or console
+  errors observed. These are browser viewport checks, not physical-phone QA.
+- Continued the resumed browser run through Wave 2 to a Wave 3 checkpoint.
+  Opening Level 2 offered the saved Level 1 instead of replacing it; returning
+  to Level 1 still offered Wave 3. Then completed the resumed run: 180 core,
+  25 neutralized, 100% uptime, score 536. Level select shows the clear; reopening
+  starts Wave 1 without an obsolete checkpoint. Preview is now on fresh Level 1.
+- CodeRabbit first pass: two low-severity findings (count clarified, post-write
+  reread suggestion declined with regression evidence). Second pass: two distinct
+  major findings, both fixed: canonical saves are the sole new clear writer and
+  navigation reads them; save presentation/focus lives in `expansionSaveUi.ts`.
+  Third pass: two distinct minor findings, both fixed and regression-tested:
+  reverse tab entry from outside the dialog, and replay after all 25 clears.
+  Fourth pass identified missing victory-save retry: added an explicit Retry save
+  action and transient-storage recovery regression, without per-frame write loops.
+  Fifth pass (lightweight): all 15 changed files, zero findings. Final build,
+  typecheck and all 26 verifiers pass. Review is recorded in
+  `docs/reviews/EXPANSION_RUN_SESSION_REVIEW.md`. No push, DB write or deployment.
+
+## Dependency reconciliation — 2026-09-13
+
+- The five dependency PRs are merged on upstream `main` (`a5a8dcf`). Merged
+  upstream into `codex/expansion-25-local` without conflicts; local expansion
+  scripts and the isolated database CI lane are retained.
+- TypeScript 7.0.2 / Vite 8.3.0: production build, tools typecheck and all 25
+  `verify:*` scripts pass. Rebuilding with esbuild 0.28.2 leaves the original
+  score-validator bundle byte-for-byte unchanged. No push or deployment.
+- Continuing the next local package: gameplay command capture, completed-wave
+  checkpoint persistence and explicit reload/resume UI. Cloud wiring and
+  production activation remain unfinished; do not mistake this dependency
+  merge for the expansion release.
+
+## Public expansion release requested — 2026-09-13
+
+- Working on release readiness on `codex/expansion-25-local`. The owner now
+  requests public availability with full saves and leaderboards, authorizes
+  GitHub publication/review, and explicitly accepts the current Blender art.
+  This supersedes the earlier local-only delivery restriction. Record the art
+  approval in the manifest/provenance; it is not evidence of a physical-phone
+  performance test.
+- The owner permits resetting their Signal Breach saves if necessary. No reset
+  has been performed or is currently necessary. Do not delete shared scores,
+  accounts, other games' data, or historical replay evidence.
+- Backend work is required: expansion progress currently persists only in the
+  browser (clears/unlocks and wave checkpoints); the Edge Function rejects expansion submissions
+  as unpublished. Public activation remains disabled. This is not a flag-only
+  release. See `docs/EXPANSION_PUBLIC_RELEASE_PLAN.md`.
+- Owner approved wave-checkpoint saves: cross-device clears/unlocks/settings
+  and resume at the build phase after the last completed wave, not mid-wave.
+  Save/checkpoint foundation implemented locally in `checkpoint.ts`,
+  `expansionSave.ts`, `expansionSaveSync.ts`, and `expansionSaveApi.ts`.
+- 100 boundaries across 25 levels reconstruct exactly and continue to wins.
+  Sync tests cover conflicts, lost acknowledgments, concurrent local edits,
+  account disposal, remote rollback/reset, storage errors and offline mode.
+  Mocked API tests prove exact RPC/auth boundaries and fail-closed responses.
+- Read-only inspection confirms shared `game_saves` exists, restricted to
+  service-role access, and four games are registered. New additive Signal
+  Breach-only RPC migration is local and UNAPPLIED. Disposable PostgreSQL tests
+  pass for grants, account/game isolation, invalid data and optimistic revision
+  checks. Two simultaneous writes yielded one saved and one conflict.
+- The foundation has a browser-only guest gameplay adapter (see above), but no
+  authenticated cloud connection yet. Next: auth-aware save UI/navigation,
+  cloud conflict choices and cross-device browser
+  QA; then expansion score validation/client integration and server-first release.
+- CodeRabbit CLI 0.7.6 authentication is verified outside the sandbox. The
+  sandbox falsely reported signed-out because it could not access Mac credentials;
+  retry auth/review with approved normal-host access before asking for sign-in.
+  Review of `b72235e..67e75b8` completed with five findings (one duplicate).
+  Fixes: immutable validated-save/checkpoint reuse, pinned PostgreSQL image with
+  Docker Dependabot updates, corrected scope wording and runner-owned migration
+  transactions. The affected local tests pass; the follow-up review completed
+  with zero findings across all ten corrective files. See
+  `docs/reviews/EXPANSION_SAVE_FOUNDATION_REVIEW.md`. This is local review,
+  not a green GitHub PR or a verified production deployment.
+  Original/retained replay and r4 progress checks remain green. No production
+  migration, save reset, leaderboard write, public activation or push occurred.
+- Final foundation checks: production build, tools typecheck, three new save
+  verification commands, art release gate, original replay checks, 116 retained
+  r3 wins/115 historical equivalents, r4 progress and unchanged original validator
+  all pass. Dependency audit reports zero vulnerabilities. Local Codex inspection
+  added an explicit remote-revision rollback conflict guard; its regression test
+  passes. No independent/GitHub reviewer approval is claimed. The disposable
+  PostgreSQL server was stopped after verification.
+- Codex and CodeRabbit review remain required; do not bypass protected-main
+  checks. No remote write, migration, deployment, reset or push has occurred in
+  this approval-recording step.
+
+## Expansion r4 / 25-level local revision — complete locally — 2026-09-11
+
+- Working on `codex/expansion-25-local`, based on completed local `b77203f`.
+  Local checkpoints: foundation `0352d10`, Chapter 1 `5308629`, Chapter 2
+  `231c14d`, Chapter 3 `2857e95`, full Blender rerender `27c9a03`, tested
+  campaign integration `f452bd3`.
+- Owner confirmed exactly three chapters with 8 / 8 / 9 levels (125 waves),
+  consistent Blender CLI grid/assets, and a tested local playable finish.
+- Follow `docs/EXPANSION_25_LOCAL_PLAN.md`. Preserve historical r1/r2/r3 content
+  and replay/progress identities; introduce revision-scoped lookup and a separate
+  r4 progress key before activating remapped levels.
+- CodeRabbit diff upload and local commits are authorized. No GitHub push,
+  deployment or shared database changes. Previous 15-level evidence below is a
+  historical baseline, not evidence that the new 25-level milestone is complete.
+- Implemented current `expansion-1-r4`: three chapters, 8 / 8 / 9 levels,
+  five authored waves per level, new geometry and legal build plans. Retained
+  r1/r2/r3 lookup is revision-scoped; the r4 progress key imports old earned
+  access without rewriting the historical key or auto-clearing inserted boards.
+- Current evidence: 100/100 normal wins, 98/100 stress wins, 198 exact winning
+  replays and 100 no-action losses. Stress losses: Level 2 and Level 13, charlie,
+  six-tick input delay, wave five. Original/retained checks remain green.
+- All 21 Blender families were genuinely rerendered and provenance-verified.
+  Runtime sprites total 1,058,037 bytes. The original validator and shared
+  leaderboard/backend files are unchanged. Release art approval remains false.
+- All 28 local verification commands pass. The compiled preview passed twelve
+  viewport cases including 390×700/701, 390×820/821 and wide landscape. Browser
+  input covered range inspection, place/sell, pause/guide, low effects, loss and
+  retry. A real five-wave Level 25 browser win persisted CLEARED and offered no
+  Level 26. That run exposed a results overlay defect, now corrected locally.
+- See `docs/EXPANSION_R4_LOCAL_ACCEPTANCE.md` for exact evidence and limits,
+  and `docs/reviews/EXPANSION_R4_LOCAL_REVIEW.md` for review dispositions.
+- Use `http://127.0.0.1:4391/?expansion-nav=1` (dev) or
+  `http://127.0.0.1:4393/?expansion-nav=1` (compiled preview). Ports 4175, 4176,
+  4177 and 4185 belong to other games. Physical phone testing is still pending;
+  follow `docs/LOCAL_PHONE_ACCEPTANCE.md` for optional trusted-LAN port 4392.
+- Final CodeRabbit UI review completed; its hidden-overlay precedence finding
+  is fixed. All actionable findings are addressed, with scope-conflicting and
+  false-positive findings documented. Compiled result overlays were checked at
+  five desktop/phone sizes; shortest landscape scrolls to working controls.
+- Next owner step: play the local build and assess the art, fun and difficulty.
+  Physical-phone performance/touch acceptance remains pending. GitHub push,
+  publication, database changes and deployment require separate authorization.
+
+## Chapters 1–3 local milestone — implemented and reviewed — 2026-09-10
+
+- Current work: `codex/phase10-shield-front`, based on local Chapter 2 checkpoint
+  `512d096` after Blender roster checkpoint `8e70d9a`. Corrective Blender
+  provenance/full-rerender checkpoint: `af4e922`. Chapter 3 source, UI,
+  compatibility tests and review dispositions are committed in `2aa5a8c`.
+- Expansion 1 now has Chapters 1–3 / Levels 1–15 / 75 authored waves. Chapter 3
+  introduces Shield Drones and Arc ICE; Chapters 4–6 remain unavailable roadmap
+  content. The original three-sector/twelve-wave campaign is unchanged.
+- The Blender CLI produced 21 versioned families with editable scenes, masters,
+  runtime sprites, three chapter floors and exact provenance. The corrected
+  generator rejects mixed-lineage partial rebuilds. All artifacts were genuinely
+  rerendered, not relabeled; runtime total 1,058,094 bytes, largest loaded level
+  roster 792,098 bytes. Source/picker/Field Guide/board use consistent families.
+- Exact evidence: 60/60 normal paced-policy wins, 56/60 stress wins, 116 saved
+  winning logs replayed, 115 historical r1/r2 equivalents, 60 no-action losses.
+  All original validator bytes and retained Chapter 1/2 content hashes match.
+- CodeRabbit's authorized full-diff CLI review completed with 19 findings.
+  See `docs/reviews/THREE_CHAPTER_FINAL_REVIEW.md` for every disposition, plus
+  independent Codex checks. This is not GitHub approval or a green PR status.
+- Browser checks cover the six planned viewport sizes, range inspection with
+  no spend, ordinary placement/refund, guide pause/resume, active low effects,
+  a real loss/retry reset and normal menu navigation. The smallest portrait
+  dock overflow, the 700→701 portrait breakpoint, tight landscape labels and
+  stretched desktop grid were fixed. Ten viewport/breakpoint cases pass.
+- Local Mac URL: `http://127.0.0.1:4391/` (`npm run dev:local`). Built static
+  preview: `http://127.0.0.1:4393/`. Trusted-LAN phone server: port 4392
+  (`npm run dev:phone`), credentials suppressed. Do not reuse 4175/4176/4177/4185;
+  other games own those ports. See `docs/LOCAL_PHONE_ACCEPTANCE.md`.
+- Release remains pending owner gameplay-scale art/fun acceptance and physical
+  phone performance testing. The asset release verifier intentionally rejects
+  the unapproved candidate. No GitHub push, public activation, migration,
+  Edge Function deployment, token extraction, or leaderboard submission occurred.
+- Next owner step: test the local milestone; then explicitly authorize the
+  selected publication/release stage. Keep future PRs chapter-sized, with
+  native required CodeRabbit/Codex review and all conversations resolved.
+
+## Local preview port correction — 2026-09-10
+
+- Browser verification found port 4177 currently serves **GridWatch Match**.
+  Do not stop or replace that other project's server. The owner’s existing
+  Signal Breach tab can retain old page content; its title is not proof of the
+  current server identity.
+- A second concurrent game bound loopback port 4185 after the LAN server
+  started. The agent stopped only its own 4185 process and reserved separate
+  Signal Breach ports: 4391 (`npm run dev:local`) for Mac preview, and 4392
+  (`npm run dev:phone`) for the credential-disabled trusted LAN preview.
+  Ports 4175/4176 remain reserved.
+  This port substitution preserves project isolation and supersedes the older
+  4177 preview target below.
+
+## Three-Chapter Review and Blender Goal Definition - 2026-09-10
+
+- The owner requested a review of all current changes, end-state clarification,
+  then a goal for three chapters with Blender CLI grid/asset production.
+- The owner approved the recommended end state and sending the diff to
+  CodeRabbit: Chapters 1–3 total (15 levels/75 waves), a consistent Blender
+  grid/roster, and a local tested/committed build for acceptance. A matching
+  execution goal is active. See
+  `docs/THREE_CHAPTER_REVIEW_2026-09-10.md` and
+  `docs/THREE_CHAPTER_BLENDER_GOAL_PLAN.md`. Correctness repair, rendering and
+  Blender style-slice work are proceeding in independent packages.
+- Review corrections now preserve generic once-per-tick targeting, use the
+  updated grid for Splitter children, expire effects outside combat, honor
+  reduced motion, and replay retained content revisions. Targeted tests pass.
+  Human-paced validation clears 40/40 runs at one action per three ticks with
+  observation delay, and 36/40 at the six-tick stress pace. All 76 winning logs
+  replay exactly; all 40 no-action controls lose. Physical-phone and owner
+  contextual acceptance are still pending.
+- CodeRabbit's initial external diff upload was rejected; the owner then
+  explicitly authorized it and the new review completed with 14 findings.
+  Findings are being dispositioned against reproducible evidence; the request
+  to finish all six chapters is rejected because this milestone is exactly
+  three chapters. No push, merge or deployment is authorized by
+  this local milestone.
+
+## Phase 9C - Expansion Chapter 2 Local Implementation - In Progress - 2026-09-10
+
+- Work is local-only on `codex/phase9-chapter2-sapper`, branched from merged
+  PR #80 / `main` commit `2e1f023`. Do not push until the owner completes local
+  desktop/mobile acceptance and explicitly authorizes publication.
+- The owner accepted the Blender Sapper source visual and authorized local
+  integration. The machine manifest correctly keeps `ownerApproved: false`
+  until contextual desktop/mobile acceptance; the
+  expansion renderer preloads the 256x256 Sapper sprite and adds procedural
+  dashed target-lock plus orthogonal death-pulse telegraphs.
+- The exact approved Sapper contract is promoted into the pure expansion sim:
+  16 HP, one move per two active ticks, strict reachable-Firewall priority,
+  stable path/board tie-breaking, 8 chew damage, and one non-chaining
+  6-damage Manhattan-1 pulse on ICE neutralization. Production verification
+  covers priority, cadence, chew, pulse radius, and pulse damage.
+- Levels 6-10 are authored as Demolition Front: five fresh 8x8 boards, five
+  waves each, no persistence between levels, and no Honeypot, Jammer, or new
+  boss. The additive `expansion-1-r2` manifest contains ten levels / fifty
+  waves while retaining all five Chapter 1 per-level hashes byte-identically.
+- Current deterministic balance evidence is 20/20 Chapter 2 guided clears,
+  5/5 empty-build losses, median terminal integrity above 90 for every new
+  level, and a materially worse clustered Level 6 counter-negative result.
+  Chapter 1's frozen balance hash remains
+  `1cf49097f34151cfe0fdae7ba837056753c3d591eb29fc80faed2ca18194fe5b`;
+  Chapter 2's fixed report hash is
+  `6c2c3d4a739d8b945bbf44a2ff0c237e65007fe77555533498d6bb21d3fd2690`.
+- The expansion remains localhost-only and never submits a score. No Supabase
+  migration, Edge Function deployment, leaderboard category, public feature
+  flag, or GridWatchGamesDB write is part of this batch. Use port 4391 because
+  ports 4175 and 4176 are reserved for GridWatchZero testing.
+
+## CodeRabbit Merge Gate Repair - Complete - 2026-09-10
+
+- PR #80 is merged. The live `main-protection` ruleset requires app-bound
+  `build` and `CodeRabbit` checks, one current approval, latest-push approval,
+  stale-review dismissal, resolved conversations, linear history, and no
+  force-push/deletion bypass.
+
 ## 2026-09-14: One origin — served at /play/breach/ with the shared account kit
 
 - **Live since 2026-09-14** (PR #81 @ `7751e05`, Cloudflare Pages auto-deploy; Nexus PR #21
@@ -31,7 +770,7 @@
   (localStorage is per origin). Accepted behaviour: the old host is a compatibility shim
   until step 5 retires it into a redirect.
 
-## CodeRabbit Merge Gate Repair - In Progress - 2026-09-09
+## CodeRabbit Merge Gate Repair - Historical Implementation Notes - 2026-09-09
 
 - PR #79 merged without a CodeRabbit response because the live `main-protection`
   ruleset required only the `build` status and conversation resolution; its
@@ -635,19 +1374,20 @@ Note: the previous "zero network / no `import.meta.env`" invariant no longer hol
 - This directory is now its own standalone git repository. Its intended upstream is `https://github.com/remeadows/gridwatch-signal-breach.git`.
 - The only sanctioned runtime dependency is `@supabase/supabase-js` for the optional leaderboard. Dev dependencies are Vite, TypeScript, and esbuild (esbuild only bundles the leaderboard validator via `npm run build:validator`).
 - Keep gameplay tuning in `src/data/` where practical. Score weights currently live in `src/sim/scoring.ts`.
-- The leaderboard is the one sanctioned network feature. `src/sim` must stay pure and deterministic (no `Math.random`/`Date.now`) — the server-side anti-cheat replays it verbatim. After any `src/sim` change, run `npm run build:validator` and commit the regenerated `supabase/functions/submit-gridwatch-score/sim.bundle.js`, then redeploy the Edge Function.
+- The leaderboard is the one sanctioned network feature. `src/sim` must stay pure and deterministic (no `Math.random`/`Date.now`). Changes to the frozen V2 simulator require `npm run build:validator` and committing any reviewed change to `supabase/functions/submit-gridwatch-score/sim.bundle.js`; deployment is a separate owner-authorized action. Changes confined to `src/sim/expansion/` do not authorize or require deploying that phase4-v1 validator. Expansion 1 has its own immutable replay ruleset and requires isolated leaderboard categories and a separately approved server-first release. The original validator must remain byte-identical for this milestone.
 - Do not add manual path drawing, sectors beyond the existing three, or waves
-  beyond the existing twelve to the frozen V2 campaign. Expansion 1 Chapter 1
-  is separately authored and owner-accepted through Level 5; Chapters 2–6
-  remain reserved and unauthored until their one-chapter-at-a-time batches.
+  beyond the existing twelve to the frozen V2 campaign. Expansion 1 r4 contains
+  exactly three chapters and 25 authored levels (8 / 8 / 9), five waves per
+  level. The historical six-chapter roadmap is superseded; no Chapters 4–6
+  belong to the current release scope.
 
 ## Good Next Checks
 
 - Keep glyph fallback through at least one production release after the default
   Phase 6 rollout. Use `?art=glyphs` for a visual diagnostic or rollback.
 - Keep Expansion 1 local-only until its separate server validator and isolated
-  leaderboard categories pass the owner-approval and compatibility gates. After
-  Chapter 1 publication, author Chapter 2 as its own five-level reviewed batch.
+  leaderboard categories pass the owner-approval and compatibility gates.
+  All three authored chapters must finish desktop/mobile owner acceptance before publication.
 - Keep every GitHub push behind both Codex and CodeRabbit review.
 - After any future Cloudflare Pages deploy, confirm
   `https://GridWatch-SignalBreach.warsignallabs.net` loads, hashed root-relative

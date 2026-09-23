@@ -38,20 +38,68 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Verify expansion save database isolation
+        run: |
+          node scripts/verify-expansion-migration-boundary.mjs
+          docker build --tag signal-breach-save-test .github/ci
+          docker run --detach --name signal-breach-save-test \
+            --env POSTGRES_PASSWORD=isolated-ci-test-only \
+            --mount "type=bind,source=$PWD,target=/workspace,readonly" \
+            signal-breach-save-test
+          trap 'docker rm --force signal-breach-save-test' EXIT
+          for attempt in $(seq 1 30); do
+            if docker exec signal-breach-save-test pg_isready -h 127.0.0.1 -U postgres; then break; fi
+            sleep 1
+          done
+          docker exec signal-breach-save-test pg_isready -h 127.0.0.1 -U postgres
+          docker exec signal-breach-save-test psql -U postgres -d postgres \
+            -v ON_ERROR_STOP=1 -f /workspace/scripts/verify-expansion-save-database.sql
+          docker exec signal-breach-save-test createdb -U postgres expansion_score_test
+          docker exec signal-breach-save-test psql -U postgres -d expansion_score_test \
+            -v ON_ERROR_STOP=1 -f /workspace/scripts/verify-expansion-score-database.sql
+
       - name: Verify deterministic replay fixtures
         run: |
           npm run typecheck:tools
           npm run verify:assets
+          npm run verify:expansion-art
+          npm run verify:expansion-art-fallback
           npm run verify:play-base
           npm run verify:account-kit
+          npm run verify:account-preview
           npm run verify:replays
+          npm run verify:expansion-leaderboard
+          npm run verify:expansion-score-client
+          npm run verify:expansion-score-http
+          npm run verify:expansion-score-ui
           npm run verify:latency-trap
           npm run verify:rusher
+          npm run verify:sapper
           npm run verify:expansion-sim
+          npm run verify:expansion-revisions
+          npm run verify:expansion-revision-lookup
+          npm run verify:expansion-progress-r4
+          npm run verify:expansion-checkpoints
+          npm run verify:expansion-run-session
+          npm run verify:expansion-save-sync
+          npm run verify:expansion-save-api
+          npm run verify:expansion-save-codec
+          npm run verify:expansion-account-save
+          npm run check:expansion-save-contract
+          npm run verify:expansion-r4-drafts
+          npm run verify:expansion-canvas
+          npm run verify:expansion-r4-evidence
+          npm run verify:expansion-retained-evidence
+          npm run verify:expansion-visuals
+          npm run verify:shield-network
+          npm run verify:shield-combat
+          npm run verify:preview-policy
           npm run verify:content
           npm run verify:progress
           npm run balance:report
           npm run expansion:balance
+          npm run expansion:human-balance
+          npm run verify:chapter03-human
           npm run expansion:content-report
 
       - name: Verify score validator bundle is in sync
@@ -60,5 +108,8 @@ jobs:
         # server-side anti-cheat can never silently diverge from the game.
         run: |
           npm run build:validator
+          npm run build:expansion-validator
+          git diff --exit-code -- supabase/functions/submit-gridwatch-score/expansion-r4.bundle.js \
+            || (echo "::error::expansion-r4.bundle.js is stale — run 'npm run build:expansion-validator' and commit the result." && exit 1)
           git diff --exit-code -- supabase/functions/submit-gridwatch-score/sim.bundle.js \
             || (echo "::error::sim.bundle.js is stale — run 'npm run build:validator' and commit the result." && exit 1)

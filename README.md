@@ -7,9 +7,10 @@ A static browser-playable cyberpunk signal-routing defense game built with Vite,
 GridWatch: Signal Breach is a three-sector signal-routing defense campaign. Place relays, firewalls, ICE turrets, scrubbers, and overclock nodes on 8x8 grids to keep the Source connected to the Core while probes, crawlers, spoofs, hunters, splitters, and a goliath corrupt the board over twelve deterministic waves.
 
 The game itself is a static client (no game logic on a server). The **high-score
-leaderboard** and sign-in (see below) are always configured through the shared
-account kit; they are the only network features — the game itself still runs
-fully offline.
+leaderboard**, sign-in, and optional account saves through the shared Nexus
+save service (see local release-candidate status below) use the shared account
+kit. These are the only network features; the game itself still runs fully
+offline. Guest progress remains browser-only and is never silently uploaded.
 
 ## How Codex Helped
 
@@ -37,23 +38,68 @@ Serving from the old host's root (`/`) is a compatibility route only, handled
 by `public/_redirects` rewriting `/play/breach/*` requests back onto the same
 built assets; it is not a second base-path configuration.
 
-### Expansion 1 Chapter 1 local acceptance
+### Expansion 1 Chapters 1–3 local acceptance
 
-Chapter 1 is intentionally available only on `localhost`/`127.0.0.1` while its
-separate server validator and leaderboard categories remain unpublished:
+The expansion stays local while its separate server validator and leaderboard
+categories remain unpublished. Dedicated ports avoid the other GridWatch games:
 
 ```sh
-npm run build
-npm run preview -- --host 127.0.0.1 --port 4175 --strictPort
+npm run dev:local
 ```
 
-Open `http://127.0.0.1:4175/?expansion-nav=1`. The five authored levels contain
-five waves each and use isolated `expansion-v1` state, replay, content hashes,
-and progress. Local results never submit to Supabase. These query flags are
-hostname-gated and cannot enable expansion play on the public site.
+Open `http://127.0.0.1:4391/play/breach/` and choose **Expansion Campaign**. Twenty-five authored
+levels span three chapters (8 / 8 / 9) with five waves each. The current local
+`expansion-1-r4` revision uses isolated progress and keeps historical r1/r2/r3
+replays intact. Chapter 2 introduces Sapper spacing; Chapter 3
+introduces Shield Drones and shield-piercing Arc ICE. Blender CLI produces the
+three themed grids and consistent hardware/enemy roster; Canvas2D remains the
+runtime renderer. Source scenes and raster provenance are versioned in the repo.
 
-Use `npm run verify:expansion-sim`, `npm run expansion:balance`, and
-`npm run expansion:content-report` for the Chapter 1 deterministic gates.
+Local results never submit to Supabase. Production builds cannot enable the
+expansion on public hosts. For a physical phone on trusted Wi-Fi, use
+`npm run dev:phone` on port 4392; that explicit dev mode suppresses leaderboard
+networking. See `docs/LOCAL_PHONE_ACCEPTANCE.md`. Do not use ports 4175–4185
+without checking ownership: several other games are being tested concurrently.
+
+Run `npm run verify:expansion-sim`, `npm run verify:expansion-revisions`,
+`npm run verify:expansion-retained-evidence`,
+`npm run verify:expansion-r4-evidence`, `npm run verify:expansion-progress-r4`,
+`npm run verify:expansion-canvas`,
+`npm run expansion:human-balance`, `npm run verify:chapter03-human`,
+`npm run verify:expansion-art`, `npm run verify:expansion-art-fallback`, and
+`npm run expansion:content-report`.
+The historical `expansion:balance` lane proves deterministic solvability, not
+human fun or phone performance. The owner accepted the current Blender art on
+2026-09-13, and its release approval checks pass. Physical-phone performance
+remains unverified; art acceptance does not close that separate evidence gap.
+
+Both the original three-sector campaign and the expansion now default to the
+same Blender-rendered hardware/enemy sprites. Original sectors 1–3 reuse the
+three chapter floor textures, and original tutorial/picker portraits match the
+board. This is a local art update, not a gameplay or leaderboard ruleset change.
+Use `?art=phase6` or `?art=glyphs` for visual rollback and `?quality=low` for
+reduced effects. These switches do not change the simulation or scores. Run
+`npm run verify:expansion-art-fallback` to test both campaigns' shared assets,
+all original sector render paths, floor-cache readiness and failed-image fallback.
+
+The local expansion saves a checkpoint after each completed wave.
+Reloading offers an explicit resume at the next build phase, with the original
+command history preserved. Changes after that boundary are not saved until the
+next wave is cleared. Only one unfinished level is saved; opening another level
+offers a choice to resume the saved level or discard its checkpoint. Settings
+and clears are also stored locally. Storage errors and stale-tab conflicts are
+shown in the HUD. Guests stay browser-only. Signed-in accounts have a separate
+cache and use the shared Nexus save service through account-kit v0.2.5, with
+reconciliation before writes, explicit conflict choices and truthful sync status.
+Guest progress is never silently uploaded to an account. This client integration
+is a **local release candidate**, not a public deployment or proof of real
+two-device authenticated acceptance. Local sign-in links still return to the
+canonical Nexus game path, not localhost; isolated tests do not bypass that flow.
+Run `npm run verify:expansion-run-session` for all 100 reload boundaries across
+the 25 levels, exact continued replays, storage failure and owner-isolation checks.
+Run `npm run verify:expansion-account-save` for owner fencing and isolated
+two-device shared-kit CAS tests, and `npm run check:expansion-save-contract`
+for the installed kit's wire-schema compatibility.
 
 ## Deploy
 

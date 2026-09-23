@@ -1,6 +1,6 @@
 import { ENEMY_TUNING } from "../src/data/enemies";
 import { EXPANSION_1_R1_TUNING } from "../src/data/campaigns/expansion/tuning";
-import { EXPANSION_LEVELS } from "../src/data/campaigns/expansion";
+import { EXPANSION_LEVELS } from "./retained-expansion";
 import { replayRun } from "../src/sim/replay";
 import {
   CHAPTER_02_ENEMY_PROTOTYPES,
@@ -16,12 +16,16 @@ import {
 const ENTRY = { x: 0, y: 3 };
 const CORE = { x: 7, y: 3 };
 
-// SA-01: identity remains isolated from current and playable expansion content.
+// SA-01: identity stays expansion-only while the approved production chapter uses it.
 expectEqual(Object.hasOwn(ENEMY_TUNING, "sapper"), false, "SA-01 changed current enemy tuning.");
 expectEqual(getChapter02EnemyPrototype("sapper"), SAPPER_PROTOTYPE, "SA-01 Sapper lookup failed.");
 expectEqual(getChapter02EnemyPrototype("hunter"), undefined, "SA-01 leaked existing enemies into the Chapter 2 prototype.");
 expectDeepEqual(Object.keys(CHAPTER_02_ENEMY_PROTOTYPES), ["sapper"], "SA-01 prototype registry drifted.");
-expectEqual(JSON.stringify(EXPANSION_LEVELS).includes("sapper"), false, "SA-01 leaked Sapper into playable Chapter 1 content.");
+expectEqual(JSON.stringify(EXPANSION_LEVELS.filter((level) => level.chapterId === 1)).includes("sapper"), false, "SA-01 leaked Sapper into Chapter 1 content.");
+expectEqual(EXPANSION_LEVELS.filter((level) => level.chapterId === 2).every((level) =>
+  level.waves.every((wave) => (wave.enemyWeights.sapper ?? 0) > 0 ||
+    wave.scriptedSpawns?.some((spawn) => spawn.kind === "sapper")),
+), true, "SA-01 Chapter 2 omitted its approved Sapper.");
 
 // SA-02: exact proposed constants remain reviewable in one frozen object.
 expectDeepEqual(SAPPER_PROTOTYPE, {
@@ -138,10 +142,11 @@ expectDeepEqual(runTicks(repeatInput, 8), runTicks(repeatInput, 8), "SA-10 proto
 const legacyRegression = replayRun({ seed: "golden-loss-1", sector: 1, commands: [] });
 expectEqual(legacyRegression.state.tickCount, 84, "SA-11 golden loss tick count drifted.");
 expectEqual(legacyRegression.score.total, 38, "SA-11 golden loss score drifted.");
-expectDeepEqual(EXPANSION_LEVELS.map((level) => level.id), [1, 2, 3, 4, 5], "SA-12 Chapter 1 level envelope drifted.");
-expectEqual(EXPANSION_LEVELS.reduce((total, level) => total + level.waves.length, 0), 25, "SA-12 Chapter 1 wave envelope drifted.");
+const chapterOne = EXPANSION_LEVELS.filter((level) => level.chapterId === 1);
+expectDeepEqual(chapterOne.map((level) => level.id), [1, 2, 3, 4, 5], "SA-12 Chapter 1 level envelope drifted.");
+expectEqual(chapterOne.reduce((total, level) => total + level.waves.length, 0), 25, "SA-12 Chapter 1 wave envelope drifted.");
 
-console.log("Sapper prototype verification passed.");
+console.log("Sapper mechanic laboratory verification passed.");
 
 function createState(input: Readonly<{
   tickCount?: number;

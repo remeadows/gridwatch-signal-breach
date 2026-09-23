@@ -1,6 +1,42 @@
 # GridWatch Skill Guide
 
-Last reviewed: 2026-09-09
+Last reviewed: 2026-09-23
+
+Current leaderboard package: run `verify:expansion-leaderboard`,
+`verify:expansion-score-client`, `verify:expansion-score-http`,
+`verify:expansion-score-ui` and disposable
+PostgreSQL `scripts/verify-expansion-score-database.sql`. Never run that fixture
+against GridWatchGamesDB. Regenerate `build:expansion-validator` and verify the
+original `build:validator` artifact remains unchanged. The r4 server-first client
+latch is intentionally false until release. Follow
+`docs/EXPANSION_LEADERBOARD_PACKAGE.md`; older blanket-rejection notes below
+describe the historical protocol harness, not the new r4 dispatcher.
+
+Current save package: the compatible Nexus server is deployed and the game now
+uses released account-kit v0.2.5 in a local owner-bound adapter. Run
+`verify:expansion-account-save` (including isolated two-device kit integration)
+and `check:expansion-save-contract` (defaults to the installed kit) alongside
+the existing codec/checkpoint/account/LAN lanes. Do not confuse these tests
+with real authenticated two-device acceptance. The runtime uses shared kit
+saves, not `expansionSaveApi.ts`'s historical standalone RPC prototype.
+
+Upstream reconciliation: use `/play/breach/` on local ports 4391/4393.
+Shared authentication comes from the account kit, not environment variables.
+Dedicated LAN preview explicitly disables account networking. Before cloud-save
+rollout, reconcile the local expansion RPC prototype with the shared Nexus save
+service and register a compatible expansion schema. Older verification counts,
+six-chapter references and root-host URLs below are historical.
+The local schema/codec candidate is documented in
+`docs/EXPANSION_SHARED_SAVE_CONTRACT.md`; test it with
+`verify:expansion-save-codec` and the explicit companion-kit contract check.
+Do not enable cloud writes until the reviewed kit/Nexus server is compatible.
+
+Release override: the owner now requests public expansion with cloud saves and
+leaderboards, permits GitHub review/publication, and accepts current Blender art.
+Follow `docs/EXPANSION_PUBLIC_RELEASE_PLAN.md` for the new release scope; older
+local-only passages below describe the completed milestone. Cloud saves are now
+an authorized optional network capability, with offline play preserved. Physical
+phone performance remains an evidence gap, not inferred from art acceptance.
 
 Use this file to select the right Codex skill and verification path for work in
 GridWatch: Signal Breach. `AGENTS.md` remains the highest-priority project guide.
@@ -21,12 +57,19 @@ There is currently no project-root `CLAUDE.md` or `MEMORY.md`. Treat
 Its opening static-only description predates the optional leaderboard; use
 `AGENTS.md` and `HANDOFF.md` as the authority for the sanctioned Supabase exception.
 
+Current local milestone: the owner approved three chapters (25 levels/125
+waves, split 8 / 8 / 9), a consistent Blender-authored grid/roster, local verification/commits,
+and sending this game's diff to CodeRabbit. Follow
+`docs/EXPANSION_25_LOCAL_PLAN.md`; Chapters 4–6 and GitHub publication
+are outside this milestone. Final contextual acceptance remains pending even
+where source art or implementation was approved.
+
 ## Skill Routing
 
 | Work | Skill | Project-specific note |
 |---|---|---|
 | Game design, gameplay, or interactive simulation | `axiom-games` | The available skill is oriented toward Apple game frameworks. Use its general game-loop discipline, but this repository's vanilla TypeScript/Canvas2D architecture is authoritative. |
-| Browser interaction and mobile/desktop visual QA | `playwright` | Use the CLI workflow for 320, 390/393, 420, 760, and desktop viewport checks. Keep temporary artifacts out of the repository when the task is complete. |
+| Browser interaction and mobile/desktop visual QA | `frontend-testing-debugging` plus available browser controls | Prefer the installed Computer Use browser API; test 320px, 390px, landscape and desktop viewports. Keep temporary screenshots outside the repo. Do not substitute viewport emulation for physical-phone acceptance. |
 | Asset generation or editing | `imagegen` or local Blender | Generated assets must be local, optimized, documented, and usable offline. Expansion 3D assets may use the owner-approved reproducible Blender pipeline; keep editable `.blend` source and deterministic build scripts, then ship only pre-rendered raster sprites to Canvas2D. Never add a runtime image-generation or asset API. |
 | Cloudflare Pages configuration or release work | `cloudflare` | Preserve Git-integrated previews and production deploys from `main`. Do not add Pages Functions or another backend. |
 | Supabase Auth, leaderboard, database, or Edge Function work | `supabase` | `GridWatchGamesDB` is shared. Preserve RLS, Auth identity, the game slug, replay validation, and service-role isolation. |
@@ -99,14 +142,16 @@ In addition to the UI lane:
 
 - Run `npm run verify:progress` to cover V1-to-V2 migration, malformed-storage
   recovery, storage unavailability, and campaign namespace isolation.
-- Run `npm run verify:content` to prove Chapter 1 contains exactly Levels 1–5
-  and 25 waves while Chapters 2–6 remain unauthored. Run
+- Run `npm run verify:content` to prove r4 contains exactly three authored
+  chapters split 8 / 8 / 9 levels (25 levels / 125 waves), with no placeholder
+  chapters or levels. Run
   `npm run expansion:content-report` to verify the literal immutable hashes.
 - Verify the normal title flow with no flag, then use `?expansion-nav=1` only
-  on localhost for acceptance QA. Check the campaign screen, six spoiler-safe
-  chapter cards, the five-card Chapter 1 screen, level unlock progression, and
+  on localhost for acceptance QA. Check the campaign screen, three spoiler-safe
+  chapter cards, the eight-card Chapter 1 screen, level unlock progression, and
   `?expansion-play=1&level=N` at mobile and desktop widths. Confirm public hosts
-  cannot activate either flag and expansion results expose no leaderboard path.
+  cannot activate either flag and expansion leaderboard requests stay disabled
+  until the separate server-first release latch is enabled.
 - Keyboard-check the expansion Canvas: Tab to the grid, use arrows to move the
   visible cell focus, press Space to place the selected tool, Delete/Backspace
   to sell, and Enter to launch the prepared wave. Confirm the expected
@@ -123,7 +168,7 @@ In addition to the UI lane:
   until a separate server-first expansion validator/category release is
   approved and reviewed.
 
-### Expansion Chapter 2 mechanic prototypes
+### Historical Chapter 2 mechanic-prototype lane
 
 - Keep an unapproved prototype absent from playable expansion types, content,
   `src/sim/index.ts`, and the server validator bundle.
@@ -140,7 +185,9 @@ In addition to the UI lane:
 ### Blender expansion-asset intake
 
 - The owner approved Blender as a local source-authoring tool on 2026-09-08.
-  This does not authorize runtime 3D, WebGL, Three.js, or bulk asset generation.
+  The three-chapter milestone additionally authorizes the consistent expansion
+  grid and roster, built as related local batches. It does not authorize runtime
+  3D, WebGL or Three.js.
 - Keep the editable `.blend`, deterministic Blender Python build script,
   transparent source master, optimized runtime sprite, modeling brief, and
   SHA-256 provenance together. The playable game consumes only the raster.
@@ -179,3 +226,16 @@ Use the commands in `AGENTS.md` and `HANDOFF.md` as the canonical checklist.
 For current leaderboard-enabled builds, network/env searches must distinguish
 the sanctioned code under `src/leaderboard/` and Supabase from accidental new
 network dependencies elsewhere.
+
+# Historical local execution contract — 2026-09-11
+
+The 2026-09-13 release override above supersedes this milestone's publication
+restriction. PR publication is now authorized; merge and server deployment
+still require their separate release gates.
+
+Use `docs/EXPANSION_25_LOCAL_PLAN.md` for the approved 25-level (8/8/9) local
+revision. Resolve content by revision plus level ID, isolate r4 progress, keep
+historical fixtures immutable, and use full provenance-verified Blender CLI
+rebuilds. Keep chapter-sized local checkpoints and test before commits. CodeRabbit
+may review the diff and PR publication is authorized. Merge and server deployment
+remain prohibited until their separate release gates are met.
