@@ -2,15 +2,21 @@
 
 ## PR #84 review follow-up — 2026-09-23
 
-- **Next monitor action:** a tested follow-up for Codex conversation
+- **Next monitor action:** tested local follow-ups for Codex conversation
   `PRRT_kwDOSue4ts6lKOy1` / comment `4082698494` is local only. Do not recreate
-  the fix. CodeRabbit CLI review against base `e625935` failed twice before
+  the fix. CodeRabbit CLI review against base `e625935` failed three times before
   review with `Connection failed: WebSocket closed`. Retry local review on the
   committed follow-up against `e625935` with current AGENTS context; after it
   completes and any valid findings are addressed, push, reply/resolve this thread
-  and request current-head Codex review. Do not treat connection failure as a
+  and request current-head Codex review. The additional CodeRabbit documentation
+  thread `PRRT_kwDOSue4ts6lKd3P` / comment `4082792059` is also fixed locally:
+  SKILLS no longer retains the contradictory publication prohibition. Resolve
+  both only after publication. CodeRabbit auth status identifies the expected
+  GitHub account/organization; no re-login or credential change was performed.
+  Do not treat connection failure as a
   passing review or close the thread before publication. Remote head remains
-  `e625935`; build/CodeQL/preview are green and remote CodeRabbit is still pending.
+  `e625935`; build/CodeQL/preview and CodeRabbit status checks are green, but the
+  current-head CodeRabbit review requests the documentation correction above.
 - Current-head Codex follow-up found the panel's general account listener still
   discarded a successful score result on same-owner profile/token refresh. UI
   generations now advance only on an actual owner change; refreshes still update

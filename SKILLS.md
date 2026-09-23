@@ -237,4 +237,5 @@ Use `docs/EXPANSION_25_LOCAL_PLAN.md` for the approved 25-level (8/8/9) local
 revision. Resolve content by revision plus level ID, isolate r4 progress, keep
 historical fixtures immutable, and use full provenance-verified Blender CLI
 rebuilds. Keep chapter-sized local checkpoints and test before commits. CodeRabbit
-may review the diff; GitHub publication and deployment are not authorized.
+may review the diff and PR publication is authorized. Merge and server deployment
+remain prohibited until their separate release gates are met.
