@@ -1,5 +1,22 @@
 # GridWatch Handoff
 
+## 🟢 Leaderboards phase 3: Breach DEPLOYED and accepted — 2026-09-25
+
+- **Deploy (Russ's go, 2026-09-25):**
+  - **Client:** merging #87 (`8e87bd5`) auto-deployed it through Cloudflare Pages (production deployment `013b8ffd`). The function was not deployed first, because the Supabase CLI on the Mac had no sign-in; `supabase login` failed server-side while Russ was remote.
+  - **Function:** deployed as **v11** once Russ signed in, from a clean detached checkout of `8e87bd5`, using `supabase functions deploy submit-gridwatch-score --project-ref mggxfzzxrpjgpzhwiwqi --no-verify-jwt`. The CLI uploaded exactly the 8 runtime files listed below. `verify_jwt` is false; ezbr sha256 `3cbbbbf3f0a589ea155a97b87e0140d46f67a489d6a8ae724759ecd79865700a`. Rollback target: v10.
+  - **The gap:** between the Pages deploy and v11 the new client ran against v10. The DB shows **zero** `public.scores` rows written after 2026-09-25 15:00Z, so no score was written to the legacy table. This does not prove that no player attempted a submission in that window: a failed request would leave no row.
+- **Post-deploy checks:**
+  - Function: POST without auth → 401, bad token → 401 ("Your session has expired — sign in again."), OPTIONS from the Nexus origin → 204, GET → 405.
+  - Live client, served through Nexus `/play/breach/`: `main-3aWjnIMh.js` / `expansionLeaderboardUi-CnNAMM3z.js` contain `list_boards`, `get_board_entry`, `CAMPAIGN` and "Campaign #", and no `get_leaderboard`.
+- **Acceptance (Russ, signed in, 2026-09-25):**
+  - *Campaign:* cleared sector 2 (761) and sector 3 (544). The DB has `campaign / r2` entries `sector:2` and `sector:3`, with total **1305** on `all` and on `w:2026-W39`. The in-game CAMPAIGN tab shows `#1 RUSS 1305` (Russ's screenshot). ✅
+  - *Expansion:* cleared level 1. The DB has `expansion / r4` entry `level:1` = **536** (meta `contentRevision` `expansion-1-r4`, `all` period only). The in-game result reads "Verified 536 · Best 536 · Level rank #1", so the post-write read-back ran as the player (Russ's screenshot). ✅
+  - *Public reads (anon `get_board`):* Campaign `#1 Russ 1305` and Expansion `#1 Russ 536`, as Nexus serves them.
+  - **Not separately observed:** an iPhone run, the "no Submit on a lost run" behaviour, and the signed-in Nexus Breach boards. Russ's verdict: "breach is good to go". That is the owner's acceptance of those unobserved items.
+
+**Next:** nothing on Breach for the rebuild until phase 5 retires `record_score` and `scores`. After that, a rollback to v10 is no longer safe. Deferred follow-ups: the dead `categoryForRuleset`, the dead `https:` stub in the harness, the two client board readers (two cold `list_boards` calls), and the `SubmitResult` not-recorded type missing `runScore` and `rating`.
+
 ## Leaderboards phase 3 — Breach writes through the shared board registry (not deployed) — 2026-09-25
 
 - **Plan / branch:** `docs/superpowers/plans/2026-09-25-breach-submit-score.md`, branch
