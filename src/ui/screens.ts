@@ -549,7 +549,7 @@ function isExpansionNavigationScreen(screen: AppScreen): boolean {
 }
 
 const LEADERBOARD_FILTERS: readonly { label: string; value: number | null }[] = [
-  { label: "ALL", value: null },
+  { label: "CAMPAIGN", value: null },
   { label: "SECTOR 1", value: 1 },
   { label: "SECTOR 2", value: 2 },
   { label: "SECTOR 3", value: 3 },

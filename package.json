@@ -18,6 +18,7 @@
     "verify:score-board": "node scripts/run-typescript.mjs scripts/verify-score-board.ts",
     "verify:score-placement": "node scripts/run-typescript.mjs scripts/verify-score-placement.ts",
     "verify:campaign-score-http": "node scripts/verify-campaign-score-http.mjs",
+    "verify:board-reads": "node scripts/run-typescript.mjs scripts/verify-board-reads.ts",
     "balance:report": "node scripts/run-typescript.mjs scripts/balance-report.ts",
     "balance:search": "node scripts/run-typescript.mjs scripts/search-balance.ts",
     "expansion:content-report": "node scripts/run-typescript.mjs scripts/expansion-content-report.ts",

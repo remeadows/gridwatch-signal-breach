@@ -1,7 +1,8 @@
 import { leaderboardConfig } from "./config";
 import { canonicalExpansionScoreReplay, expansionScoreCategory, MAX_EXPANSION_SCORE_BYTES } from "./expansionScoreProtocol";
 import type { ExpansionReplayInput } from "../sim/expansion/types";
-import type { FetchLeaderboardResult, LeaderboardEntry } from "./api";
+import type { FetchLeaderboardResult } from "./api";
+import { createBoardReader } from "./boardReads";
 
 // Compatible score function v10 deployed before this reviewed client activation.
 export const EXPANSION_LEADERBOARDS_RELEASED = true;
@@ -10,6 +11,7 @@ export type ExpansionSubmitResult = { ok: false; error: string } | {
   rating: string; handle: string; category: string; level: number; contentRevision: string;
 };
 export function createExpansionScoreApi(config: { enabled: boolean; url: string; anonKey: string; gameSlug: string }, request: typeof fetch = fetch) {
+  const boards = createBoardReader(config, request);
   async function post(path: string, body: unknown, token: string): Promise<{ ok: boolean; data: unknown }> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 10000);
@@ -38,15 +40,11 @@ export function createExpansionScoreApi(config: { enabled: boolean; url: string;
         return data as ExpansionSubmitResult;
       } catch { return { ok: false, error: "Score not confirmed. Check your connection and retry." }; }
     },
+    // Level ranking on the expansion / r4 board (entry `level:<n>`).
     async read(level: number): Promise<FetchLeaderboardResult> {
       if (!config.enabled) return { ok: false, error: "Expansion leaderboard is disabled in this build." };
-      try {
-        const response = await post("/rest/v1/rpc/get_leaderboard", { p_game: config.gameSlug, p_category: expansionScoreCategory(level) }, config.anonKey);
-        if (!response.ok) return { ok: false, error: "Rankings could not be loaded. Retry when online." };
-        const data = response.data;
-        if (!Array.isArray(data) || data.length > 20 || !data.every((row) => row && typeof row.handle === "string" && Number.isSafeInteger(row.rank) && row.rank > 0 && Number.isSafeInteger(row.score) && row.score >= 0)) return { ok: false, error: "Invalid leaderboard response." };
-        return { ok: true, entries: data as LeaderboardEntry[] };
-      } catch { return { ok: false, error: "Rankings unavailable. Check your connection and retry." }; }
+      try { expansionScoreCategory(level); } catch { return { ok: false, error: "Rankings unavailable. Check your connection and retry." }; }
+      return boards.expansionLevel(level);
     },
   };
 }
