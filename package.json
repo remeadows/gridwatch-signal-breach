@@ -66,7 +66,7 @@
     "vite": "^8.3.0"
   },
   "dependencies": {
-    "@gridwatch/account-kit": "git+https://github.com/remeadows/gridwatch-account-kit.git#v0.2.5",
+    "@gridwatch/account-kit": "git+https://github.com/remeadows/gridwatch-account-kit.git#v0.3.0",
     "@supabase/supabase-js": "^2.116.0"
   }
 }
