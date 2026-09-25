@@ -76,6 +76,7 @@ jobs:
           npm run verify:score-placement
           npm run verify:campaign-score-http
           npm run verify:board-reads
+          npm run verify:submit-result-text
           npm run verify:latency-trap
           npm run verify:rusher
           npm run verify:sapper

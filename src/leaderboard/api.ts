@@ -26,16 +26,22 @@ export type SubmitResult =
       ok: true;
       // True when this run beat the player's previous best for the sector.
       improved: boolean;
-      // The score this run earned vs. the player's stored best (kept score).
+      // The score this run earned vs. the player's stored best for the sector.
       runScore: number;
-      bestScore: number;
+      bestScore: number | null;
+      // The player's campaign total (sum of cleared-sector bests).
+      campaignScore: number | null;
       ruleset: string;
       rating: string;
-      globalRank: number;
-      sectorRank: number;
+      // Rank on the campaign board, and on this sector's entry ranking. Null when the
+      // server could not read them back after a committed write.
+      globalRank: number | null;
+      sectorRank: number | null;
       // The handle the score is stored under (from the player's profile).
       handle: string;
     }>
+  // A lost or retired-ruleset run: validated, deliberately not written (HTTP 200).
+  | Readonly<{ ok: false; recorded: false; reason: string; error: string }>
   | Readonly<{ ok: false; error: string }>;
 
 // A read either succeeds with entries (possibly empty — a genuinely empty board)
