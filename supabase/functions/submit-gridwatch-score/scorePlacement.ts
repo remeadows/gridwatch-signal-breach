@@ -28,7 +28,14 @@ export function createBoardIdCache(): BoardIdCache {
       if (hit) return hit;
       try {
         const { data, error } = await rpc("list_boards", { p_game_slug: GAME_SLUG });
-        if (error || !Array.isArray(data)) return null;
+        if (error) {
+          console.error(`[score] placement: list_boards failed: ${errorMessage(error)}`);
+          return null;
+        }
+        if (!Array.isArray(data)) {
+          console.error("[score] placement: list_boards failed: malformed response");
+          return null;
+        }
         for (const row of data) {
           if (isRecord(row) && row.game_slug === GAME_SLUG && typeof row.id === "string"
             && typeof row.key === "string" && typeof row.ruleset === "string") {
@@ -36,7 +43,8 @@ export function createBoardIdCache(): BoardIdCache {
           }
         }
         return ids.get(cacheKey(board)) ?? null;
-      } catch {
+      } catch (err) {
+        console.error(`[score] placement: list_boards failed: ${errorMessage(err)}`);
         return null;
       }
     },
@@ -87,15 +95,26 @@ export async function readCampaignPlacement(rpc: Rpc, boards: BoardIdCache, sect
       rpc("get_board_entry", { p_board_id: id, p_period_key: "all", p_entry_key: sectorEntryKey(sector), p_limit: PLACEMENT_LIMIT }),
       rpc("get_my_standing", { p_board_id: id, p_period_key: "all" }),
     ]);
-    const mine = entry.error ? null : yourEntry(entry.data);
-    const overall = standing.error ? null : yourStanding(standing.data);
+    let mine: EntryStanding | null = null;
+    if (entry.error) {
+      console.error(`[score] placement: get_board_entry ${sectorEntryKey(sector)} failed: ${errorMessage(entry.error)}`);
+    } else {
+      mine = yourEntry(entry.data);
+    }
+    let overall: BoardStanding | null = null;
+    if (standing.error) {
+      console.error(`[score] placement: get_my_standing failed: ${errorMessage(standing.error)}`);
+    } else {
+      overall = yourStanding(standing.data);
+    }
     return {
       bestScore: mine?.score ?? null,
       sectorRank: mine?.rank ?? null,
       globalRank: overall?.rank ?? null,
       campaignTotal: overall?.total ?? null,
     };
-  } catch {
+  } catch (err) {
+    console.error(`[score] placement: campaign placement failed: ${errorMessage(err)}`);
     return none;
   }
 }
@@ -108,9 +127,15 @@ export async function readExpansionPlacement(rpc: Rpc, boards: BoardIdCache, lev
     const entry = await rpc("get_board_entry", {
       p_board_id: id, p_period_key: "all", p_entry_key: levelEntryKey(level), p_limit: PLACEMENT_LIMIT,
     });
-    const mine = entry.error ? null : yourEntry(entry.data);
+    let mine: EntryStanding | null = null;
+    if (entry.error) {
+      console.error(`[score] placement: get_board_entry ${levelEntryKey(level)} failed: ${errorMessage(entry.error)}`);
+    } else {
+      mine = yourEntry(entry.data);
+    }
     return { bestScore: mine?.score ?? null, levelRank: mine?.rank ?? null };
-  } catch {
+  } catch (err) {
+    console.error(`[score] placement: expansion placement failed: ${errorMessage(err)}`);
     return none;
   }
 }
@@ -173,4 +198,13 @@ export function expansionReply(input: {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+// Best-effort reads never fail the request, but every swallowed failure is logged so an
+// outage is visible in function logs. Only the RPC name/entry key and the error's own message
+// are logged — never tokens, ids, or payloads.
+function errorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  if (isRecord(err) && typeof err.message === "string") return err.message;
+  return String(err);
 }
