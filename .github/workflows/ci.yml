@@ -73,6 +73,7 @@ jobs:
           npm run verify:expansion-score-http
           npm run verify:expansion-score-ui
           npm run verify:score-board
+          npm run verify:score-placement
           npm run verify:latency-trap
           npm run verify:rusher
           npm run verify:sapper
