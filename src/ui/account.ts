@@ -10,6 +10,7 @@ import {
   signOut,
 } from "../leaderboard/account";
 import type { SubmitResult } from "../leaderboard/api";
+import { describeSubmitResult } from "../leaderboard/submitResultText";
 import { MAX_HANDLE_LENGTH } from "../leaderboard/config";
 
 // "submit" mode requires the submission callback; "manage" mode forbids it.
@@ -151,19 +152,14 @@ export function createAccountPanel(options: AccountPanelOptions): HTMLElement {
         submit.disabled = true;
         setStatus("Submitting run for validation…", "info");
         const result = await onSubmit();
-        if (result.ok) {
+        const outcome = describeSubmitResult(result, "panel");
+        if (outcome.settled) {
           submitted = true;
-          const placement = `Global #${result.globalRank} · Sector #${result.sectorRank}`;
-          setStatus(
-            result.improved
-              ? `New best ${result.bestScore}! ${placement}.`
-              : `This run: ${result.runScore}. Your best ${result.bestScore} stands — ${placement}.`,
-            "success",
-          );
+          setStatus(outcome.text, outcome.kind);
           render();
         } else {
           submit.disabled = false;
-          setStatus(result.error, "error");
+          setStatus(outcome.text, outcome.kind);
         }
       });
       submit.disabled = submitted;

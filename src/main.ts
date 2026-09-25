@@ -27,6 +27,7 @@ import { renderUnitPicker } from "./ui/unitPicker";
 import { getCommandFeedback } from "./ui/toolInfo";
 import { leaderboardConfig } from "./leaderboard/config";
 import { submitScore } from "./leaderboard/api";
+import { describeSubmitResult } from "./leaderboard/submitResultText";
 import { accessToken, accountState, initAccount, onAccountChange, onSaveOwnerChange, saveOwner } from "./leaderboard/account";
 import { ExpansionLocalSave } from "./ui/expansionLocalSave";
 import { createExpansionCloudSave } from "./leaderboard/expansionCloudClient";
@@ -371,11 +372,7 @@ async function maybeAutoSubmitPendingRun(): Promise<void> {
     commands: pending.commands,
     accessToken: accessToken() ?? "",
   });
-  leaderboardNotice = result.ok
-    ? result.improved
-      ? `Run logged — new best ${result.bestScore}! Global #${result.globalRank} · Sector #${result.sectorRank}.`
-      : `Run logged. Your best ${result.bestScore} stands — Global #${result.globalRank} · Sector #${result.sectorRank}.`
-    : `Couldn't log your last run: ${result.error}`;
+  leaderboardNotice = describeSubmitResult(result, "notice").text;
   screen = "leaderboard";
   hoverTile = null;
 }
@@ -519,7 +516,8 @@ function drawFrame(now: number): void {
       onSectorSelect: openSectorSelect,
       onNextSector: getNextSectorHandler(),
       onViewLeaderboard: openLeaderboard,
-      onSubmitScore: leaderboardConfig.enabled
+      // Only cleared sectors count on the campaign board, so a lost run offers no submission.
+      onSubmitScore: leaderboardConfig.enabled && state.phase === "won"
         ? () =>
             submitScore({
               ruleset: SIM_RULESET_ID,

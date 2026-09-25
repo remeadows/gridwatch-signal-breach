@@ -1,5 +1,97 @@
 # GridWatch Handoff
 
+## Leaderboards phase 3 — Breach writes through the shared board registry (not deployed) — 2026-09-25
+
+- **Plan / branch:** `docs/superpowers/plans/2026-09-25-breach-submit-score.md`, branch
+  `feat/breach-submit-score`. Implements Nexus spec §6 phase 3, game 3 (gridwatch-command-nexus:
+  `docs/superpowers/specs/2026-09-24-nexus-leaderboards-rebuild-design.md`). The database side is
+  live (Nexus migrations `20260924131533_leaderboard_boards`, `20260924135833_submit_score_board_lock`);
+  no migration in this repo.
+- **Edge Function:** one service-role `submit_score` call per accepted run — cleared V2 sector →
+  `gridwatch-signal-breach / campaign / r2`, entry `sector:<n>`; expansion win → `expansion / r4`,
+  entry `level:<n>`. Request id = proof SHA-256, achieved_at = server time, meta =
+  `{v, ruleset|contentRevision, sector|level, seed, commandCount, rating}` (full proof covered by
+  the hash only). Every `record_score` call, the `sector-cleared:*` markers, the
+  `standard`/`daily-*`/`weekly-*` hub-alignment block and all `public.scores` reads are gone.
+  Replay anti-cheat unchanged; `sim.bundle.js` and `expansion-r4.bundle.js` byte-identical.
+- **Not recorded:** lost V2 runs and legacy-ruleset runs get HTTP 200
+  `{ok:false, recorded:false, reason, runScore, rating, error}` (`runScore`/`rating` null for a
+  retired-ruleset run) and write nothing; the pinned legacy validator import is removed. The
+  current client no longer offers submission on a lost run.
+- **Responses:** every existing field kept. `duplicate` / `request_conflict` = already logged
+  (`improved:false`). `campaignScore` = board total; `bestScore`, `sectorRank`, `levelRank`
+  (`get_board_entry` is_you row) and `globalRank` (now the campaign-board rank, `get_my_standing`)
+  are read back as the player, null if unavailable. HTTP: 422 invalid_time / invalid_entry /
+  score_out_of_range, 400 invalid_request, 503 unknown_board / ruleset_mismatch (logged), 500
+  other / RPC failure, 409 no handle.
+- **In-game reads:** `list_boards` → `get_board(campaign,'all')` (tab renamed ALL → CAMPAIGN),
+  `get_board_entry(campaign,'all','sector:n')`, `get_board_entry(expansion,'all','level:n')`.
+  No `get_leaderboard` call remains. Placement copy says "Campaign #" (was "Global #").
+- **Behaviour changes (spec §5):** per-sector rankings count cleared runs only; the headline is
+  the sum of cleared-sector bests; no daily board (campaign has all-time + week).
+- **Spec deviation (§2 step 3):** the weekly period follows submission time (`p_achieved_at` =
+  server time), not play time as the spec describes, because Breach runs carry no trusted end
+  time. Consequence: a run submitted after a UTC week boundary counts for the new week, and
+  re-posting an old winning proof after the 1-hour replay window writes it into the current week
+  (the old `weekly-*` rows had the same property; improve-only means it can't raise a score above
+  the replayed value).
+- **Compat:** bundles cached before the deploy keep working. Two rare degraded cases, both
+  after a committed write whose read-back failed or ranks the player outside the top 100: a
+  cached V2 bundle prints `#null`; a cached expansion bundle says "Invalid score response"
+  and keeps the run pending (a retry is answered as already logged). Fuller cached-client
+  picture: a cached pre-deploy V2 bundle still wins normally; a non-improving run whose
+  read-back fails can print "Your best null stands"; a lost run's "Not recorded" text shows in
+  error styling with SUBMIT re-enabled (re-clicking returns the same answer, no loop); a legacy
+  pending run is consumed by `takePendingRun` and not re-sent. A cached expansion bundle rejects
+  a null rank/best (read-back failed or outside top 100) and keeps the run pending until an
+  explicit re-submit from a fresh bundle.
+- **Deviations from the plan text (found during review):** (a) `scorePlacement.ts` logs
+  `[score] placement: …` on every swallowed read-back failure (never tokens/ids); (b) nothing else.
+- **Evidence:** CI set 47/47 `npm run` steps green, both bundles byte-identical, `deno check`
+  clean, local browser check (dev server on the branch against the live DB, read-only; desktop
+  1280 and 375 px): the tabs read CAMPAIGN · SECTOR 1 · SECTOR 2 · SECTOR 3 on one row with no
+  horizontal overflow; empty boards show `No scores yet. Be the first to hold the grid.`;
+  requests are `rpc/list_boards` once, then `rpc/get_board` / `rpc/get_board_entry`, with no
+  `rpc/get_leaderboard`; the expansion level read returns ok (0 entries) via `get_board_entry`;
+  console clean.
+
+**Deploy — Russ-gated, and only after Match's phase-3 deploy is accepted.**
+1. Merge nothing yet. Review and approve the PR; CI green.
+2. **Edge Function first**, from the approved PR head (Cloudflare Pages deploys the client the
+   moment the PR merges, so the function must go out before the merge): in a clean detached
+   checkout of that commit run
+   `deno check --node-modules-dir=none --no-lock supabase/functions/submit-gridwatch-score/index.ts`, then
+   `supabase functions deploy submit-gridwatch-score --project-ref mggxfzzxrpjgpzhwiwqi --no-verify-jwt`.
+   The CLI bundles sibling imports automatically. A file-by-file deploy (e.g. the Supabase MCP
+   `deploy_edge_function`) must instead upload exactly `index.ts`'s runtime import graph — `index.ts`,
+   `replayValidation.ts`, `expansionScoreHandler.ts`, `requestBody.ts`, `scoreBoard.ts`,
+   `scorePlacement.ts`, `sim.bundle.js`, `expansion-r4.bundle.js` (8 files, verified present in
+   `supabase/functions/submit-gridwatch-score/`). `expansionReplayValidation.ts` and
+   `expansion-r4.bundle.d.ts` also live in that directory but are not imported by `index.ts` at
+   runtime (the old server-first release's 4-file list included `expansionReplayValidation.ts`
+   because that generation of `index.ts` imported it directly; this generation validates expansion
+   runs through `expansionScoreHandler.ts` → `expansion-r4.bundle.js` instead) — do not include them
+   in a file-by-file deploy. After deploying, record the deployed files' SHA-256s, as
+   `docs/EXPANSION_SERVER_RELEASE_2026_09_23.md` did for the prior release.
+   Record the new version (rollback = version 10, i.e. redeploy the function from `ff6238a`). No-write
+   probes: `OPTIONS` with `Origin: https://nexus.warsignallabs.net` → 204 with that origin echoed;
+   unauthenticated `POST` → 401. The old client keeps working against the new function.
+3. **Then the static client:** merge the PR. Cloudflare Pages builds `main` and publishes
+   `gridwatch-signal-breach.pages.dev`; players get it through `https://nexus.warsignallabs.net/play/breach/`.
+   Confirm the Pages deployment succeeded and hard-refresh.
+4. **Acceptance (Mac and iPhone, signed in):** clear one V2 sector → `New best <n>! Campaign #r · Sector #s.`;
+   win one expansion level → `Verified <n> · Best <n> · Level rank #r`. On Nexus Leaderboards → Signal
+   Breach: the Campaign board shows your row with the `is_you` highlight and `YOU // #n OF m ON THE GRID`,
+   and the Expansion board (board picker) shows your level total the same way. In game, CAMPAIGN and the
+   cleared SECTOR tab list you. A lost run shows no submit section. Supabase function logs show no
+   `[score]` errors. Record pass/fail here. Then Zero.
+5. **Rollback:** redeploy the function from `ff6238a` (writes `public.scores` again; the new client
+   still renders its responses); roll Pages back to the previous production deployment in the
+   Cloudflare dashboard if the client itself misbehaves. Caveat: after rolling the function back to
+   v10, the new client's in-game boards go stale — it reads the shared registry, while v10 writes
+   `public.scores` — and the same staleness happens if the Pages client is merged before the
+   function is deployed (step 2 before step 3 exists precisely to avoid that ordering).
+
 ## PR #86 review follow-up — 2026-09-23
 
 - Current head `e4e9f74`: build, CodeQL, Cloudflare preview and CodeRabbit status

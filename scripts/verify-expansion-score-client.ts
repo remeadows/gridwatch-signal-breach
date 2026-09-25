@@ -8,6 +8,7 @@ const proof = fixture.runs[0]!.replay as ExpansionReplayInput;
 const nextProof = { ...proof, seed: "another-run" };
 const success: ExpansionSubmitResult = { ok: true, improved: true, runScore: 100, bestScore: 100, levelRank: 1, rating: "A", handle: "Tester", category: expansionScoreCategory(proof.level), level: proof.level, contentRevision: proof.contentRevision };
 const config = { enabled: true, url: "https://isolated.invalid", anonKey: "test-public", gameSlug: "gridwatch-signal-breach" };
+const REGISTRY = [{ id: "00000000-0000-4000-8000-0000000000e4", game_slug: "gridwatch-signal-breach", key: "expansion", ruleset: "r4", status: "active" }];
 let requests = 0;
 let response: unknown = success;
 const fakeFetch: typeof fetch = async (url, init) => {
@@ -19,18 +20,31 @@ const fakeFetch: typeof fetch = async (url, init) => {
     assert.equal(new Headers(init?.headers).get("Authorization"), "Bearer isolated-token");
     assert.deepEqual(body, proof);
     assert.equal("score" in body, false);
-  } else assert.deepEqual(body, { p_game: config.gameSlug, p_category: expansionScoreCategory(proof.level) });
+  } else if (String(url).endsWith("/rest/v1/rpc/list_boards")) {
+    assert.deepEqual(body, { p_game_slug: config.gameSlug });
+    return Response.json(REGISTRY);
+  } else {
+    assert.equal(String(url), `${config.url}/rest/v1/rpc/get_board_entry`);
+    assert.deepEqual(body, { p_board_id: REGISTRY[0]!.id, p_period_key: "all", p_entry_key: `level:${proof.level}`, p_limit: 20 });
+  }
   return Response.json(response);
 };
 const api = createExpansionScoreApi(config, fakeFetch);
 assert.equal((await api.submit(proof, "isolated-token")).ok, true);
 response = { ...success, category: "phase4-v1:global" };
 assert.equal((await api.submit(proof, "isolated-token")).ok, false);
+response = { ...success, bestScore: null, levelRank: null };
+assert.equal((await api.submit(proof, "isolated-token")).ok, true, "A committed score with no read-back is still a success.");
+for (const bad of [{ bestScore: 99 }, { bestScore: -1 }, { levelRank: 0 }, { levelRank: "1" }, { bestScore: undefined }]) {
+  response = { ...success, ...bad };
+  assert.equal((await api.submit(proof, "isolated-token")).ok, false, `Rejects ${JSON.stringify(bad)}`);
+}
 response = null;
 assert.equal((await api.submit(proof, "isolated-token")).ok, false);
-response = [{ rank: 1, handle: "<not-html>", score: 100 }];
-assert.equal((await api.read(proof.level)).ok, true);
-response = [{ rank: 0, handle: "x", score: 100 }];
+response = [{ rank: 1, display_name: "<not-html>", score: 100, achieved_at: "2026-09-25T12:00:00Z", is_you: false }];
+const read = await api.read(proof.level);
+assert.equal(read.ok && read.entries[0]!.handle, "<not-html>", "display_name maps onto the row handle.");
+response = [{ rank: 0, display_name: "x", score: 100 }];
 assert.equal((await api.read(proof.level)).ok, false);
 const offline = createExpansionScoreApi(config, async () => { throw Error("offline"); });
 assert.equal((await offline.submit(proof, "x")).ok, false);

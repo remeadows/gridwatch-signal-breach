@@ -5,35 +5,45 @@
 // stores the score IT computes. The number a client claims is never trusted.
 //
 // Identity: the caller must be signed in (Supabase Auth). The score is attributed
-// to their user id, displayed under the handle from their profile, and only their
-// personal best per board is kept (record_score upsert).
+// to their user id and displayed under the handle from their profile.
+//
+// Storage: one service-role submit_score call per accepted run on the shared board
+// registry (Nexus spec 2026-09-24 §2): cleared V2 sectors → campaign / r2 entry
+// `sector:<n>`, expansion wins → expansion / r4 entry `level:<n>`. The database
+// keeps each entry's best and sums the campaign total. Lost and legacy-ruleset runs
+// are answered "not recorded" and write nothing.
 //
 // verify_jwt is intentionally false so this function can handle the CORS preflight
 // itself; the user's token is validated manually below.
 import { createClient } from "jsr:@supabase/supabase-js@2";
-import {
-  SIM_RULESET_ID,
-  replayRun as replayCurrentRun,
-  ReplayError as CurrentReplayError,
-} from "./sim.bundle.js";
-import {
-  replayRun as replayLegacyRun,
-  ReplayError as LegacyReplayError,
-} from "https://raw.githubusercontent.com/remeadows/gridwatch-signal-breach/fa0a5df7a5bae70068772566913d13e99fe137f0/supabase/functions/submit-gridwatch-score/sim.bundle.js";
+import { replayRun, ReplayError, SIM_RULESET_ID } from "./sim.bundle.js";
 import {
   EXPANSION_RULESET_ID,
   ReplayValidationError,
   assertNoExpansionReplayIdentity,
   canonicalizeCommands,
-  categoryForRuleset,
   resolveRuleset,
   type CanonicalCommand,
   type ResolvedRuleset,
 } from "./replayValidation.ts";
 import { handleExpansionScore } from "./expansionScoreHandler.ts";
 import { readReplayBody } from "./requestBody.ts";
+import {
+  CAMPAIGN_BOARD,
+  campaignMeta,
+  notRecordedReply,
+  sectorEntryKey,
+  submitArgs,
+  submitOutcome,
+} from "./scoreBoard.ts";
+import {
+  campaignReply,
+  createBoardIdCache,
+  readCampaignPlacement,
+  readExpansionPlacement,
+  type Rpc,
+} from "./scorePlacement.ts";
 
-const GAME_SLUG = "gridwatch-signal-breach";
 const MAX_COMMANDS = 5000;
 const MAX_SCORE = 100000;
 const VALID_SECTORS = new Set([1, 2, 3]);
@@ -71,23 +81,12 @@ async function sha256Hex(input: string): Promise<string> {
     .join("");
 }
 
-// UTC ISO-8601 period stamps for the hub's Today / This Week boards. Byte-identical
-// in logic to the other GridWatch games' score workers and the Command Nexus hub's
-// src/lib/periods.ts — change together.
-function dailyCategory(now: Date): string {
-  return "daily-" + now.toISOString().slice(0, 10);
-}
-function weeklyCategory(now: Date): string {
-  const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  const week = Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
-  return `weekly-${d.getUTCFullYear()}-W${String(week).padStart(2, "0")}`;
-}
-
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+// Board ids from list_boards, cached per isolate once found (never on failure).
+const boardIds = createBoardIdCache();
 
 Deno.serve(async (req: Request) => {
   const origin = req.headers.get("origin");
@@ -112,6 +111,8 @@ Deno.serve(async (req: Request) => {
   if (authError || !user) {
     return json({ ok: false, error: "Your session has expired — sign in again." }, 401, origin);
   }
+  // Read-back after a write runs as the player, so is_you / get_my_standing resolve to them.
+  const userRpc: Rpc = (fn, args) => userClient.rpc(fn, args);
 
   let payload: Record<string, unknown>;
   try {
@@ -125,8 +126,8 @@ Deno.serve(async (req: Request) => {
     return json({ ok: false, error: "Invalid replay payload." }, 400, origin);
   }
 
-  // A separate frozen r4 validator/category path. Always return here: expansion
-  // must never enter the original sector or hub-alignment writes below.
+  // A separate frozen r4 validator and board. Always return here: expansion must
+  // never write the campaign board below.
   if (payload.ruleset === EXPANSION_RULESET_ID) {
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, { auth: { persistSession: false } });
     const result = await handleExpansionScore(payload, user.id, {
@@ -134,11 +135,14 @@ Deno.serve(async (req: Request) => {
         const { data, error } = await admin.from("profiles").select("handle").eq("user_id", userId).maybeSingle();
         return { handle: data?.handle ?? null, error: Boolean(error) };
       },
-      record: async (input) => {
-        const { data, error } = await admin.rpc("record_score", input);
-        return error || !data?.length ? null : data[0];
+      submit: async (args) => {
+        const { data, error } = await admin.rpc("submit_score", args);
+        if (error) console.error("[score] submit_score call failed:", error);
+        return error ? null : data;
       },
+      placement: (level) => readExpansionPlacement(userRpc, boardIds, level),
     });
+    if (result.log) console.error(`[score] ${result.log}`);
     return json(result.body, result.status, origin);
   }
 
@@ -165,29 +169,22 @@ Deno.serve(async (req: Request) => {
     return json({ ok: false, error: "Invalid replay payload." }, 400, origin);
   }
 
+  // Pre-phase-4 (legacy-v1) runs belong to no board: the campaign board is r2 and scores
+  // only current-ruleset clears. Answer before replaying anything; nothing is written.
+  if (ruleset.legacy) {
+    return json(notRecordedReply("retired-ruleset", null, null), 200, origin);
+  }
+
   let score: number;
   let rating: string;
   let phase: string;
-  let metadata: Record<string, unknown>;
   try {
-    const replay = ruleset.legacy ? replayLegacyRun : replayCurrentRun;
-    const result = replay({ seed, sector, commands: canonicalCommands });
-    const breakdown = result.score;
-    const state = result.state;
-    score = breakdown.total;
-    rating = breakdown.rating;
-    phase = state.phase;
-    metadata = {
-      sector,
-      ruleset: ruleset.id,
-      phase,
-      integrity: breakdown.integrity,
-      neutralized: breakdown.neutralized,
-      uptimePercent: breakdown.uptimePercent,
-      efficiencyBonus: breakdown.efficiencyBonus,
-    };
+    const result = replayRun({ seed, sector, commands: canonicalCommands });
+    score = result.score.total;
+    rating = result.score.rating;
+    phase = result.state.phase;
   } catch (err) {
-    if (err instanceof LegacyReplayError || err instanceof CurrentReplayError) {
+    if (err instanceof ReplayError) {
       return json({ ok: false, error: `Rejected: ${err.message}` }, 422, origin);
     }
     return json({ ok: false, error: "Replay failed." }, 422, origin);
@@ -199,11 +196,12 @@ Deno.serve(async (req: Request) => {
   if (!Number.isFinite(score) || score < 0 || score > MAX_SCORE) {
     return json({ ok: false, error: "Score out of bounds." }, 422, origin);
   }
+  // The campaign board counts cleared sectors only (spec §5): a lost run is not recorded.
+  if (phase === "lost") {
+    return json(notRecordedReply("not-cleared", score, rating), 200, origin);
+  }
 
-  const category = categoryForRuleset(ruleset, `sector:${sector}`);
-  const proof = ruleset.legacy
-    ? { seed, sector, commands: canonicalCommands }
-    : { ruleset: ruleset.id, seed, sector, commands: canonicalCommands };
+  const proof = { ruleset: ruleset.id, seed, sector, commands: canonicalCommands };
   const proofHash = await sha256Hex(JSON.stringify(proof));
 
   const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
@@ -223,172 +221,30 @@ Deno.serve(async (req: Request) => {
     return json({ ok: false, error: "Choose a handle before submitting." }, 409, origin);
   }
 
-  // Atomic keep-best upsert + ranking, in the database.
-  const { data: recorded, error: recordError } = await admin.rpc("record_score", {
-    p_user_id: user.id,
-    p_slug: GAME_SLUG,
-    p_category: category,
-    p_score: score,
-    p_rating: rating,
-    p_metadata: metadata,
-    p_proof: proof,
-    p_proof_hash: proofHash,
-  });
-  if (recordError || !recorded || recorded.length === 0) {
+  // One write: the database keeps the sector best improve-only and re-sums the campaign
+  // total for `all` and the ISO week of achieved_at.
+  const { data: submitted, error: submitError } = await admin.rpc("submit_score", submitArgs({
+    userId: user.id,
+    board: CAMPAIGN_BOARD,
+    entryKey: sectorEntryKey(sector),
+    score,
+    proofHash,
+    achievedAt: new Date(),
+    meta: campaignMeta({ ruleset: ruleset.id, sector, seed, commandCount: canonicalCommands.length, rating }),
+  }));
+  if (submitError) {
+    console.error("[score] submit_score call failed:", submitError);
     return json({ ok: false, error: "Could not save score." }, 500, origin);
   }
-  const row = recorded[0] as {
-    stored_score: number;
-    improved: boolean;
-    global_rank: number;
-    sector_rank: number;
-  };
-
-  // Command Nexus hub alignment: the hub reads the legacy shared board via
-  // get_leaderboard(game, 'standard' | 'daily-*' | 'weekly-*'). #25 originally wrote
-  // only sector:N rows, so the hub's Signal Breach board stayed empty. Feed it here:
-  //   standard    = campaign total = sum of best scores for CLEARED sectors only
-  //   daily/weekly = this run's score (best single-sector run of the period,
-  //                 win or lose — unchanged from the original alignment)
-  //
-  // "Cleared" is tracked via a separate, append-only sector-cleared:N marker
-  // (fixed score of 1, written only when phase === "won") rather than derived
-  // from sector:N's stored metadata.phase. sector:N is a pure keep-best-by-raw-
-  // score row shared by wins and losses: a later, higher-scoring LOSS can
-  // overwrite a previously WON row (flipping metadata.phase back to "lost"), and
-  // a later, lower-scoring WIN never overwrites an existing higher-scoring LOSS
-  // (so the win would never be recorded at all). Neither direction may ever
-  // un-clear or silently drop a real clear, so "cleared" must be a monotonic
-  // fact independent of whichever attempt currently holds the best-score slot.
-  //
-  // The companion migration constrains a null-category leaderboard read to the
-  // three legacy sector categories. New rulesets prefix every category, so they
-  // remain additive and cannot overwrite or leak into historical rankings.
-  //
-  // BEST-EFFORT: every write here is wrapped so a failure never fails the
-  // primary sector submission above; every Supabase {error} is logged
-  // explicitly (v2's .rpc()/query builder return {data,error} and do not
-  // throw by default, so a silent failure here would otherwise be invisible).
-  //
-  // record_score resolves the target game from p_slug internally, so it does
-  // NOT need our locally-fetched gameId — only the direct .from("scores")
-  // reads below (which filter by game_id, not slug) do. Keeping the marker
-  // write and the daily/weekly writes ungated means a transient `games`
-  // lookup failure can never silently drop them; only the `standard` write
-  // (which needs campaignScore, computed from those gated reads) is skipped
-  // when the lookup fails.
-  let campaignScore: number | null = null;
-  try {
-    if (phase === "won") {
-      const markerCategory = categoryForRuleset(ruleset, `sector-cleared:${sector}`);
-      const { error: markerError } = await admin.rpc("record_score", {
-        p_user_id: user.id,
-        p_slug: GAME_SLUG,
-        p_category: markerCategory,
-        p_score: 1,
-        p_rating: rating,
-        p_metadata: { kind: "cleared-marker", sector, ruleset: ruleset.id },
-        p_proof: proof,
-        p_proof_hash: proofHash,
-      });
-      if (markerError) console.error(`hub-alignment: ${markerCategory} marker write error:`, markerError);
-    }
-
-    const { data: gameRow, error: gameError } = await admin
-      .from("games").select("id").eq("slug", GAME_SLUG).maybeSingle();
-    if (gameError) console.error("hub-alignment: games lookup error:", gameError);
-    const gameId = gameRow?.id as string | undefined;
-
-    let clearedSectorCount = 0;
-    if (gameId) {
-      const sectorCategories = [1, 2, 3].map((id) =>
-        categoryForRuleset(ruleset, `sector:${id}`)
-      );
-      const clearedCategories = [1, 2, 3].map((id) =>
-        categoryForRuleset(ruleset, `sector-cleared:${id}`)
-      );
-      const [{ data: sectorRows, error: sectorError }, { data: clearedMarkerRows, error: clearedError }] =
-        await Promise.all([
-          admin.from("scores").select("category, score")
-            .eq("game_id", gameId).eq("user_id", user.id)
-            .in("category", sectorCategories),
-          admin.from("scores").select("category")
-            .eq("game_id", gameId).eq("user_id", user.id)
-            .in("category", clearedCategories),
-        ]);
-      if (sectorError) console.error("hub-alignment: sector scores fetch error:", sectorError);
-      if (clearedError) console.error("hub-alignment: cleared-marker fetch error:", clearedError);
-
-      if (!sectorError && !clearedError) {
-        const clearedSectors = new Set(
-          (clearedMarkerRows ?? []).map((r) =>
-            Number((r.category as string).split(":").at(-1))
-          ),
-        );
-        const sectorScoreRows = (sectorRows ?? []) as Array<{ category: string; score: number }>;
-        const clearedRows = sectorScoreRows.filter((r) =>
-          clearedSectors.has(Number(r.category.split(":").at(-1))),
-        );
-        campaignScore = clearedRows.reduce((sum, r) => sum + (r.score ?? 0), 0);
-        clearedSectorCount = clearedRows.length;
-      }
-    }
-
-    const now = new Date();
-    const aggProof = { kind: "aggregate", ruleset: ruleset.id, from: category };
-    const aggHash = await sha256Hex(JSON.stringify({ user: user.id, ...aggProof }));
-    const alignedWrites: Array<{ cat: string; sc: number; meta: Record<string, unknown>; agg: boolean }> = [
-      ...(campaignScore !== null
-        ? [{
-            cat: categoryForRuleset(ruleset, "standard"),
-            sc: campaignScore,
-            meta: { kind: "campaign", ruleset: ruleset.id, sectors: clearedSectorCount },
-            agg: true,
-          }]
-        : []),
-      {
-        cat: categoryForRuleset(ruleset, dailyCategory(now)),
-        sc: score,
-        meta: metadata,
-        agg: false,
-      },
-      {
-        cat: categoryForRuleset(ruleset, weeklyCategory(now)),
-        sc: score,
-        meta: metadata,
-        agg: false,
-      },
-    ];
-    await Promise.all(alignedWrites.map(async (w) => {
-      const { error: writeError } = await admin.rpc("record_score", {
-        p_user_id: user.id,
-        p_slug: GAME_SLUG,
-        p_category: w.cat,
-        p_score: w.sc,
-        p_rating: rating,
-        p_metadata: w.meta,
-        p_proof: w.agg ? aggProof : proof,
-        p_proof_hash: w.agg ? aggHash : proofHash,
-      });
-      if (writeError) console.error(`hub-alignment: ${w.cat} write error:`, writeError);
-    }));
-  } catch (err) {
-    console.error("hub-alignment writes failed (non-fatal):", err);
+  const outcome = submitOutcome(submitted, CAMPAIGN_BOARD);
+  if (outcome.kind === "rejected") {
+    if (outcome.log) console.error(`[score] ${outcome.log}`);
+    return json({ ok: false, error: outcome.error }, outcome.status, origin);
   }
 
+  const placement = await readCampaignPlacement(userRpc, boardIds, sector);
   return json(
-    {
-      ok: true,
-      improved: row.improved,
-      runScore: score,
-      bestScore: row.stored_score,
-      campaignScore,
-      ruleset: ruleset.id,
-      rating,
-      globalRank: row.global_rank,
-      sectorRank: row.sector_rank,
-      handle: profile.handle,
-    },
+    campaignReply({ outcome, placement, runScore: score, ruleset: ruleset.id, rating, handle: profile.handle }),
     200,
     origin,
   );

@@ -89,7 +89,7 @@ export function createExpansionLeaderboardPanel(level: number, offer?: Expansion
         const result = await expansionPendingScores.submit(run);
         if (disposed || mine !== generation) return;
         submitted = result.ok;
-        message = result.ok ? `Verified ${result.runScore} · Best ${result.bestScore} · Level rank #${result.levelRank}` : result.error;
+        message = result.ok ? verifiedMessage(result) : result.error;
         render();
       });
       submit.disabled = busy || !expansionScoreApi.enabled;
@@ -145,6 +145,15 @@ export function createExpansionLeaderboardPanel(level: number, offer?: Expansion
   observer.observe(document.body, { childList: true, subtree: true });
   render();
   return { element: root, dispose };
+}
+
+// Null best/rank (read-back unavailable after a committed write) are left out, never "#null".
+function verifiedMessage(result: { runScore: number; bestScore: number | null; levelRank: number | null }): string {
+  return [
+    `Verified ${result.runScore}`,
+    result.bestScore !== null ? `Best ${result.bestScore}` : null,
+    result.levelRank !== null ? `Level rank #${result.levelRank}` : "Level rank updating",
+  ].filter((part) => part !== null).join(" · ");
 }
 
 /** Nexus sign-in returns to the game root; offer an explicit pending submission. */

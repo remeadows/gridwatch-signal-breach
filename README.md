@@ -121,28 +121,28 @@ Pull requests get automatic Cloudflare preview deployments. A lightweight GitHub
 
 ## Leaderboard (high scores)
 
-A global + per-sector **Top 20** leaderboard, backed by Supabase (`GridWatchGamesDB`,
-a shared multi-game database). Players view rankings from the title or game-over
-screen. Submitting a score requires signing in — sign-in starts on Nexus and
-returns you to the game; each player picks a unique handle and the board keeps
-only their **personal best** per sector (and a single best-across-sectors row
-on the global board).
+A campaign + per-sector **Top 20** leaderboard, backed by Supabase (`GridWatchGamesDB`,
+a shared multi-game database) through the GridWatch board registry that Nexus also
+reads. Players view rankings from the title or game-over screen. Submitting a score
+requires signing in — sign-in starts on Nexus and returns you to the game; each
+player picks a unique handle. Only **cleared** sectors count: the board keeps each
+player's best per sector, and the campaign ranking is the sum of those bests.
 
 **Identity & best-per-player.** Auth is handled by the shared GridWatch account
-kit via Supabase Auth on Nexus. A `profiles` row maps each user to their handle, `scores` are owned by
-`user_id` with a unique `(game, category, user_id)`, and the Edge Function does a
-keep-best upsert (`record_score`) so replaying a sector only ever updates your own
-top score.
+kit via Supabase Auth on Nexus. A `profiles` row maps each user to their handle.
+The Edge Function writes each accepted run with one service-role `submit_score`
+call; the database keeps each player's best per entry (improve-only) and sums the
+campaign total, so replaying a sector only ever improves your own score.
 
 **Anti-cheat by replay.** The simulation is pure and deterministic, so the client
 submits its run as `{ ruleset, seed, sector, commands }` rather than a score. A
 Supabase Edge Function (`submit-gridwatch-score`) authenticates the player,
 selects the immutable ruleset validator, replays the run, and stores the score
 **it** computes — the client's claimed number is never trusted, and a tampered or
-unfinished run is rejected. Legacy clients remain on a pinned validator while
-new score categories keep incomparable tuning separate. RLS blocks all direct
-writes/reads to the `scores` table; reads go through the `get_leaderboard` RPC,
-writes through the function's service role only.
+unfinished run is rejected. Lost runs and runs from retired rulesets are answered
+"not recorded". The board tables have no client grants; reads go through
+`list_boards` / `get_board` / `get_board_entry`, writes through the function's
+service role only.
 
 The validator runs a bundle generated from `src/sim`:
 

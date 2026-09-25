@@ -1,4 +1,5 @@
-import { SIM_RULESET_ID, type RecordedCommand } from "../sim";
+import type { RecordedCommand } from "../sim";
+import { createBoardReader } from "./boardReads";
 import { leaderboardConfig } from "./config";
 
 export type LeaderboardEntry = Readonly<{
@@ -25,16 +26,22 @@ export type SubmitResult =
       ok: true;
       // True when this run beat the player's previous best for the sector.
       improved: boolean;
-      // The score this run earned vs. the player's stored best (kept score).
+      // The score this run earned vs. the player's stored best for the sector.
       runScore: number;
-      bestScore: number;
+      bestScore: number | null;
+      // The player's campaign total (sum of cleared-sector bests).
+      campaignScore: number | null;
       ruleset: string;
       rating: string;
-      globalRank: number;
-      sectorRank: number;
+      // Rank on the campaign board, and on this sector's entry ranking. Null when the
+      // server could not read them back after a committed write.
+      globalRank: number | null;
+      sectorRank: number | null;
       // The handle the score is stored under (from the player's profile).
       handle: string;
     }>
+  // A lost or retired-ruleset run: validated, deliberately not written (HTTP 200).
+  | Readonly<{ ok: false; recorded: false; reason: string; error: string }>
   | Readonly<{ ok: false; error: string }>;
 
 // A read either succeeds with entries (possibly empty — a genuinely empty board)
@@ -59,14 +66,6 @@ async function fetchWithTimeout(
   } finally {
     window.clearTimeout(timeoutId);
   }
-}
-
-function authHeaders(): Record<string, string> {
-  return {
-    "Content-Type": "application/json",
-    apikey: leaderboardConfig.anonKey,
-    Authorization: `Bearer ${leaderboardConfig.anonKey}`,
-  };
 }
 
 // Submits a finished run for server-side validation. The server authenticates
@@ -121,51 +120,11 @@ export async function submitScore(input: SubmitScoreInput): Promise<SubmitResult
   }
 }
 
-// Reads the Top 20 for this immutable ruleset. `sector` null uses the special
-// ruleset-global category selector implemented by the companion migration;
-// otherwise the query is an exact, prefixed sector category. Historical rows
-// remain readable by legacy clients without mixing incomparable scores here.
-export async function fetchLeaderboard(
-  sector: number | null,
-): Promise<FetchLeaderboardResult> {
-  if (!leaderboardConfig.enabled) {
-    return { ok: false, error: "Leaderboard is offline." };
-  }
+// Reads the Top 20 from the shared board registry: `sector` null is the campaign board
+// (each player's sum of cleared-sector bests), otherwise that sector's entry ranking on the
+// same board (cleared runs only).
+const boards = createBoardReader(leaderboardConfig);
 
-  try {
-    const response = await fetchWithTimeout(
-      `${leaderboardConfig.url}/rest/v1/rpc/get_leaderboard`,
-      {
-        method: "POST",
-        headers: authHeaders(),
-        body: JSON.stringify({
-          p_game: leaderboardConfig.gameSlug,
-          p_category:
-            sector !== null
-              ? `${SIM_RULESET_ID}:sector:${sector}`
-              : `${SIM_RULESET_ID}:global`,
-        }),
-      },
-    );
-
-    if (!response.ok) {
-      return { ok: false, error: `Leaderboard request failed (${response.status}).` };
-    }
-
-    const data = (await response.json().catch(() => null)) as
-      | LeaderboardEntry[]
-      | null;
-
-    return Array.isArray(data)
-      ? { ok: true, entries: data }
-      : { ok: false, error: "Invalid leaderboard response." };
-  } catch (err) {
-    return {
-      ok: false,
-      error:
-        err instanceof DOMException && err.name === "AbortError"
-          ? "Leaderboard request timed out."
-          : "Network error.",
-    };
-  }
+export function fetchLeaderboard(sector: number | null): Promise<FetchLeaderboardResult> {
+  return sector === null ? boards.campaign() : boards.campaignSector(sector);
 }

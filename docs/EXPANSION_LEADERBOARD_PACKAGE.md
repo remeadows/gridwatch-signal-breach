@@ -12,10 +12,13 @@ Local implementation, 2026-09-23. Publication is a separate reviewed step.
 - Proof: seed and full canonical command history, maximum 5,000 commands,
   12,000 replay ticks, 512 KiB HTTP body. Server accepts only five-wave wins.
   Claimed score, category, handle and user ID do not determine the stored result.
-- Category: `expansion-v1:expansion-1-r4:level:N`. Reads use that same exact
-  category; submission exposes `levelRank`, never the generic RPC's global rank.
-- The existing service-only `record_score` atomically keeps each user's best.
-  Expansion makes one write and returns before original/hub/daily/weekly writes.
+- Board (since 2026-09-25): `gridwatch-signal-breach / expansion / r4`, entry
+  `level:N`. Reads use `get_board_entry` on that board; submission exposes
+  `levelRank` (the player's `is_you` row), never a campaign rank. The response
+  still echoes the historical category string `expansion-v1:expansion-1-r4:level:N`
+  because cached clients check it.
+- One service-role `submit_score` call keeps each user's best per level. Expansion
+  makes exactly that one write and never touches the campaign board.
   Original legacy and phase4-v1 categories, scoring and replay bundles are intact.
   No DB migration, row deletion, shared-game grant change or score reset.
 
