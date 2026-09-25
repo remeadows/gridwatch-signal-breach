@@ -13,6 +13,13 @@ player to the game. Outside the leaderboard, keep it static: no other
 backends, API calls, secrets, runtime dependencies, or multiplayer. The core
 simulation stays pure and deterministic.
 
+Scores are written ONLY by the `submit-gridwatch-score` Edge Function, as one
+service-role `submit_score` call per accepted run on the shared board registry
+(`gridwatch-signal-breach / campaign / r2` for cleared sectors, `expansion / r4`
+for expansion wins). The client reads boards through `list_boards`, `get_board`
+and `get_board_entry`. Never call `record_score`, `get_leaderboard` or read
+`public.scores` (Nexus retires them in leaderboards phase 5).
+
 The current V2 product scope is a three-sector campaign with twelve total waves.
 Keep that campaign immutable: do not add sectors or waves to it, and do not
 renumber or reinterpret its sectors, waves, progress, scores, or replay
@@ -44,10 +51,11 @@ upgrades do not persist between levels. The original V2 campaign remains three
 sectors and twelve waves.
 
 Expansion work must use a new immutable replay ruleset, campaign/level identity,
-progress namespace, and isolated leaderboard categories. It must never overload
-the existing `sector` identity, reuse `phase4-v1` score categories, rewrite or
-delete historical leaderboard rows, or change behavior for `grid-drift` or
-`gridwatch-match` in the shared GridWatchGamesDB.
+progress namespace, and its own leaderboard board (`expansion / r4`; a new content
+revision needs a new board registered by a Nexus migration). It must never
+overload the existing `sector` identity, write the campaign board, rewrite or
+delete leaderboard rows, or change behavior for `grid-drift` or `gridwatch-match`
+in the shared GridWatchGamesDB.
 
 Implement the expansion in reviewed local checkpoints: architecture first,
 then one chapter at a time. The owner approved the existing 21-family Blender
@@ -89,7 +97,7 @@ rg -n "fetch|XMLHttpRequest|process\\.env|import\\.meta\\.env" src index.html pa
 find . -name '.env*' -print
 ```
 
-Expected: install/build/dev/preview succeed, the app renders at `/play/breach/` (and still at `/` on the old host via the `_redirects` rewrite), the `rg` command matches only the sanctioned leaderboard path (`src/leaderboard/api.ts`, plus the `fetchLeaderboard` identifier in `src/ui/screens.ts` and bundled copies under `dist`), and `find` prints no `.env*` files.
+Expected: install/build/dev/preview succeed, the app renders at `/play/breach/` (and still at `/` on the old host via the `_redirects` rewrite), the `rg` command matches only the sanctioned leaderboard code (`src/leaderboard/api.ts`, `boardReads.ts`, `expansionScoreApi.ts`, `expansionSaveApi.ts`), the rankings-read identifiers in `src/ui/screens.ts` and `src/ui/expansionLeaderboardUi.ts`, and bundled copies under `dist`, and `find` prints no `.env*` files.
 
 For public-repo security checks, also run:
 

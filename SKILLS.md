@@ -11,11 +11,15 @@ closed-latch/local-only descriptions below are historical. Public activation
 still requires the separate protected PR to be reviewed and merged. Genuine
 production score and two-device save acceptance remain distinct gates.
 
-Current leaderboard package: run `verify:expansion-leaderboard`,
-`verify:expansion-score-client`, `verify:expansion-score-http`,
-`verify:expansion-score-ui` and disposable
-PostgreSQL `scripts/verify-expansion-score-database.sql`. Never run that fixture
-against GridWatchGamesDB. Regenerate `build:expansion-validator` and verify the
+Current leaderboard package (shared board registry since 2026-09-25): run
+`verify:score-board`, `verify:score-placement`, `verify:campaign-score-http`,
+`verify:board-reads`, `verify:submit-result-text`, `verify:expansion-leaderboard`,
+`verify:expansion-score-client`, `verify:expansion-score-http` and
+`verify:expansion-score-ui`. Writes go through one `submit_score` call per run
+(`campaign / r2`, `expansion / r4`); `record_score` is no longer called. Disposable
+PostgreSQL `scripts/verify-expansion-score-database.sql` covers only the historical
+`record_score` migrations. Never run that fixture against GridWatchGamesDB.
+Regenerate `build:expansion-validator` and verify the
 original `build:validator` artifact remains unchanged. The r4 server-first client
 latch is intentionally false until release. Follow
 `docs/EXPANSION_LEADERBOARD_PACKAGE.md`; older blanket-rejection notes below
@@ -102,6 +106,11 @@ where source art or implementation was approved.
 - Any sim or tuning change that affects replay must regenerate
   `supabase/functions/submit-gridwatch-score/sim.bundle.js` and be deployed in a
   version-compatible way with the Edge Function.
+- A replay ruleset or expansion content revision change needs a NEW board
+  (Nexus migration) plus the matching constants in
+  `supabase/functions/submit-gridwatch-score/scoreBoard.ts` and
+  `src/leaderboard/boardReads.ts`; until both agree `submit_score` answers
+  `ruleset_mismatch` (HTTP 503).
 
 ## Verification Lanes
 
