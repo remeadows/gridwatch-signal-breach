@@ -15,6 +15,7 @@
     "verify:expansion-score-client": "node scripts/run-typescript.mjs scripts/verify-expansion-score-client.ts",
     "verify:expansion-score-http": "node scripts/verify-expansion-score-http.mjs",
     "verify:expansion-score-ui": "node scripts/verify-expansion-score-ui.mjs",
+    "verify:score-board": "node scripts/run-typescript.mjs scripts/verify-score-board.ts",
     "balance:report": "node scripts/run-typescript.mjs scripts/balance-report.ts",
     "balance:search": "node scripts/run-typescript.mjs scripts/search-balance.ts",
     "expansion:content-report": "node scripts/run-typescript.mjs scripts/expansion-content-report.ts",
