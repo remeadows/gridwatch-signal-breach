@@ -79,9 +79,10 @@ panel.dispose(); body.replaceChildren();
 // A token/profile refresh is not an owner change. Keep in-flight results and
 // completed confirmation visible, but still reject another owner's completion.
 const originalSubmit = globalThis.__scoreUi.pending.submit;
-for (const result of [
-  { ok: true, runScore: 123, bestScore: 456, levelRank: 2 },
-  { ok: false, error: "Temporary score service failure. Retry this run." },
+for (const [result, expected] of [
+  [{ ok: true, runScore: 123, bestScore: 456, levelRank: 2 }, /Verified 123 · Best 456 · Level rank #2/],
+  [{ ok: true, runScore: 321, bestScore: null, levelRank: null }, /Verified 321 · Level rank updating/],
+  [{ ok: false, error: "Temporary score service failure. Retry this run." }, /Temporary score service failure/],
 ]) {
   let complete;
   let requests = 0;
@@ -99,8 +100,8 @@ for (const result of [
   assert.equal(requests, 1, "Refresh must not re-enable duplicate submission.");
   complete(result);
   for (let i = 0; i < 8; i++) await Promise.resolve();
-  const expected = result.ok ? /Verified 123 · Best 456 · Level rank #2/ : /Temporary score service failure/;
   assert.match(panel.element.textContent, expected, "Same-owner refresh must not discard a submission result.");
+  assert.doesNotMatch(panel.element.textContent, /null/, "Missing read-back is never printed as null.");
   for (const listener of accountListeners) listener();
   assert.match(panel.element.textContent, expected, "A later profile refresh must preserve the completed result.");
   assert.equal(stored.has("alice"), !result.ok, "Only failed submissions retain the proof for retry.");

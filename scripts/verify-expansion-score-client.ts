@@ -33,6 +33,12 @@ const api = createExpansionScoreApi(config, fakeFetch);
 assert.equal((await api.submit(proof, "isolated-token")).ok, true);
 response = { ...success, category: "phase4-v1:global" };
 assert.equal((await api.submit(proof, "isolated-token")).ok, false);
+response = { ...success, bestScore: null, levelRank: null };
+assert.equal((await api.submit(proof, "isolated-token")).ok, true, "A committed score with no read-back is still a success.");
+for (const bad of [{ bestScore: 99 }, { bestScore: -1 }, { levelRank: 0 }, { levelRank: "1" }, { bestScore: undefined }]) {
+  response = { ...success, ...bad };
+  assert.equal((await api.submit(proof, "isolated-token")).ok, false, `Rejects ${JSON.stringify(bad)}`);
+}
 response = null;
 assert.equal((await api.submit(proof, "isolated-token")).ok, false);
 response = [{ rank: 1, display_name: "<not-html>", score: 100, achieved_at: "2026-09-25T12:00:00Z", is_you: false }];
