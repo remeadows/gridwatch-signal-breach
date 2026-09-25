@@ -4,8 +4,7 @@ import { BOARD_IDS, OWNER_ID, boardRpc, loadScoreHandler } from "./score-http-ha
 
 // Exercise the actual HTTP dispatcher with isolated Auth/DB ports. This is not
 // a Deno deployment test and makes no network calls or production score writes.
-const legacyRecord = (input) => ({ data: [{ stored_score: input.p_score, improved: true, sector_rank: 1, global_rank: 1 }], error: null });
-const harness = await loadScoreHandler(boardRpc({ record_score: legacyRecord }));
+const harness = await loadScoreHandler(boardRpc());
 const { state, send, rpcCalls } = harness;
 const report = JSON.parse(await readFile(new URL("../docs/fixtures/expansion-1-r4-chapter-1-human-evidence.json", import.meta.url), "utf8"));
 const proof = report.runs.find((r) => r.actionIntervalTicks === 3 && r.seed.endsWith("alpha")).replay;
@@ -53,11 +52,10 @@ assert.equal("globalRank" in body, false);
 
 const original = JSON.parse(await readFile(new URL("../docs/fixtures/phase4-promotion-replay.json", import.meta.url), "utf8"));
 assert.equal((await send(original)).status, 200);
-const originalWrites = rpcCalls("record_score");
-assert.equal(originalWrites[0].args.p_category, "phase4-v1:sector:1");
-assert.equal(originalWrites[0].args.p_score, 514);
-assert.equal(originalWrites.some((w) => w.args.p_category.startsWith("expansion")), false);
-assert.equal(rpcCalls("submit_score").length, 1, "The original run never writes the expansion board.");
+const originalWrites = rpcCalls("submit_score").slice(1);
+assert.equal(originalWrites.length, 1);
+assert.equal(originalWrites[0].args.p_board_key, "campaign", "The original run never writes the expansion board.");
+assert.deepEqual(originalWrites[0].args.p_entries, [{ key: "sector:1", score: 514 }]);
 assert.equal((await state.handler(new Request("https://isolated.invalid", { method: "OPTIONS", headers: { Origin: "https://nexus.warsignallabs.net" } }))).status, 204);
 assert.equal((await state.handler(new Request("https://isolated.invalid"))).status, 405);
 harness.close();
