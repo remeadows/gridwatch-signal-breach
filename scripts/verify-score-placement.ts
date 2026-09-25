@@ -90,6 +90,29 @@ assert.equal(yourStanding([{ rank: null, total: 1, field: 1 }]), null);
   assert.deepEqual(thrownRead.logs, ["[score] placement: list_boards failed: offline"]);
 }
 
+// Board ids: list_boards orders active boards first, then archived. An archived row sharing a
+// key + ruleset with an active one must never overwrite the active id, and a key that exists
+// only as archived is not-found (a successful read, not a failure).
+{
+  const ARCHIVED_DUPLICATE_ID = "00000000-0000-4000-8000-0000000000c9";
+  const withArchivedDuplicate = [
+    ...REGISTRY,
+    { id: ARCHIVED_DUPLICATE_ID, game_slug: "gridwatch-signal-breach", key: "campaign", ruleset: "r2", status: "archived" },
+  ];
+  const { rpc } = fakeRpc((fn) => fn === "list_boards" ? { data: withArchivedDuplicate, error: null } : { data: [], error: null });
+  const resolved = await withCapturedErrors(() => createBoardIdCache().resolve(rpc, CAMPAIGN_BOARD));
+  assert.equal(resolved.result, CAMPAIGN_ID, "An archived duplicate listed after the active row must not overwrite it.");
+  assert.deepEqual(resolved.logs, [], "A successful read logs nothing.");
+
+  const onlyArchived = [
+    { id: ARCHIVED_DUPLICATE_ID, game_slug: "gridwatch-signal-breach", key: "campaign", ruleset: "r9", status: "archived" },
+  ];
+  const { rpc: onlyArchivedRpc } = fakeRpc((fn) => fn === "list_boards" ? { data: onlyArchived, error: null } : { data: [], error: null });
+  const notFound = await withCapturedErrors(() => createBoardIdCache().resolve(onlyArchivedRpc, { key: "campaign", ruleset: "r9" }));
+  assert.equal(notFound.result, null, "An archived-only board is treated as not found.");
+  assert.deepEqual(notFound.logs, [], "Not-found is a successful read, not a failure.");
+}
+
 // Campaign placement: sector entry + campaign standing on period 'all', limit 100.
 {
   const { rpc, calls } = fakeRpc((fn) => {

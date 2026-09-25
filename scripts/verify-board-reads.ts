@@ -55,6 +55,31 @@ function fakeFetch(answer: (fn: string, body: Record<string, unknown>) => { stat
   assert.deepEqual(seen[2]!.body, { p_board_id: CAMPAIGN_ID, p_period_key: "all", p_entry_key: "sector:2", p_limit: 20 });
 }
 
+// status: list_boards orders active boards first, then archived. An archived duplicate for the
+// same key + ruleset must never overwrite the active id, and a board that exists only as
+// archived is not-found (the same behaviour the module already defines for a missing board).
+{
+  const ARCHIVED_DUPLICATE_ID = "00000000-0000-4000-8000-0000000000c9";
+  const withArchivedDuplicate = [
+    ...REGISTRY,
+    { id: ARCHIVED_DUPLICATE_ID, game_slug: "gridwatch-signal-breach", key: "campaign", ruleset: "r2", status: "archived" },
+  ];
+  const { request, seen } = fakeFetch((fn) => fn === "list_boards" ? { json: withArchivedDuplicate } : { json: [] });
+  const result = await createBoardReader(config, request).campaign();
+  assert.equal(result.ok, true);
+  assert.deepEqual(seen[1]!.body, { p_board_id: CAMPAIGN_ID, p_period_key: "all", p_limit: 20 }, "An archived duplicate listed after the active row must not override the active id.");
+
+  const onlyArchivedCampaign = [
+    { id: ARCHIVED_DUPLICATE_ID, game_slug: "gridwatch-signal-breach", key: "campaign", ruleset: "r2", status: "archived" },
+  ];
+  const { request: archivedOnlyRequest } = fakeFetch((fn) => fn === "list_boards" ? { json: onlyArchivedCampaign } : { json: [] });
+  assert.deepEqual(
+    await createBoardReader(config, archivedOnlyRequest).campaign(),
+    { ok: false, error: "Rankings could not be loaded. Retry when online." },
+    "An archived-only board is not-found.",
+  );
+}
+
 // Expansion level: get_board_entry on the expansion board, score → score.
 {
   const { request, seen } = fakeFetch((fn) => fn === "list_boards"

@@ -37,7 +37,7 @@ export function createBoardIdCache(): BoardIdCache {
           return null;
         }
         for (const row of data) {
-          if (isRecord(row) && row.game_slug === GAME_SLUG && typeof row.id === "string"
+          if (isRecord(row) && row.game_slug === GAME_SLUG && row.status === "active" && typeof row.id === "string"
             && typeof row.key === "string" && typeof row.ruleset === "string") {
             ids.set(`${row.key}/${row.ruleset}`, row.id);
           }

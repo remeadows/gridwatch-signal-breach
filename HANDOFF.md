@@ -15,8 +15,9 @@
   `standard`/`daily-*`/`weekly-*` hub-alignment block and all `public.scores` reads are gone.
   Replay anti-cheat unchanged; `sim.bundle.js` and `expansion-r4.bundle.js` byte-identical.
 - **Not recorded:** lost V2 runs and legacy-ruleset runs get HTTP 200
-  `{ok:false, recorded:false, reason, error}` and write nothing; the pinned legacy validator import
-  is removed. The current client no longer offers submission on a lost run.
+  `{ok:false, recorded:false, reason, runScore, rating, error}` (`runScore`/`rating` null for a
+  retired-ruleset run) and write nothing; the pinned legacy validator import is removed. The
+  current client no longer offers submission on a lost run.
 - **Responses:** every existing field kept. `duplicate` / `request_conflict` = already logged
   (`improved:false`). `campaignScore` = board total; `bestScore`, `sectorRank`, `levelRank`
   (`get_board_entry` is_you row) and `globalRank` (now the campaign-board rank, `get_my_standing`)
@@ -28,10 +29,22 @@
   No `get_leaderboard` call remains. Placement copy says "Campaign #" (was "Global #").
 - **Behaviour changes (spec §5):** per-sector rankings count cleared runs only; the headline is
   the sum of cleared-sector bests; no daily board (campaign has all-time + week).
+- **Spec deviation (§2 step 3):** the weekly period follows submission time (`p_achieved_at` =
+  server time), not play time as the spec describes, because Breach runs carry no trusted end
+  time. Consequence: a run submitted after a UTC week boundary counts for the new week, and
+  re-posting an old winning proof after the 1-hour replay window writes it into the current week
+  (the old `weekly-*` rows had the same property; improve-only means it can't raise a score above
+  the replayed value).
 - **Compat:** bundles cached before the deploy keep working. Two rare degraded cases, both
   after a committed write whose read-back failed or ranks the player outside the top 100: a
   cached V2 bundle prints `#null`; a cached expansion bundle says "Invalid score response"
-  and keeps the run pending (a retry is answered as already logged).
+  and keeps the run pending (a retry is answered as already logged). Fuller cached-client
+  picture: a cached pre-deploy V2 bundle still wins normally; a non-improving run whose
+  read-back fails can print "Your best null stands"; a lost run's "Not recorded" text shows in
+  error styling with SUBMIT re-enabled (re-clicking returns the same answer, no loop); a legacy
+  pending run is consumed by `takePendingRun` and not re-sent. A cached expansion bundle rejects
+  a null rank/best (read-back failed or outside top 100) and keeps the run pending until an
+  explicit re-submit from a fresh bundle.
 - **Deviations from the plan text (found during review):** (a) `scorePlacement.ts` logs
   `[score] placement: …` on every swallowed read-back failure (never tokens/ids); (b) nothing else.
 - **Evidence:** CI set 47/47 `npm run` steps green, both bundles byte-identical, `deno check`
@@ -49,6 +62,17 @@
    checkout of that commit run
    `deno check --node-modules-dir=none --no-lock supabase/functions/submit-gridwatch-score/index.ts`, then
    `supabase functions deploy submit-gridwatch-score --project-ref mggxfzzxrpjgpzhwiwqi --no-verify-jwt`.
+   The CLI bundles sibling imports automatically. A file-by-file deploy (e.g. the Supabase MCP
+   `deploy_edge_function`) must instead upload exactly `index.ts`'s runtime import graph — `index.ts`,
+   `replayValidation.ts`, `expansionScoreHandler.ts`, `requestBody.ts`, `scoreBoard.ts`,
+   `scorePlacement.ts`, `sim.bundle.js`, `expansion-r4.bundle.js` (8 files, verified present in
+   `supabase/functions/submit-gridwatch-score/`). `expansionReplayValidation.ts` and
+   `expansion-r4.bundle.d.ts` also live in that directory but are not imported by `index.ts` at
+   runtime (the old server-first release's 4-file list included `expansionReplayValidation.ts`
+   because that generation of `index.ts` imported it directly; this generation validates expansion
+   runs through `expansionScoreHandler.ts` → `expansion-r4.bundle.js` instead) — do not include them
+   in a file-by-file deploy. After deploying, record the deployed files' SHA-256s, as
+   `docs/EXPANSION_SERVER_RELEASE_2026_09_23.md` did for the prior release.
    Record the new version (rollback = version 10, i.e. redeploy the function from `ff6238a`). No-write
    probes: `OPTIONS` with `Origin: https://nexus.warsignallabs.net` → 204 with that origin echoed;
    unauthenticated `POST` → 401. The old client keeps working against the new function.
@@ -63,7 +87,10 @@
    `[score]` errors. Record pass/fail here. Then Zero.
 5. **Rollback:** redeploy the function from `ff6238a` (writes `public.scores` again; the new client
    still renders its responses); roll Pages back to the previous production deployment in the
-   Cloudflare dashboard if the client itself misbehaves.
+   Cloudflare dashboard if the client itself misbehaves. Caveat: after rolling the function back to
+   v10, the new client's in-game boards go stale — it reads the shared registry, while v10 writes
+   `public.scores` — and the same staleness happens if the Pages client is merged before the
+   function is deployed (step 2 before step 3 exists precisely to avoid that ordering).
 
 ## PR #86 review follow-up — 2026-09-23
 

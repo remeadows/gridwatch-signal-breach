@@ -50,7 +50,7 @@ export function createBoardReader(config: BoardReaderConfig, request: typeof fet
     if (!Array.isArray(rows)) return null;
     const found = new Map<string, string>();
     for (const row of rows) {
-      if (isRecord(row) && row.game_slug === config.gameSlug && typeof row.id === "string"
+      if (isRecord(row) && row.game_slug === config.gameSlug && row.status === "active" && typeof row.id === "string"
         && typeof row.key === "string" && typeof row.ruleset === "string") {
         found.set(`${row.key}/${row.ruleset}`, row.id);
       }
