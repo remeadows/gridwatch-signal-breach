@@ -5,7 +5,7 @@
 - **Deploy (Russ's go, 2026-09-25):**
   - **Client:** merging #87 (`8e87bd5`) auto-deployed it through Cloudflare Pages (production deployment `013b8ffd`). The function was not deployed first, because the Supabase CLI on the Mac had no sign-in; `supabase login` failed server-side while Russ was remote.
   - **Function:** deployed as **v11** once Russ signed in, from a clean detached checkout of `8e87bd5`, using `supabase functions deploy submit-gridwatch-score --project-ref mggxfzzxrpjgpzhwiwqi --no-verify-jwt`. The CLI uploaded exactly the 8 runtime files listed below. `verify_jwt` is false; ezbr sha256 `3cbbbbf3f0a589ea155a97b87e0140d46f67a489d6a8ae724759ecd79865700a`. Rollback target: v10.
-  - **The gap:** between the Pages deploy and v11 the new client ran against v10. The DB shows **zero** `public.scores` rows written after 2026-09-25 15:00Z, so no run was stranded.
+  - **The gap:** between the Pages deploy and v11 the new client ran against v10. The DB shows **zero** `public.scores` rows written after 2026-09-25 15:00Z, so no score was written to the legacy table. This does not prove that no player attempted a submission in that window: a failed request would leave no row.
 - **Post-deploy checks:**
   - Function: POST without auth → 401, bad token → 401 ("Your session has expired — sign in again."), OPTIONS from the Nexus origin → 204, GET → 405.
   - Live client, served through Nexus `/play/breach/`: `main-3aWjnIMh.js` / `expansionLeaderboardUi-CnNAMM3z.js` contain `list_boards`, `get_board_entry`, `CAMPAIGN` and "Campaign #", and no `get_leaderboard`.
