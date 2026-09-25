@@ -32,6 +32,7 @@ import {
 } from "./replayValidation.ts";
 import { handleExpansionScore } from "./expansionScoreHandler.ts";
 import { readReplayBody } from "./requestBody.ts";
+import { createBoardIdCache, readExpansionPlacement, type Rpc } from "./scorePlacement.ts";
 
 const GAME_SLUG = "gridwatch-signal-breach";
 const MAX_COMMANDS = 5000;
@@ -89,6 +90,9 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
+// Board ids from list_boards, cached per isolate once found (never on failure).
+const boardIds = createBoardIdCache();
+
 Deno.serve(async (req: Request) => {
   const origin = req.headers.get("origin");
 
@@ -112,6 +116,8 @@ Deno.serve(async (req: Request) => {
   if (authError || !user) {
     return json({ ok: false, error: "Your session has expired — sign in again." }, 401, origin);
   }
+  // Read-back after a write runs as the player, so is_you / get_my_standing resolve to them.
+  const userRpc: Rpc = (fn, args) => userClient.rpc(fn, args);
 
   let payload: Record<string, unknown>;
   try {
@@ -125,8 +131,8 @@ Deno.serve(async (req: Request) => {
     return json({ ok: false, error: "Invalid replay payload." }, 400, origin);
   }
 
-  // A separate frozen r4 validator/category path. Always return here: expansion
-  // must never enter the original sector or hub-alignment writes below.
+  // A separate frozen r4 validator and board. Always return here: expansion must
+  // never write the campaign board below.
   if (payload.ruleset === EXPANSION_RULESET_ID) {
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, { auth: { persistSession: false } });
     const result = await handleExpansionScore(payload, user.id, {
@@ -134,11 +140,14 @@ Deno.serve(async (req: Request) => {
         const { data, error } = await admin.from("profiles").select("handle").eq("user_id", userId).maybeSingle();
         return { handle: data?.handle ?? null, error: Boolean(error) };
       },
-      record: async (input) => {
-        const { data, error } = await admin.rpc("record_score", input);
-        return error || !data?.length ? null : data[0];
+      submit: async (args) => {
+        const { data, error } = await admin.rpc("submit_score", args);
+        if (error) console.error("[score] submit_score call failed:", error);
+        return error ? null : data;
       },
+      placement: (level) => readExpansionPlacement(userRpc, boardIds, level),
     });
+    if (result.log) console.error(`[score] ${result.log}`);
     return json(result.body, result.status, origin);
   }
 
