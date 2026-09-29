@@ -67,6 +67,6 @@
   },
   "dependencies": {
     "@gridwatch/account-kit": "git+https://github.com/remeadows/gridwatch-account-kit.git#v0.2.5",
-    "@supabase/supabase-js": "^2.116.0"
+    "@supabase/supabase-js": "^2.117.2"
   }
 }
